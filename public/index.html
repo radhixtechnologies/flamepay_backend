@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlamePay — Admin Control Portal</title>
+  <link rel="icon" type="image/png" href="/assets/flamepay_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN (If not authenticated) -->
+  <div id="login-modal" class="auth-wrapper" style="display: none;">
+    <div class="auth-card">
+      <div class="brand-header">
+        <img src="/assets/flamepay_icon.png" alt="FlamePay Logo" class="brand-logo">
+        <h2>FlamePay Admin</h2>
+        <p>Enterprise Operations & Management Suite</p>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label>Username</label>
+          <div class="input-icon">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" id="login-username" value="admin" required placeholder="Enter admin username">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-icon">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="login-password" value="password123" required placeholder="Enter password">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          <span>Sign In to Dashboard</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+      <div class="demo-badge">Demo credentials: <b>admin / password123</b></div>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN APP -->
+  <div id="admin-app" class="dashboard-layout">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="/assets/flamepay_icon.png" alt="FlamePay Logo">
+        <div>
+          <span class="brand-name">Flame<span>Pay</span></span>
+          <span class="portal-badge">ADMIN</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" data-tab="users">
+          <i class="fa-solid fa-users"></i>
+          <span>Users & Wallets</span>
+        </button>
+        <button class="nav-item" data-tab="kyc">
+          <i class="fa-solid fa-id-card"></i>
+          <span>KYC Verifications</span>
+          <span class="badge badge-warning" id="kyc-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="transactions">
+          <i class="fa-solid fa-receipt"></i>
+          <span>Live Transactions</span>
+        </button>
+        <button class="nav-item" data-tab="apis">
+          <i class="fa-solid fa-terminal"></i>
+          <span>API Endpoints</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="avatar">SA</div>
+          <div class="info">
+            <div class="name">Super Admin</div>
+            <div class="role">Root Access</div>
+          </div>
+        </div>
+        <button class="logout-btn" id="logout-btn" title="Sign Out">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="page-title-group">
+          <h1 id="page-title">Operational Overview</h1>
+          <p id="page-desc">Real-time metrics, payment processing, and user verifications</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="status-indicator">
+            <span class="pulse-dot"></span>
+            <span id="api-status-badge">API Engine: <b>Live</b></span>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="refreshCurrentTab()">
+            <i class="fa-solid fa-rotate"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB 1: OVERVIEW -->
+      <section id="tab-overview" class="tab-pane active">
+        <!-- STAT CARDS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-blue"><i class="fa-solid fa-wallet"></i></div>
+            <div class="stat-data">
+              <span class="stat-label">Total Processing Volume</span>
+              <h2 id="stat-volume">₹0.00</h2>
+              <span class="stat-trend positive"><i class="fa-solid fa-arrow-up"></i> +18.4% today</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-orange"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-data">
+              <span class="stat-label">Active Users</span>
+              <h2 id="stat-users">0</h2>
+              <span class="stat-trend neutral">Consumer accounts</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-green"><i class="fa-solid fa-shield-check"></i></div>
+            <div class="stat-data">
+              <span class="stat-label">Verified KYC Profiles</span>
+              <h2 id="stat-verified-kyc">0</h2>
+              <span class="stat-trend positive">Tier 2 ₹2 Lakh Limits</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-purple"><i class="fa-solid fa-clock"></i></div>
+            <div class="stat-data">
+              <span class="stat-label">Pending Verifications</span>
+              <h2 id="stat-pending-kyc">0</h2>
+              <span class="stat-trend warning">Action required</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT ACTIVITY SECTION -->
+        <div class="grid-2col">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Latest Transactions</h3>
+              <button class="btn-link" onclick="switchTab('transactions')">View All</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Txn ID</th>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-recent-txns">
+                  <tr><td colspan="5" class="loading-state">Loading transactions...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Pending KYC Submissions</h3>
+              <button class="btn-link" onclick="switchTab('kyc')">Review</button>
+            </div>
+            <div id="overview-pending-kyc" class="kyc-mini-list">
+              <p class="loading-state">Checking KYC submissions...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: USERS & WALLETS -->
+      <section id="tab-users" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Registered Customers</h3>
+            <div class="panel-tools">
+              <input type="text" id="user-search-input" placeholder="Search by name, phone or email..." class="search-input" onkeyup="filterUsersTable()">
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="users-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Customer Name</th>
+                  <th>Phone Number</th>
+                  <th>Wallet Balance</th>
+                  <th>KYC Status</th>
+                  <th>CIBIL</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: KYC VERIFICATIONS -->
+      <section id="tab-kyc" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Identity & Compliance Documents</h3>
+            <p>Approve or Reject full Tier-2 KYC requests submitted from Flutter super-app.</p>
+          </div>
+          <div class="kyc-full-grid" id="kyc-full-list"></div>
+        </div>
+      </section>
+
+      <!-- TAB 4: TRANSACTIONS -->
+      <section id="tab-transactions" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Complete Audit Ledger</h3>
+            <button class="btn btn-secondary btn-sm" onclick="fetchTransactions()"><i class="fa-solid fa-rotate"></i> Sync</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="transactions-table">
+              <thead>
+                <tr>
+                  <th>Ref ID</th>
+                  <th>Timestamp</th>
+                  <th>Customer / Target</th>
+                  <th>Category</th>
+                  <th>Mode</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="txns-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: APIS DIRECTORY -->
+      <section id="tab-apis" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Flutter Super-App REST Endpoints</h3>
+            <p>These endpoints are directly integrated with Dio in FlamePay Flutter Mobile App.</p>
+          </div>
+          <div class="api-grid">
+            <div class="api-card">
+              <div class="api-badge post">POST</div>
+              <code>/api/v1/auth/send-otp</code>
+              <p>Sends 6-digit OTP verification code to mobile.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge post">POST</div>
+              <code>/api/v1/auth/verify-otp</code>
+              <p>Verifies OTP, returns JWT tokens and active User Profile.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge get">GET</div>
+              <code>/api/v1/user/profile</code>
+              <p>Fetches authenticated user information & KYC status.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge post">POST</div>
+              <code>/api/v1/user/kyc-submit</code>
+              <p>Submits Aadhaar, PAN and demographic details to verify account.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge get">GET</div>
+              <code>/api/v1/wallet/balance</code>
+              <p>Returns live wallet balance, monthly limit, and spent amounts.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge post">POST</div>
+              <code>/api/v1/wallet/transfer</code>
+              <p>Transfers wallet funds instantly via Mobile number or UPI ID.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge get">GET</div>
+              <code>/api/v1/recharge/operators</code>
+              <p>Lists telecom & DTH operators with circles.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge post">POST</div>
+              <code>/api/v1/recharge/pay</code>
+              <p>Executes prepaid recharge or utility bill payment.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
