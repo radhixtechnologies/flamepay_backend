@@ -1,11 +1,5 @@
 // FlamePay Enterprise Admin Portal & Real-Time Financial Leads Engine
-const API_BASE = (function() {
-  const host = window.location.hostname;
-  if (host.includes('admin.')) {
-    return `${window.location.protocol}//${host.replace('admin.', 'api.')}/api/v1`;
-  }
-  return '/api/v1';
-})();
+const API_BASE = '/api/v1';
 
 let currentTab = 'overview';
 let cachedLoans = [];
