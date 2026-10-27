@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlamePay — Admin Control Portal</title>
+  <title>FlamePay — Enterprise Admin Portal & Lead Engine</title>
   <link rel="icon" type="image/png" href="/assets/flamepay_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
       <div class="brand-header">
         <img src="/assets/flamepay_icon.png" alt="FlamePay Logo" class="brand-logo">
         <h2>FlamePay Admin</h2>
-        <p>Enterprise Operations & Management Suite</p>
+        <p>Enterprise Operations & Financial Leads Engine</p>
       </div>
       <form id="login-form">
         <div class="form-group">
@@ -41,7 +41,7 @@
           <i class="fa-solid fa-arrow-right"></i>
         </button>
       </form>
-      <div class="demo-badge">Demo credentials: <b>admin / password123</b></div>
+      <div class="demo-badge">Default credentials: <b>admin / password123</b></div>
     </div>
   </div>
 
@@ -59,10 +59,42 @@
       </div>
 
       <nav class="nav-menu">
+        <div class="nav-section-title">CORE OPERATIONS</div>
         <button class="nav-item active" data-tab="overview">
           <i class="fa-solid fa-chart-pie"></i>
           <span>Overview</span>
         </button>
+        <button class="nav-item" data-tab="loans">
+          <i class="fa-solid fa-sack-dollar"></i>
+          <span>Loan Leads</span>
+          <span class="badge badge-primary" id="loans-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="credit-cards">
+          <i class="fa-solid fa-credit-card"></i>
+          <span>Credit Cards</span>
+          <span class="badge badge-info" id="cards-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="insurance">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Buy Insurance</span>
+          <span class="badge badge-purple" id="insurance-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="cibil">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>CIBIL Reports</span>
+        </button>
+
+        <div class="nav-section-title">PAYMENTS & UTILITIES</div>
+        <button class="nav-item" data-tab="recharges">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Recharges & Bills</span>
+        </button>
+        <button class="nav-item" data-tab="transactions">
+          <i class="fa-solid fa-receipt"></i>
+          <span>Live Transactions</span>
+        </button>
+
+        <div class="nav-section-title">USERS & COMPLIANCE</div>
         <button class="nav-item" data-tab="users">
           <i class="fa-solid fa-users"></i>
           <span>Users & Wallets</span>
@@ -72,13 +104,9 @@
           <span>KYC Verifications</span>
           <span class="badge badge-warning" id="kyc-badge">0</span>
         </button>
-        <button class="nav-item" data-tab="transactions">
-          <i class="fa-solid fa-receipt"></i>
-          <span>Live Transactions</span>
-        </button>
         <button class="nav-item" data-tab="apis">
-          <i class="fa-solid fa-terminal"></i>
-          <span>API Endpoints</span>
+          <i class="fa-solid fa-code"></i>
+          <span>API Directory</span>
         </button>
       </nav>
 
@@ -87,7 +115,7 @@
           <div class="avatar">SA</div>
           <div class="info">
             <div class="name">Super Admin</div>
-            <div class="role">Root Access</div>
+            <div class="role">Root Authority</div>
           </div>
         </div>
         <button class="logout-btn" id="logout-btn" title="Sign Out">
@@ -102,14 +130,18 @@
       <!-- TOPBAR -->
       <header class="topbar">
         <div class="page-title-group">
-          <h1 id="page-title">Operational Overview</h1>
-          <p id="page-desc">Real-time metrics, payment processing, and user verifications</p>
+          <h1 id="page-title">Operations & Leads Overview</h1>
+          <p id="page-desc">Real-time metrics, financial product leads, and user verifications</p>
         </div>
         <div class="topbar-actions">
           <div class="status-indicator">
             <span class="pulse-dot"></span>
             <span id="api-status-badge">API Engine: <b>Live</b></span>
           </div>
+          <button class="btn btn-primary btn-sm" onclick="simulateUserLoanTap()">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Simulate User Loan Tap</span>
+          </button>
           <button class="btn btn-secondary btn-sm" onclick="refreshCurrentTab()">
             <i class="fa-solid fa-rotate"></i>
             <span>Refresh</span>
@@ -121,69 +153,77 @@
       <section id="tab-overview" class="tab-pane active">
         <!-- STAT CARDS -->
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon icon-blue"><i class="fa-solid fa-wallet"></i></div>
-            <div class="stat-data">
-              <span class="stat-label">Total Processing Volume</span>
-              <h2 id="stat-volume">₹0.00</h2>
-              <span class="stat-trend positive"><i class="fa-solid fa-arrow-up"></i> +18.4% today</span>
+          <div class="stat-card stat-accent-gold">
+            <div class="stat-icon icon-gold"><i class="fa-solid fa-sack-dollar"></i></div>
+            <div class="stat-details">
+              <span class="stat-label">Loan Inquiries / Leads</span>
+              <h2 class="stat-value" id="stat-loans">0</h2>
+              <span class="stat-sub text-success" id="stat-loan-volume">₹0 Requested</span>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon icon-orange"><i class="fa-solid fa-users"></i></div>
-            <div class="stat-data">
-              <span class="stat-label">Active Users</span>
-              <h2 id="stat-users">0</h2>
-              <span class="stat-trend neutral">Consumer accounts</span>
+          <div class="stat-card stat-accent-blue">
+            <div class="stat-icon icon-blue"><i class="fa-solid fa-credit-card"></i></div>
+            <div class="stat-details">
+              <span class="stat-label">Credit Card Leads</span>
+              <h2 class="stat-value" id="stat-cards">0</h2>
+              <span class="stat-sub text-blue">HDFC, SBI, ICICI, Axis</span>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon icon-green"><i class="fa-solid fa-shield-check"></i></div>
-            <div class="stat-data">
-              <span class="stat-label">Verified KYC Profiles</span>
-              <h2 id="stat-verified-kyc">0</h2>
-              <span class="stat-trend positive">Tier 2 ₹2 Lakh Limits</span>
+          <div class="stat-card stat-accent-purple">
+            <div class="stat-icon icon-purple"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="stat-details">
+              <span class="stat-label">Insurance Inquiries</span>
+              <h2 class="stat-value" id="stat-insurance">0</h2>
+              <span class="stat-sub text-purple">Health, Motor, Life</span>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon icon-purple"><i class="fa-solid fa-clock"></i></div>
-            <div class="stat-data">
-              <span class="stat-label">Pending Verifications</span>
-              <h2 id="stat-pending-kyc">0</h2>
-              <span class="stat-trend warning">Action required</span>
+          <div class="stat-card stat-accent-green">
+            <div class="stat-icon icon-green"><i class="fa-solid fa-wallet"></i></div>
+            <div class="stat-details">
+              <span class="stat-label">Total Txn Volume</span>
+              <h2 class="stat-value" id="stat-volume">₹0.00</h2>
+              <span class="stat-sub text-success" id="stat-txns">0 Transactions</span>
             </div>
           </div>
         </div>
 
-        <!-- RECENT ACTIVITY SECTION -->
-        <div class="grid-2col">
-          <div class="panel">
+        <div class="dashboard-columns">
+          <!-- RECENT LOAN LEADS IN OVERVIEW -->
+          <div class="panel flex-2">
             <div class="panel-header">
-              <h3>Latest Transactions</h3>
-              <button class="btn-link" onclick="switchTab('transactions')">View All</button>
+              <div class="panel-title-block">
+                <h3>🔥 High-Priority Loan Leads (Users Tapped in App)</h3>
+                <p>Instant leads captured when customers tap on Loan Apply in FlamePay</p>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="switchTab('loans')">View All Leads →</button>
             </div>
             <div class="table-responsive">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Txn ID</th>
-                    <th>User</th>
-                    <th>Type</th>
-                    <th>Amount</th>
+                    <th>Customer Name</th>
+                    <th>Loan Type</th>
+                    <th>Requested</th>
+                    <th>CIBIL</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
-                <tbody id="overview-recent-txns">
-                  <tr><td colspan="5" class="loading-state">Loading transactions...</td></tr>
+                <tbody id="overview-loans-tbody">
+                  <tr><td colspan="6" class="loading-state">Loading loan leads...</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <div class="panel">
+          <!-- PENDING KYC -->
+          <div class="panel flex-1">
             <div class="panel-header">
-              <h3>Pending KYC Submissions</h3>
-              <button class="btn-link" onclick="switchTab('kyc')">Review</button>
+              <div class="panel-title-block">
+                <h3>Pending KYC Submissions</h3>
+                <p>Identity & PAN review</p>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="switchTab('kyc')">Review</button>
             </div>
             <div id="overview-pending-kyc" class="kyc-mini-list">
               <p class="loading-state">Checking KYC submissions...</p>
@@ -192,11 +232,192 @@
         </div>
       </section>
 
-      <!-- TAB 2: USERS & WALLETS -->
+      <!-- TAB 2: LOAN LEADS & APPLICATIONS -->
+      <section id="tab-loans" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header flex-wrap">
+            <div class="panel-title-block">
+              <h3>💰 Loan Leads & Customer Inquiries</h3>
+              <p>When a user taps on Personal, Home, Business, or LAP in the mobile app, their complete financial profile is instantly captured here.</p>
+            </div>
+            <div class="panel-actions-group">
+              <button class="btn btn-primary" onclick="simulateUserLoanTap()">
+                <i class="fa-solid fa-plus-circle"></i>
+                <span>Simulate User Tap In App</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- FILTER BAR -->
+          <div class="filter-toolbar">
+            <div class="filter-pills" id="loan-type-filters">
+              <button class="pill active" onclick="filterLoansByType('all')">All Loans</button>
+              <button class="pill" onclick="filterLoansByType('Personal Loan')">Personal Loan</button>
+              <button class="pill" onclick="filterLoansByType('Business Loan')">Business Loan</button>
+              <button class="pill" onclick="filterLoansByType('Home Loan')">Home Loan</button>
+              <button class="pill" onclick="filterLoansByType('Loan Against Property')">Loan Against Property</button>
+            </div>
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="loan-search-input" placeholder="Search by name, phone, city..." onkeyup="filterLoansTable()">
+            </div>
+          </div>
+
+          <!-- LOANS TABLE -->
+          <div class="table-responsive">
+            <table class="data-table" id="loans-table">
+              <thead>
+                <tr>
+                  <th>Lead ID / Date</th>
+                  <th>Customer Information</th>
+                  <th>Loan Category</th>
+                  <th>Amount & Tenure</th>
+                  <th>Income & Employment</th>
+                  <th>CIBIL Score</th>
+                  <th>Lead Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="loans-tbody">
+                <tr><td colspan="8" class="loading-state">Loading loan applications...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: CREDIT CARDS -->
+      <section id="tab-credit-cards" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-block">
+              <h3>💳 Credit Card Applications & Leads</h3>
+              <p>Compare & apply leads for HDFC, SBI, ICICI, and Axis credit cards</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Lead Ref</th>
+                  <th>Applicant Name</th>
+                  <th>Phone / Email</th>
+                  <th>Preferred Card & Bank</th>
+                  <th>Monthly Income</th>
+                  <th>CIBIL</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="cards-tbody">
+                <tr><td colspan="8" class="loading-state">Loading credit card leads...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: BUY INSURANCE -->
+      <section id="tab-insurance" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-block">
+              <h3>🛡️ Buy Insurance Leads & Quotes</h3>
+              <p>Health, Motor/Vehicle, Term Life, and Travel insurance policy inquiries</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Inquiry Ref</th>
+                  <th>Customer</th>
+                  <th>Phone Number</th>
+                  <th>Insurance Category</th>
+                  <th>Sum Insured / Vehicle</th>
+                  <th>Provider / Premium</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="insurance-tbody">
+                <tr><td colspan="8" class="loading-state">Loading insurance inquiries...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: CIBIL SCORE REPORTS -->
+      <section id="tab-cibil" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-block">
+              <h3>📈 CIBIL Score Reports & Credit Inquiries</h3>
+              <p>Real-time credit health analytics of users who checked their CIBIL score in FlamePay</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Customer Name</th>
+                  <th>Mobile Number</th>
+                  <th>CIBIL Score</th>
+                  <th>Credit Rating</th>
+                  <th>Active Loans/Cards</th>
+                  <th>On-Time Repayment</th>
+                  <th>Checked At</th>
+                </tr>
+              </thead>
+              <tbody id="cibil-tbody">
+                <tr><td colspan="8" class="loading-state">Loading CIBIL score inquiries...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: RECHARGES & UTILITY BILLS -->
+      <section id="tab-recharges" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-block">
+              <h3>⚡ Recharges & Utility Bill Payments</h3>
+              <p>Mobile recharges (Jio, Airtel, Vi, BSNL) and utility bill settlements (Electricity, Gas, Water, Broadband)</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Txn ID</th>
+                  <th>Customer</th>
+                  <th>Service Category</th>
+                  <th>Operator / Provider</th>
+                  <th>Mobile / Consumer No.</th>
+                  <th>Amount</th>
+                  <th>Payment Mode</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recharges-tbody">
+                <tr><td colspan="8" class="loading-state">Loading utility bills & recharges...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: USERS & WALLETS -->
       <section id="tab-users" class="tab-pane">
         <div class="panel">
           <div class="panel-header">
-            <h3>Registered Customers</h3>
+            <div class="panel-title-block">
+              <h3>👥 Registered Customers & Wallet Management</h3>
+              <p>Manage user balances, KYC status, limits, and account access</p>
+            </div>
             <div class="panel-tools">
               <input type="text" id="user-search-input" placeholder="Search by name, phone or email..." class="search-input" onkeyup="filterUsersTable()">
             </div>
@@ -211,6 +432,7 @@
                   <th>Wallet Balance</th>
                   <th>KYC Status</th>
                   <th>CIBIL</th>
+                  <th>Account Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -220,22 +442,27 @@
         </div>
       </section>
 
-      <!-- TAB 3: KYC VERIFICATIONS -->
+      <!-- TAB 8: KYC VERIFICATIONS -->
       <section id="tab-kyc" class="tab-pane">
         <div class="panel">
           <div class="panel-header">
-            <h3>Identity & Compliance Documents</h3>
-            <p>Approve or Reject full Tier-2 KYC requests submitted from Flutter super-app.</p>
+            <div class="panel-title-block">
+              <h3>🪪 Identity & Compliance Documents</h3>
+              <p>Approve or Reject full Tier-2 KYC requests submitted from Flutter super-app.</p>
+            </div>
           </div>
           <div class="kyc-full-grid" id="kyc-full-list"></div>
         </div>
       </section>
 
-      <!-- TAB 4: TRANSACTIONS -->
+      <!-- TAB 9: TRANSACTIONS -->
       <section id="tab-transactions" class="tab-pane">
         <div class="panel">
           <div class="panel-header">
-            <h3>Complete Audit Ledger</h3>
+            <div class="panel-title-block">
+              <h3>🧾 Complete Audit Ledger</h3>
+              <p>End-to-end payment journal with timestamps and status codes</p>
+            </div>
             <button class="btn btn-secondary btn-sm" onclick="fetchTransactions()"><i class="fa-solid fa-rotate"></i> Sync</button>
           </div>
           <div class="table-responsive">
@@ -246,7 +473,7 @@
                   <th>Timestamp</th>
                   <th>Customer / Target</th>
                   <th>Category</th>
-                  <th>Mode</th>
+                  <th>Payment Mode</th>
                   <th>Amount</th>
                   <th>Status</th>
                 </tr>
@@ -257,53 +484,55 @@
         </div>
       </section>
 
-      <!-- TAB 5: APIS DIRECTORY -->
+      <!-- TAB 10: APIS DIRECTORY -->
       <section id="tab-apis" class="tab-pane">
         <div class="panel">
           <div class="panel-header">
-            <h3>Flutter Super-App REST Endpoints</h3>
-            <p>These endpoints are directly integrated with Dio in FlamePay Flutter Mobile App.</p>
+            <div class="panel-title-block">
+              <h3>🔌 Flutter Super-App REST Endpoints</h3>
+              <p>Ready to integrate into the Flutter mobile application via Dio/HTTP</p>
+            </div>
           </div>
           <div class="api-grid">
             <div class="api-card">
               <div class="api-badge post">POST</div>
-              <code>/api/v1/auth/send-otp</code>
-              <p>Sends 6-digit OTP verification code to mobile.</p>
+              <code>/api/v1/loan/apply</code>
+              <p>Triggered when user taps on Loan Apply or submits inquiry. Captures full lead details.</p>
             </div>
             <div class="api-card">
               <div class="api-badge post">POST</div>
-              <code>/api/v1/auth/verify-otp</code>
-              <p>Verifies OTP, returns JWT tokens and active User Profile.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge get">GET</div>
-              <code>/api/v1/user/profile</code>
-              <p>Fetches authenticated user information & KYC status.</p>
+              <code>/api/v1/credit-card/apply</code>
+              <p>Registers customer interest for HDFC, SBI, ICICI credit cards.</p>
             </div>
             <div class="api-card">
               <div class="api-badge post">POST</div>
-              <code>/api/v1/user/kyc-submit</code>
-              <p>Submits Aadhaar, PAN and demographic details to verify account.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge get">GET</div>
-              <code>/api/v1/wallet/balance</code>
-              <p>Returns live wallet balance, monthly limit, and spent amounts.</p>
+              <code>/api/v1/insurance/inquiry</code>
+              <p>Captures Health, Motor, Term Life, and Travel insurance quotes.</p>
             </div>
             <div class="api-card">
               <div class="api-badge post">POST</div>
-              <code>/api/v1/wallet/transfer</code>
-              <p>Transfers wallet funds instantly via Mobile number or UPI ID.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge get">GET</div>
-              <code>/api/v1/recharge/operators</code>
-              <p>Lists telecom & DTH operators with circles.</p>
+              <code>/api/v1/cibil/check</code>
+              <p>Fetches credit score report (300-900) and logs inquiry for admin.</p>
             </div>
             <div class="api-card">
               <div class="api-badge post">POST</div>
               <code>/api/v1/recharge/pay</code>
-              <p>Executes prepaid recharge or utility bill payment.</p>
+              <p>Executes prepaid recharge for Jio, Airtel, Vi, and BSNL.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge post">POST</div>
+              <code>/api/v1/bills/pay</code>
+              <p>Executes electricity, gas, broadband, and water bill settlements.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge post">POST</div>
+              <code>/api/v1/auth/verify-otp</code>
+              <p>Authenticates user and returns JWT token and customer profile.</p>
+            </div>
+            <div class="api-card">
+              <div class="api-badge post">POST</div>
+              <code>/api/v1/wallet/transfer</code>
+              <p>Transfers wallet funds via Mobile number or UPI ID.</p>
             </div>
           </div>
         </div>
@@ -311,6 +540,140 @@
 
     </main>
   </div>
+
+  <!-- MODAL: DETAILED LOAN LEAD INSPECTOR -->
+  <div id="loan-details-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="badge badge-gold" id="modal-lead-id">LEAD_ID</span>
+          <h2 id="modal-lead-title">Customer Loan Application Details</h2>
+          <span class="modal-timestamp" id="modal-lead-timestamp">Timestamp</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeLoanModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- QUICK CONTACT HEADER -->
+        <div class="lead-hero-banner">
+          <div class="lead-customer-avatar" id="modal-customer-avatar">RS</div>
+          <div class="lead-hero-info">
+            <h3 id="modal-customer-name">Rahul Sharma</h3>
+            <p id="modal-customer-contact"><i class="fa-solid fa-phone"></i> +91 9876543210 &nbsp;•&nbsp; <i class="fa-solid fa-envelope"></i> rahul.sharma@example.com</p>
+            <div class="lead-hero-tags">
+              <span class="pill-tag" id="modal-customer-location"><i class="fa-solid fa-location-dot"></i> Mumbai, Maharashtra</span>
+              <span class="pill-tag text-purple" id="modal-customer-source"><i class="fa-solid fa-mobile-screen"></i> App Screen Tap (Instant Lead)</span>
+            </div>
+          </div>
+          <div class="lead-quick-actions">
+            <a href="#" id="modal-call-btn" class="btn btn-success btn-sm"><i class="fa-solid fa-phone"></i> Direct Call</a>
+            <a href="#" id="modal-wa-btn" target="_blank" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+          </div>
+        </div>
+
+        <!-- 3 COLUMN INFORMATION GRID -->
+        <div class="modal-info-grid">
+          
+          <!-- BOX 1: LOAN REQUEST SPECS -->
+          <div class="info-box">
+            <h4><i class="fa-solid fa-sack-dollar text-gold"></i> Loan Request Particulars</h4>
+            <div class="info-row">
+              <span class="info-lbl">Loan Category:</span>
+              <span class="info-val font-bold text-primary" id="modal-loan-type">Personal Loan</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Requested Amount:</span>
+              <span class="info-val font-bold text-success font-lg" id="modal-loan-amount">₹5,00,000</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Preferred Tenure:</span>
+              <span class="info-val" id="modal-loan-tenure">36 Months (3 Years)</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Est. Monthly EMI:</span>
+              <span class="info-val" id="modal-loan-emi">₹16,250/mo approx</span>
+            </div>
+          </div>
+
+          <!-- BOX 2: FINANCIALS & INCOME -->
+          <div class="info-box">
+            <h4><i class="fa-solid fa-briefcase text-blue"></i> Employment & Income</h4>
+            <div class="info-row">
+              <span class="info-lbl">Employment Type:</span>
+              <span class="info-val" id="modal-employment-type">Salaried Professional</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Company / Business:</span>
+              <span class="info-val" id="modal-company-name">Tata Consultancy Services</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Monthly In-Hand:</span>
+              <span class="info-val font-bold" id="modal-monthly-income">₹85,000 / month</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Annual CTC:</span>
+              <span class="info-val" id="modal-annual-income">₹10,20,000</span>
+            </div>
+          </div>
+
+          <!-- BOX 3: CIBIL & KYC -->
+          <div class="info-box">
+            <h4><i class="fa-solid fa-shield-halved text-purple"></i> CIBIL & Compliance</h4>
+            <div class="info-row">
+              <span class="info-lbl">CIBIL Score:</span>
+              <span class="info-val font-bold text-success font-lg" id="modal-cibil-score">780 (Excellent)</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">PAN Number:</span>
+              <span class="info-val font-mono" id="modal-pan">ABCDE1234F</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">Aadhaar:</span>
+              <span class="info-val font-mono" id="modal-aadhaar">XXXX XXXX 9823</span>
+            </div>
+            <div class="info-row">
+              <span class="info-lbl">KYC Status:</span>
+              <span class="info-val" id="modal-kyc-status"><span class="badge badge-success">Verified</span></span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- LEAD STATUS & ADMIN NOTES -->
+        <div class="lead-action-section">
+          <h4>Lead Status & Executive Notes</h4>
+          <div class="lead-controls-row">
+            <div class="form-group-inline">
+              <label>Update Status:</label>
+              <select id="modal-status-select" class="form-select">
+                <option value="interested">Interested (New Tap in App)</option>
+                <option value="contacted">Contacted Customer</option>
+                <option value="in_review">In Review / Docs Collected</option>
+                <option value="approved">Approved & Sanctioned</option>
+                <option value="rejected">Rejected / Ineligible</option>
+                <option value="disbursed">Disbursed Successfully</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="saveLoanModalStatus()">
+              <i class="fa-solid fa-check"></i> Save Status
+            </button>
+          </div>
+
+          <div class="notes-group">
+            <label>Internal Follow-up Notes:</label>
+            <textarea id="modal-notes-input" rows="3" class="form-textarea" placeholder="Add follow-up details, banker remarks, interest rate offered..."></textarea>
+            <div class="notes-footer">
+              <button class="btn btn-secondary btn-sm" onclick="saveLoanModalNotes()">Save Notes</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
 
   <script src="/js/app.js"></script>
 </body>

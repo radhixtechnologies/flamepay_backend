@@ -251,6 +251,148 @@ router.post('/recharge/pay', (req, res) => {
 
 router.get('/bills/categories', (req, res) => success(res, db.billCategories));
 
+router.post('/bills/pay', (req, res) => {
+  const { category = 'electricity', operator = 'Tata Power', consumerNumber = '100982341', amount = 1250 } = req.body;
+  const user = db.users[0];
+  if (user.walletBalance >= amount) user.walletBalance -= amount;
+
+  const txnId = 'BILL' + Date.now().toString().slice(-6);
+  db.transactions.unshift({
+    id: txnId,
+    userId: user.id,
+    userName: user.name,
+    title: `${operator} Bill Payment`,
+    subtitle: `Consumer No: ${consumerNumber}`,
+    amount: Number(amount),
+    timestamp: new Date().toISOString(),
+    status: 'success',
+    category,
+    operatorName: operator,
+    mobile: user.phone,
+    paymentMode: 'FlamePay Wallet'
+  });
+
+  success(res, {
+    transactionId: txnId,
+    receiptNo: 'REC' + Math.floor(100000 + Math.random() * 900000),
+    amount: Number(amount),
+    status: 'success',
+    timestamp: new Date().toISOString()
+  }, 'Bill payment processed successfully');
+});
+
+// --- FINANCIAL PRODUCTS: LOANS (Personal, Home, Business, LAP) ---
+router.post('/loan/apply', (req, res) => {
+  const {
+    loanType = 'Personal Loan',
+    requestedAmount = 500000,
+    tenureMonths = 36,
+    employmentType = 'Salaried',
+    monthlyIncome = 75000,
+    city = 'Mumbai',
+    source = 'App Screen Tap (Instant Lead)'
+  } = req.body;
+
+  // Use logged in user if available, else first user
+  const user = db.users[0];
+  const leadId = 'LN_LEAD_' + Math.floor(100 + Math.random() * 900);
+
+  const newLead = {
+    id: leadId,
+    userId: user.id,
+    userName: req.body.userName || user.name,
+    userPhone: req.body.userPhone || user.phone,
+    userEmail: req.body.userEmail || user.email,
+    loanType,
+    requestedAmount: Number(requestedAmount),
+    tenureMonths: Number(tenureMonths),
+    employmentType: req.body.employmentType || user.employmentType || employmentType,
+    companyName: req.body.companyName || user.companyName || 'Not Specified',
+    monthlyIncome: Number(req.body.monthlyIncome || user.monthlyIncome || monthlyIncome),
+    cibilScore: user.cibilScore || 750,
+    pan: user.pan || 'PAN REQUIRED',
+    aadhaar: user.aadhaar || 'AADHAAR REQUIRED',
+    city: req.body.city || user.city || city,
+    state: user.state || 'Maharashtra',
+    source,
+    status: 'interested', // Initial state when user taps
+    adminNotes: `User tapped on ${loanType} inside Flutter App. High priority financial lead.`,
+    appliedAt: new Date().toISOString()
+  };
+
+  db.loanLeads.unshift(newLead);
+
+  success(res, newLead, 'Loan interest recorded successfully! Our executive will contact you shortly.');
+});
+
+// --- FINANCIAL PRODUCTS: CREDIT CARDS ---
+router.post('/credit-card/apply', (req, res) => {
+  const { cardName = 'HDFC Regalia Gold Credit Card', bankName = 'HDFC Bank' } = req.body;
+  const user = db.users[0];
+  const leadId = 'CC_LEAD_' + Math.floor(100 + Math.random() * 900);
+
+  const newLead = {
+    id: leadId,
+    userId: user.id,
+    userName: user.name,
+    userPhone: user.phone,
+    userEmail: user.email,
+    cardName,
+    bankName,
+    cardCategory: 'Rewards & Travel',
+    monthlyIncome: user.monthlyIncome || 85000,
+    cibilScore: user.cibilScore || 780,
+    status: 'interested',
+    annualFee: '₹1,500',
+    appliedAt: new Date().toISOString()
+  };
+
+  db.creditCardLeads.unshift(newLead);
+  success(res, newLead, 'Credit card application submitted successfully');
+});
+
+// --- FINANCIAL PRODUCTS: INSURANCE ---
+router.post('/insurance/inquiry', (req, res) => {
+  const { insuranceType = 'Health Insurance', sumInsured = '₹10,00,000' } = req.body;
+  const user = db.users[0];
+  const leadId = 'INS_LEAD_' + Math.floor(100 + Math.random() * 900);
+
+  const newLead = {
+    id: leadId,
+    userId: user.id,
+    userName: user.name,
+    userPhone: user.phone,
+    insuranceType,
+    sumInsured,
+    provider: 'Partner Insurers',
+    estimatedPremium: 'Custom Quote',
+    status: 'interested',
+    appliedAt: new Date().toISOString()
+  };
+
+  db.insuranceLeads.unshift(newLead);
+  success(res, newLead, 'Insurance inquiry registered successfully');
+});
+
+// --- CIBIL SCORE CHECK ---
+router.post('/cibil/check', (req, res) => {
+  const user = db.users[0];
+  const inquiry = {
+    id: 'CIBIL_REQ_' + Math.floor(100 + Math.random() * 900),
+    userId: user.id,
+    userName: user.name,
+    phone: user.phone,
+    cibilScore: user.cibilScore || 780,
+    rating: (user.cibilScore || 780) >= 750 ? 'Excellent' : 'Good',
+    activeCreditLines: 3,
+    paymentHistory: '98% On-Time',
+    checkedAt: new Date().toISOString()
+  };
+
+  db.cibilInquiries.unshift(inquiry);
+  success(res, inquiry, 'CIBIL report generated successfully');
+});
+
 // --- OFFERS, NOTIFICATIONS & HISTORY ---
 router.get('/offers/list', (req, res) => success(res, db.offers));
 router.get('/notifications/list', (req, res) => success(res, db.notifications));
