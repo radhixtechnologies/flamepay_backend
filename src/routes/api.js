@@ -727,6 +727,24 @@ router.post('/cibil/check', async (req, res) => {
   success(res, inquiry, 'CIBIL report generated successfully');
 });
 
+// Fetch Active CIBIL Report for Mobile App
+router.get('/cibil/report', (req, res) => {
+  const user = db.users[0];
+  const lastInquiry = db.cibilInquiries[0];
+  const score = lastInquiry ? lastInquiry.cibilScore : (user.cibilScore || 780);
+
+  success(res, {
+    score,
+    rating: score >= 750 ? 'Excellent' : 'Good',
+    activeAccounts: lastInquiry ? lastInquiry.activeCreditLines : 3,
+    paymentHistory: lastInquiry ? lastInquiry.paymentHistory : '98% On-Time',
+    lastChecked: lastInquiry ? lastInquiry.checkedAt : new Date().toISOString(),
+    creditUtilization: '18%',
+    totalInquiries: db.cibilInquiries.length || 1,
+    reportUrl: 'https://admin.flamepay.in/reports/sample_cibil.pdf'
+  }, 'CIBIL report fetched');
+});
+
 // --- OFFERS, NOTIFICATIONS & HISTORY ---
 router.get('/offers/list', (req, res) => success(res, db.offers));
 router.get('/notifications/list', (req, res) => success(res, db.notifications));

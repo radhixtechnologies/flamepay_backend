@@ -14,6 +14,7 @@ const post = async (endpoint, body = {}) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(4000),
     });
 
     const data = await res.json();

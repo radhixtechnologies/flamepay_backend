@@ -125,7 +125,7 @@ const getBalance = async () => {
   const { memberId, pin } = getCredentials();
   const url = `${CYRUS_BASE}/api/GetOperator.aspx?memberid=${encodeURIComponent(memberId)}&pin=${encodeURIComponent(pin)}&Method=getbalance`;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
     const data = await res.json();
     return data;
   } catch (err) {
@@ -141,7 +141,7 @@ const getOperators = async () => {
   const { memberId, pin } = getCredentials();
   const url = `${CYRUS_BASE}/api/GetOperator.aspx?memberid=${encodeURIComponent(memberId)}&pin=${encodeURIComponent(pin)}&Method=getoperator`;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
     const data = await res.json();
     return data;
   } catch (err) {
@@ -157,7 +157,7 @@ const getCircles = async () => {
   const { memberId, pin } = getCredentials();
   const url = `${CYRUS_BASE}/api/GetOperator.aspx?memberid=${encodeURIComponent(memberId)}&pin=${encodeURIComponent(pin)}&Method=getcircle`;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
     const data = await res.json();
     return data;
   } catch (err) {
@@ -189,7 +189,7 @@ const executeRecharge = async ({
   console.log(`[Cyrus Recharge Request] URL: ${CYRUS_BASE}/services_cyapi/recharge_cyapi.aspx?memberid=${memberId}&...&number=${cleanNumber}&op=${opCode}&circle=${circleCode}&amt=${amount}&tx=${txn}`);
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     const text = await res.text();
     let data;
     try {
@@ -240,7 +240,8 @@ const fetchBill = async ({ operator, consumerNumber }) => {
 
     const res = await fetch(url, {
       method: 'POST',
-      body: formData
+      body: formData,
+      signal: AbortSignal.timeout(6000)
     });
 
     const data = await res.json();
@@ -271,7 +272,7 @@ const payBill = async ({
   const url = `${CYRUS_BASE}/services_cyapi/recharge_cyapi.aspx?memberid=${encodeURIComponent(memberId)}&pin=${encodeURIComponent(pin)}&number=${cleanNumber}&operator=${encodeURIComponent(operator)}&circle=${circle}&amount=${amount}&usertx=${txn}&account=${encodeURIComponent(account || cleanNumber)}&othervalue=${encodeURIComponent(othervalue)}&othervalue1=${encodeURIComponent(othervalue1)}&format=json&RechargeMode=1`;
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     const text = await res.text();
     let data;
     try {
