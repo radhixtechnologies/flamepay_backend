@@ -413,6 +413,23 @@ router.post('/recharge/pay', async (req, res) => {
   // Live Sync into Admin Dashboard Ledger
   db.transactions.unshift(newTxn);
 
+  if (status === 'failed') {
+    // Refund wallet balance so user doesn't lose money on failed recharge
+    user.walletBalance += numAmount;
+    user.spentThisMonth -= numAmount;
+
+    return res.status(400).json({
+      success: false,
+      message: cyrusInfo?.errorMessage ? `Cyrus API: ${cyrusInfo.errorMessage}` : 'Recharge failed. Money refunded to wallet.',
+      data: {
+        transactionId: txnId,
+        status: 'failed',
+        errorMessage: cyrusInfo?.errorMessage,
+        cyrusResponse: cyrusInfo
+      }
+    });
+  }
+
   success(res, {
     transactionId: txnId,
     operatorRefNumber: opRef,
@@ -425,7 +442,7 @@ router.post('/recharge/pay', async (req, res) => {
     paymentMode,
     cashbackEarned: Math.round(numAmount * 0.02),
     cyrusResponse: cyrusInfo
-  }, 'Recharge processed');
+  }, 'Recharge successful');
 });
 
 router.get('/bills/categories', (req, res) => success(res, db.billCategories));
@@ -508,6 +525,22 @@ router.post('/bills/pay', async (req, res) => {
 
   // Live Sync into Admin Dashboard Ledger
   db.transactions.unshift(newTxn);
+
+  if (status === 'failed') {
+    user.walletBalance += numAmount;
+    user.spentThisMonth -= numAmount;
+
+    return res.status(400).json({
+      success: false,
+      message: cyrusInfo?.errorMessage ? `Cyrus API: ${cyrusInfo.errorMessage}` : 'Bill payment failed. Money refunded to wallet.',
+      data: {
+        transactionId: txnId,
+        status: 'failed',
+        errorMessage: cyrusInfo?.errorMessage,
+        cyrusResponse: cyrusInfo
+      }
+    });
+  }
 
   success(res, {
     transactionId: txnId,
