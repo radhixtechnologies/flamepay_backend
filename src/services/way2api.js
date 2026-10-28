@@ -24,6 +24,42 @@ const post = async (endpoint, body = {}) => {
   }
 };
 
+const normalizeCircle = (circle) => {
+  const c = String(circle || '').toLowerCase().replace(/[^a-z0-9]/g, ' ');
+  if (c.includes('mp') || c.includes('madhya') || c.includes('chattisgarh') || c.includes('chhattisgarh')) return 'madhya_pradesh';
+  if (c.includes('delhi')) return 'delhi';
+  if (c.includes('mumbai')) return 'mumbai';
+  if (c.includes('kolkata')) return 'kolkata';
+  if (c.includes('maharashtra') || c.includes('goa')) return 'maharashtra';
+  if (c.includes('up east') || c.includes('uttar pradesh east')) return 'up_east';
+  if (c.includes('up west') || c.includes('uttar pradesh west')) return 'up_west';
+  if (c.includes('bihar') || c.includes('jharkhand')) return 'bihar';
+  if (c.includes('gujarat')) return 'gujarat';
+  if (c.includes('haryana')) return 'haryana';
+  if (c.includes('himachal')) return 'himachal_pradesh';
+  if (c.includes('karnataka')) return 'karnataka';
+  if (c.includes('kerala')) return 'kerala';
+  if (c.includes('punjab')) return 'punjab';
+  if (c.includes('rajasthan')) return 'rajasthan';
+  if (c.includes('tamil') || c.includes('chennai')) return 'tamil_nadu';
+  if (c.includes('andhra') || c.includes('telangana')) return 'andhra_pradesh';
+  if (c.includes('bengal')) return 'west_bengal';
+  if (c.includes('assam')) return 'assam';
+  if (c.includes('odisha') || c.includes('orissa')) return 'odisha';
+  if (c.includes('jammu') || c.includes('kashmir')) return 'jammu_kashmir';
+  if (c.includes('north east')) return 'north_east';
+  return 'delhi';
+};
+
+const normalizeOperator = (op) => {
+  const o = String(op || '').toLowerCase();
+  if (o.includes('airtel')) return 'airtel';
+  if (o.includes('jio')) return 'jio';
+  if (o.includes('vi') || o.includes('idea') || o.includes('vodafone')) return 'vi';
+  if (o.includes('bsnl')) return 'bsnl';
+  return 'jio';
+};
+
 /**
  * Identify telecom operator and circle for 10-digit mobile number
  */
@@ -36,8 +72,8 @@ const checkOperatorCircle = async (mobileNumber) => {
  * Fetch live prepaid recharge plans for operator & circle
  */
 const getMobilePlans = async (operator, circle) => {
-  const op = String(operator || 'jio').toLowerCase().replace(/\s+/g, '');
-  const cir = String(circle || 'kolkata').toLowerCase();
+  const op = normalizeOperator(operator);
+  const cir = normalizeCircle(circle);
   return await post('/mobile/recharge-plans', { operator: op, circle: cir });
 };
 

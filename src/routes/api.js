@@ -261,16 +261,35 @@ router.get('/recharge/plans', async (req, res) => {
         const mappedPlans = live.data.result.plans.map((p, idx) => {
           const desc = p.description || '';
           const dataMatch = desc.match(/\d+(\.\d+)?\s*(GB|MB)(\/Day)?/i);
+          const rawCat = (p.category || '').toLowerCase();
+          const rawLabel = (p.category_label || '').toLowerCase();
+          const descLower = desc.toLowerCase();
+
+          // Standardize category into Flutter UI tabs: Recommended, Popular, Truly Unlimited, Data Only, Annual
+          let category = 'Popular';
+          if (idx < 5 || p.category === 'popular') {
+            category = 'Recommended';
+          } else if (rawLabel.includes('unlimited') || descLower.includes('unlimited voice') || descLower.includes('5g')) {
+            category = 'Truly Unlimited';
+          } else if (rawCat.includes('data') || rawLabel.includes('data') || descLower.includes('data pack')) {
+            category = 'Data Only';
+          } else if (rawCat.includes('annual') || rawLabel.includes('annual') || (p.validity_days && p.validity_days >= 300) || descLower.includes('365 days')) {
+            category = 'Annual';
+          } else {
+            category = 'Popular';
+          }
+
           return {
             id: `plan_${p.amount}_${idx}`,
             amount: Number(p.amount),
             validity: p.validity || (p.validity_days ? `${p.validity_days} Days` : 'Standard'),
-            data: dataMatch ? dataMatch[0] : (p.category === 'data' ? 'Data Pack' : 'Standard Data'),
-            talktime: desc.toLowerCase().includes('unlimited') ? 'Unlimited Calls' : 'Standard',
+            data: dataMatch ? dataMatch[0] : (category === 'Data Only' ? 'Data Pack' : 'Standard Data'),
+            talktime: descLower.includes('unlimited') ? 'Unlimited Calls' : 'Standard',
             description: desc,
-            category: p.category_label || p.category || 'Popular',
-            ottBenefits: desc.includes('JioTV') ? ['JioTV', 'Live TV'] : (desc.includes('Disney') ? ['Disney+ Hotstar'] : []),
-            isPopular: p.category === 'popular',
+            category,
+            rawCategory: p.category_label || p.category,
+            ottBenefits: desc.includes('JioTV') ? ['JioTV', 'Live TV'] : (desc.includes('Disney') || desc.includes('Hotstar') ? ['Disney+ Hotstar'] : (desc.includes('Sony') ? ['SonyLIV'] : [])),
+            isPopular: category === 'Recommended' || category === 'Popular',
           };
         });
         return success(res, mappedPlans, 'Live plans fetched successfully');
