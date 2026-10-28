@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../data/db');
+const cyrus = require('../services/cyrus');
 
 // Admin Auth
 router.post('/login', (req, res) => {
@@ -193,6 +194,79 @@ router.post('/kyc-requests/:id/action', (req, res) => {
 // --- TRANSACTIONS ---
 router.get('/transactions', (req, res) => {
   res.json({ success: true, data: db.transactions });
+});
+
+// --- WALLET TOPUP / DEPOSIT REQUESTS (Admin Approval) ---
+router.get('/topups', (req, res) => {
+  res.json({ success: true, data: db.topupRequests });
+});
+
+router.post('/topups/:id/approve', (req, res) => {
+  const topup = db.topupRequests.find(t => t.id === req.params.id);
+  if (!topup) return res.status(404).json({ success: false, message: 'Topup request not found' });
+  if (topup.status === 'approved') return res.json({ success: true, message: 'Already approved', topup });
+
+  topup.status = 'approved';
+  topup.reviewedAt = new Date().toISOString();
+  topup.adminNotes = req.body.adminNotes || 'Payment verified in SBI Bank Account';
+
+  // Credit user's wallet
+  const user = db.users.find(u => u.id === topup.userId) || db.users[0];
+  user.walletBalance += topup.amount;
+
+  // Update associated transaction
+  const txn = db.transactions.find(t => t.id === topup.id);
+  if (txn) {
+    txn.status = 'success';
+    txn.subtitle = `Approved by Admin • UTR: ${topup.utrNumber}`;
+  }
+
+  res.json({
+    success: true,
+    message: `Topup of ₹${topup.amount} approved! User ${user.name} wallet balance is now ₹${user.walletBalance}`,
+    topup,
+    userBalance: user.walletBalance
+  });
+});
+
+router.post('/topups/:id/reject', (req, res) => {
+  const topup = db.topupRequests.find(t => t.id === req.params.id);
+  if (!topup) return res.status(404).json({ success: false, message: 'Topup request not found' });
+
+  topup.status = 'rejected';
+  topup.reviewedAt = new Date().toISOString();
+  topup.adminNotes = req.body.adminNotes || 'Payment verification failed / invalid UTR';
+
+  const txn = db.transactions.find(t => t.id === topup.id);
+  if (txn) {
+    txn.status = 'failed';
+    txn.subtitle = 'Rejected by Admin';
+  }
+
+  res.json({ success: true, message: 'Topup request rejected', topup });
+});
+
+// --- SYSTEM SETTINGS & SANDBOX TOGGLE ---
+router.get('/system/settings', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      bankDetails: db.bankDetails,
+      settings: db.settings,
+      cyrusTestMode: cyrus.getTestMode()
+    }
+  });
+});
+
+router.post('/system/test-mode', (req, res) => {
+  const { testMode } = req.body;
+  const isEnabled = cyrus.setTestMode(testMode);
+  db.settings.cyrusTestMode = isEnabled;
+  res.json({
+    success: true,
+    message: isEnabled ? 'Cyrus Sandbox / Test Mode ENABLED (Free simulated recharge - Real wallet protected)' : 'Cyrus LIVE Mode ENABLED (Will deduct real ₹67.67 Cyrus wallet)',
+    cyrusTestMode: isEnabled
+  });
 });
 
 module.exports = router;

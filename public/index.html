@@ -85,6 +85,11 @@
         </button>
 
         <div class="nav-section-title">PAYMENTS & UTILITIES</div>
+        <button class="nav-item" data-tab="topups">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>Top-Up Requests</span>
+          <span class="badge badge-warning" id="topups-badge">0</span>
+        </button>
         <button class="nav-item" data-tab="recharges">
           <i class="fa-solid fa-bolt"></i>
           <span>Recharges & Bills</span>
@@ -138,6 +143,9 @@
             <span class="pulse-dot"></span>
             <span id="api-status-badge">API Engine: <b>Live</b></span>
           </div>
+          <button id="cyrus-sandbox-btn" class="btn btn-warning btn-sm" onclick="toggleCyrusTestMode()" title="Toggle Sandbox Simulation to test recharges without deducting real ₹67.67 Cyrus wallet">
+            <i class="fa-solid fa-flask"></i> <span id="cyrus-sandbox-text">Sandbox: Active (Free Testing)</span>
+          </button>
           <button class="btn btn-primary btn-sm" onclick="simulateUserLoanTap()">
             <i class="fa-solid fa-plus-circle"></i>
             <span>Simulate User Loan Tap</span>
@@ -479,6 +487,46 @@
                 </tr>
               </thead>
               <tbody id="txns-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: TOP-UP REQUESTS (SHIVAM SHIVAM SBI / UPI DEPOSITS) -->
+      <section id="tab-topups" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-block">
+              <h3>🏦 Wallet Deposit Requests (SBI Bank / UPI Verification)</h3>
+              <p>Verify customer payments sent to <b>SHIVAM SHIVAM (SBI: 32823806111 | IFSC: SBIN0013209)</b> and credit user wallet.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="fetchTopups()"><i class="fa-solid fa-rotate"></i> Sync</button>
+          </div>
+
+          <!-- BANK DETAILS INFO BANNER -->
+          <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid var(--border-color, #334155); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">BENEFICIARY NAME</span><div style="font-weight: 700; color: #fff;">SHIVAM SHIVAM</div></div>
+            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">BANK NAME</span><div style="font-weight: 600; color: #f97316;">State Bank of India (SBI)</div></div>
+            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">ACCOUNT NUMBER</span><div style="font-family: monospace; font-weight: 700; font-size: 14px; color: #22c55e;">32823806111</div></div>
+            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">IFSC CODE</span><div style="font-family: monospace; font-weight: 700; color: #fff;">SBIN0013209</div></div>
+            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">UPI ID</span><div style="font-family: monospace; font-weight: 700; color: #38bdf8;">32823806111@sbi</div></div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="topups-table">
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Date & Time</th>
+                  <th>Customer</th>
+                  <th>Amount</th>
+                  <th>UTR / Reference No</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="topups-tbody"></tbody>
             </table>
           </div>
         </div>

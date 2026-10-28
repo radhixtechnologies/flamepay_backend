@@ -5,6 +5,15 @@
 
 const CYRUS_BASE = 'https://cyrusrecharge.in';
 
+let isSandboxMode = process.env.CYRUS_TEST_MODE === 'false' ? false : true;
+
+const setTestMode = (val) => {
+  isSandboxMode = Boolean(val);
+  return isSandboxMode;
+};
+
+const getTestMode = () => isSandboxMode;
+
 const getCredentials = () => {
   let pin = process.env.CYRUS_PASSWORD || '73A4DB6556';
   if (pin === 'sg66cy3u8vl6') pin = '73A4DB6556';
@@ -184,6 +193,20 @@ const executeRecharge = async ({
   const txn = usertx || `FP${Date.now()}`;
   const cleanNumber = String(number).replace(/[^0-9]/g, '');
 
+  // Sandbox / Test Mode Guard: Protects real Cyrus wallet balance during testing
+  if (isSandboxMode) {
+    console.log(`[Cyrus SANDBOX MODE] Simulating ${type} recharge of ₹${amount} for ${cleanNumber} (${opCode})`);
+    return {
+      success: true,
+      status: 'SUCCESS',
+      apiTransId: 'SIM_' + Math.floor(10000000 + Math.random() * 90000000),
+      operatorRef: 'OP' + Math.floor(100000000 + Math.random() * 900000000),
+      errorMessage: '',
+      transactionDate: new Date().toISOString(),
+      isSimulated: true
+    };
+  }
+
   const url = `${CYRUS_BASE}/services_cyapi/recharge_cyapi.aspx?memberid=${encodeURIComponent(memberId)}&pin=${encodeURIComponent(pin)}&number=${cleanNumber}&operator=${opCode}&circle=${circleCode}&amount=${amount}&usertx=${txn}&format=json&RechargeMode=1`;
 
   console.log(`[Cyrus Recharge Request] URL: ${CYRUS_BASE}/services_cyapi/recharge_cyapi.aspx?memberid=${memberId}&...&number=${cleanNumber}&op=${opCode}&circle=${circleCode}&amt=${amount}&tx=${txn}`);
@@ -269,6 +292,18 @@ const payBill = async ({
   const txn = usertx || `BILL${Date.now()}`;
   const cleanNumber = String(number).replace(/[^0-9]/g, '');
 
+  if (isSandboxMode) {
+    console.log(`[Cyrus SANDBOX MODE] Simulating bill payment of ₹${amount} for ${cleanNumber}`);
+    return {
+      success: true,
+      status: 'SUCCESS',
+      apiTransId: 'SIM_BILL_' + Math.floor(10000000 + Math.random() * 90000000),
+      operatorRef: 'REC' + Math.floor(100000 + Math.random() * 900000),
+      errorMessage: '',
+      isSimulated: true
+    };
+  }
+
   const url = `${CYRUS_BASE}/services_cyapi/recharge_cyapi.aspx?memberid=${encodeURIComponent(memberId)}&pin=${encodeURIComponent(pin)}&number=${cleanNumber}&operator=${encodeURIComponent(operator)}&circle=${circle}&amount=${amount}&usertx=${txn}&account=${encodeURIComponent(account || cleanNumber)}&othervalue=${encodeURIComponent(othervalue)}&othervalue1=${encodeURIComponent(othervalue1)}&format=json&RechargeMode=1`;
 
   try {
@@ -341,5 +376,7 @@ module.exports = {
   fetchBill,
   payBill,
   checkStatus,
-  raiseDispute
+  raiseDispute,
+  setTestMode,
+  getTestMode
 };

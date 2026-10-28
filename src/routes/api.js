@@ -141,6 +141,73 @@ router.get('/wallet/balance', (req, res) => {
   });
 });
 
+// Admin Bank & UPI Details for Adding Money (Shivam Shivam / SBI)
+router.get('/wallet/bank-details', (req, res) => {
+  success(res, db.bankDetails, 'Bank details fetched');
+});
+
+// Submit Topup Request (Awaiting Admin Approval with UTR number)
+router.post('/wallet/request-topup', (req, res) => {
+  const {
+    amount = 500,
+    utrNumber = '',
+    paymentMethod = 'UPI / Bank Transfer',
+    notes = ''
+  } = req.body;
+
+  const numAmount = Number(amount);
+  if (!numAmount || numAmount <= 0) return fail(res, 'Valid amount is required');
+  if (!utrNumber || utrNumber.trim() === '') return fail(res, '12-digit UTR / Reference number is required');
+
+  const user = db.users[0];
+  const reqId = 'TOPUP_' + Date.now().toString().slice(-6);
+
+  const topupRecord = {
+    id: reqId,
+    userId: user.id,
+    userName: user.name,
+    userPhone: user.phone,
+    amount: numAmount,
+    utrNumber: utrNumber.trim(),
+    paymentMethod,
+    bankingName: db.bankDetails.bankingName,
+    accountNumber: db.bankDetails.accountNumber,
+    notes,
+    status: 'pending', // pending -> approved by admin
+    createdAt: new Date().toISOString()
+  };
+
+  db.topupRequests.unshift(topupRecord);
+
+  // Add Pending Transaction in Ledger
+  db.transactions.unshift({
+    id: reqId,
+    userId: user.id,
+    userName: user.name,
+    title: 'Wallet Deposit Request',
+    subtitle: `UTR: ${utrNumber} • Pending Admin Approval`,
+    amount: numAmount,
+    timestamp: new Date().toISOString(),
+    status: 'pending',
+    category: 'wallet_topup',
+    operatorName: 'SBI UPI Deposit',
+    operatorRefNumber: utrNumber.trim(),
+    mobile: user.phone,
+    paymentMode: paymentMethod
+  });
+
+  success(res, topupRecord, 'Deposit request submitted. Admin will verify your payment and credit your wallet shortly.');
+});
+
+// Quick Balance Setter for Testing (e.g. Set balance to ₹5 or ₹500)
+router.post('/wallet/set-balance', (req, res) => {
+  const { balance } = req.body;
+  if (balance === undefined || balance === null) return fail(res, 'Balance value required');
+  const user = db.users[0];
+  user.walletBalance = Number(balance);
+  success(res, { balance: user.walletBalance }, `Wallet balance updated to ₹${user.walletBalance}`);
+});
+
 router.get('/wallet/transactions', (req, res) => {
   success(res, db.transactions);
 });
@@ -358,10 +425,23 @@ router.post('/recharge/pay', async (req, res) => {
   const numAmount = Number(amount);
   const isDth = (serviceType || '').toLowerCase().includes('dth');
 
-  if (user.walletBalance >= numAmount) {
-    user.walletBalance -= numAmount;
-    user.spentThisMonth += numAmount;
+  // STRICT WALLET BALANCE CHECK: If balance < amount, user must recharge wallet first!
+  if (user.walletBalance < numAmount) {
+    return res.status(400).json({
+      success: false,
+      code: 'INSUFFICIENT_BALANCE',
+      message: `Insufficient wallet balance. Your balance is ₹${user.walletBalance.toFixed(2)}, but recharge amount is ₹${numAmount.toFixed(2)}. Please recharge your wallet first.`,
+      data: {
+        currentBalance: user.walletBalance,
+        requiredAmount: numAmount,
+        shortfall: Number((numAmount - user.walletBalance).toFixed(2))
+      }
+    });
   }
+
+  // Deduct from wallet
+  user.walletBalance -= numAmount;
+  user.spentThisMonth += numAmount;
 
   const txnId = 'FP' + Date.now();
   let opRef = 'OP' + Math.floor(100000000 + Math.random() * 900000000);
@@ -474,10 +554,22 @@ router.post('/bills/pay', async (req, res) => {
   const numAmount = Number(amount);
   const targetOperator = billerId || operator;
 
-  if (user.walletBalance >= numAmount) {
-    user.walletBalance -= numAmount;
-    user.spentThisMonth += numAmount;
+  // STRICT WALLET BALANCE CHECK
+  if (user.walletBalance < numAmount) {
+    return res.status(400).json({
+      success: false,
+      code: 'INSUFFICIENT_BALANCE',
+      message: `Insufficient wallet balance. Your balance is ₹${user.walletBalance.toFixed(2)}, but bill amount is ₹${numAmount.toFixed(2)}. Please recharge your wallet first.`,
+      data: {
+        currentBalance: user.walletBalance,
+        requiredAmount: numAmount,
+        shortfall: Number((numAmount - user.walletBalance).toFixed(2))
+      }
+    });
   }
+
+  user.walletBalance -= numAmount;
+  user.spentThisMonth += numAmount;
 
   const txnId = 'BILL' + Date.now().toString().slice(-6);
   let opRef = 'REC' + Math.floor(100000 + Math.random() * 900000);

@@ -93,8 +93,67 @@ class Database {
         state: 'Delhi',
         createdAt: '2026-10-24T11:00:00Z',
         status: 'active'
+      },
+      {
+        id: 'FP_USER_SHIVAM',
+        name: 'Shivam',
+        phone: '+91 9990385942',
+        email: 'shivam@flamepay.in',
+        isVip: true,
+        kycStatus: 'verified',
+        walletBalance: 5.00, // Seeded with ₹5 to test the insufficient balance flow!
+        cibilScore: 790,
+        pan: 'SHIVM1234K',
+        aadhaar: 'XXXX XXXX 9942',
+        monthlyLimit: 200000.00,
+        spentThisMonth: 0.00,
+        employmentType: 'Business Owner',
+        companyName: 'FlamePay Services',
+        monthlyIncome: 150000,
+        city: 'Delhi',
+        state: 'Delhi',
+        createdAt: '2026-10-28T00:00:00Z',
+        status: 'active'
       }
     ];
+
+    // Admin Bank Account & UPI Details for Adding Money / Deposits
+    this.bankDetails = {
+      accountNumber: '32823806111',
+      ifsc: 'SBIN0013209',
+      bankingName: 'SHIVAM SHIVAM',
+      bankName: 'State Bank of India (SBI)',
+      branch: 'Main Branch',
+      upiId: '32823806111@sbi',
+      accountType: 'Current / Savings Account',
+      instructions: 'Transfer funds to the above SBI account or UPI ID. After transfer, submit the 12-digit UTR/Reference number below. Admin will verify and credit your FlamePay wallet instantly.'
+    };
+
+    // User Topup / Deposit Requests (Awaiting Admin Approval)
+    this.topupRequests = [
+      {
+        id: 'TOPUP_1001',
+        userId: 'FP_USER_101',
+        userName: 'Rahul Sharma',
+        userPhone: '+91 9876543210',
+        amount: 500,
+        utrNumber: 'UTR492819283712',
+        paymentMethod: 'SBI UPI (32823806111@sbi)',
+        bankingName: 'SHIVAM SHIVAM',
+        status: 'approved', // pending, approved, rejected
+        adminNotes: 'Verified in SBI account on 28-Oct',
+        createdAt: '2026-10-28T09:00:00Z',
+        reviewedAt: '2026-10-28T09:15:00Z'
+      }
+    ];
+
+    // Engine Settings (Supports Cyrus Sandbox / Test Mode for Free Development)
+    this.settings = {
+      cyrusTestMode: true, // Default to true so testing does not deduct real ₹67.67 Cyrus wallet!
+      minWalletAddAmount: 10,
+      maxWalletAddAmount: 50000,
+      enforceWalletBalance: true
+    };
 
     // LOAN LEADS & INQUIRIES (Personal, Home, Business, LAP)
     this.loanLeads = [

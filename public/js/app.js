@@ -95,6 +95,7 @@ function switchTab(tabId) {
     'credit-cards': 'Credit Card Applications',
     insurance: 'Buy Insurance Leads',
     cibil: 'CIBIL Score Credit Health',
+    topups: 'Wallet Deposit Requests (SBI Bank / UPI)',
     recharges: 'Recharges & Utility Bills',
     users: 'Customers & Wallet Balances',
     kyc: 'Tier-2 KYC Verifications',
@@ -106,6 +107,7 @@ function switchTab(tabId) {
     'credit-cards': 'HDFC, SBI, ICICI card applications & income analytics',
     insurance: 'Health, Motor, Life insurance quotes & policy requests',
     cibil: 'Credit scores, repayment discipline & creditworthiness',
+    topups: 'Verify payments sent to SHIVAM SHIVAM (SBI: 32823806111) and approve wallet credit',
     overview: 'Real-time metrics, financial product leads, and user verifications'
   };
 
@@ -119,6 +121,7 @@ function switchTab(tabId) {
   if (tabId === 'credit-cards') fetchCreditCards();
   if (tabId === 'insurance') fetchInsurance();
   if (tabId === 'cibil') fetchCibil();
+  if (tabId === 'topups') fetchTopups();
   if (tabId === 'recharges') fetchRecharges();
   if (tabId === 'users') fetchUsers();
   if (tabId === 'kyc') fetchKycRequests();
@@ -133,6 +136,8 @@ function refreshCurrentTab() {
 // Load All Data Engine
 async function loadAllData() {
   fetchStats();
+  checkSystemSettings();
+  fetchTopups();
   fetchLoans();
   fetchCreditCards();
   fetchInsurance();
@@ -814,4 +819,174 @@ function showToast(msg) {
   setTimeout(() => {
     t.remove();
   }, 4000);
+}
+
+// --- TOPUP MANAGEMENT & SANDBOX CONTROL ---
+let cachedTopups = [];
+
+async function fetchTopups() {
+  try {
+    const res = await fetch(`${API_BASE}/admin/topups`);
+    const json = await res.json();
+    if (!json.success) return;
+    cachedTopups = json.data;
+
+    const badge = document.getElementById('topups-badge');
+    const pendingCount = cachedTopups.filter(t => t.status === 'pending').length;
+    if (badge) {
+      badge.innerText = pendingCount;
+      badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+    }
+
+    renderTopups();
+  } catch (e) {
+    console.error('Topups fetch error:', e);
+  }
+}
+
+function renderTopups() {
+  const tbody = document.getElementById('topups-tbody');
+  if (!tbody) return;
+
+  if (cachedTopups.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:#94a3b8;">No deposit requests yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = cachedTopups.map(t => {
+    const isPending = t.status === 'pending';
+    const statusBadge = isPending 
+      ? '<span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Pending Approval</span>'
+      : (t.status === 'approved' 
+          ? '<span class="badge badge-success"><i class="fa-solid fa-check"></i> Approved & Credited</span>'
+          : '<span class="badge badge-danger"><i class="fa-solid fa-xmark"></i> Rejected</span>');
+
+    const actions = isPending ? `
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-success btn-sm" onclick="approveTopup('${t.id}')" title="Verify in SBI account & Credit Wallet">
+          <i class="fa-solid fa-check"></i> Approve
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="rejectTopup('${t.id}')">
+          <i class="fa-solid fa-xmark"></i> Reject
+        </button>
+      </div>
+    ` : `<span style="font-size:12px; color:#94a3b8;">${t.reviewedAt ? formatTimestamp(t.reviewedAt) : 'Processed'}</span>`;
+
+    return `
+      <tr>
+        <td><b>${t.id}</b></td>
+        <td style="font-size:12px; color:#64748b;">${formatTimestamp(t.createdAt)}</td>
+        <td>
+          <div style="font-weight:700;">${t.userName}</div>
+          <div style="font-size:11px; color:#94a3b8;">${t.userPhone}</div>
+        </td>
+        <td style="font-weight:800; font-size:15px; color:#22c55e;">₹${formatNumber(t.amount)}</td>
+        <td>
+          <div style="font-family:monospace; font-weight:700; color:#38bdf8;">${t.utrNumber || 'N/A'}</div>
+          <div style="font-size:11px; color:#94a3b8;">To: ${t.bankingName || 'SHIVAM SHIVAM'}</div>
+        </td>
+        <td style="font-size:12px;">${t.paymentMethod || 'SBI UPI'}</td>
+        <td>${statusBadge}</td>
+        <td>${actions}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function approveTopup(id) {
+  if (!confirm(`Confirm payment received in SBI Account (32823806111) and credit user wallet?`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/topups/${id}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminNotes: 'Verified in SBI account by Admin' })
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast(json.message);
+      fetchTopups();
+      fetchTransactions();
+      fetchUsers();
+    } else {
+      alert(json.message);
+    }
+  } catch (e) {
+    alert('Error approving topup: ' + e.message);
+  }
+}
+
+async function rejectTopup(id) {
+  const reason = prompt('Enter rejection reason (e.g. UTR not matched):', 'UTR payment not received');
+  if (reason === null) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/topups/${id}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminNotes: reason })
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast('Topup request rejected');
+      fetchTopups();
+      fetchTransactions();
+    }
+  } catch (e) {
+    alert('Error rejecting topup: ' + e.message);
+  }
+}
+
+let isCyrusSandbox = true;
+
+async function checkSystemSettings() {
+  try {
+    const res = await fetch(`${API_BASE}/admin/system/settings`);
+    const json = await res.json();
+    if (json.success && json.data) {
+      isCyrusSandbox = json.data.cyrusTestMode;
+      updateSandboxButtonUI();
+    }
+  } catch (e) {
+    console.error('Settings error:', e);
+  }
+}
+
+function updateSandboxButtonUI() {
+  const btn = document.getElementById('cyrus-sandbox-btn');
+  const txt = document.getElementById('cyrus-sandbox-text');
+  if (!btn || !txt) return;
+
+  if (isCyrusSandbox) {
+    btn.className = 'btn btn-warning btn-sm';
+    btn.innerHTML = '<i class="fa-solid fa-flask"></i> <span>Sandbox: Active (Free Testing)</span>';
+    btn.title = 'Recharges are simulated to protect real wallet. Click to switch to LIVE mode.';
+  } else {
+    btn.className = 'btn btn-danger btn-sm';
+    btn.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> <span>Cyrus: LIVE (Real Wallet)</span>';
+    btn.title = 'Recharges will deduct real ₹67.67 Cyrus wallet. Click to switch to Sandbox.';
+  }
+}
+
+async function toggleCyrusTestMode() {
+  const newMode = !isCyrusSandbox;
+  const confirmMsg = newMode 
+    ? 'Switch to Cyrus Sandbox Mode? (Recharges will be simulated for free testing)'
+    : 'Switch to Cyrus LIVE Mode? (Recharges will deduct real balance from your ₹67.67 Cyrus wallet)';
+  
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/system/test-mode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ testMode: newMode })
+    });
+    const json = await res.json();
+    if (json.success) {
+      isCyrusSandbox = json.cyrusTestMode;
+      updateSandboxButtonUI();
+      showToast(json.message);
+    }
+  } catch (e) {
+    alert('Error toggling test mode: ' + e.message);
+  }
 }
