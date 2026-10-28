@@ -7,7 +7,7 @@ const CYRUS_BASE = 'https://cyrusrecharge.in';
 
 const getCredentials = () => ({
   memberId: process.env.CYRUS_API_ID || 'AP178923',
-  pin: process.env.CYRUS_PASSWORD || 'sg66cy3u8vl6'
+  pin: process.env.CYRUS_PASSWORD || '73A4DB6556'
 });
 
 // Exact Circle Mapping for Cyrus Recharge API
