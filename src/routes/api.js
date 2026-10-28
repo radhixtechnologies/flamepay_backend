@@ -563,13 +563,11 @@ router.get('/cyrus/balance', async (req, res) => {
   success(res, data, 'Cyrus Balance fetched');
 });
 
-router.get('/cyrus/debug-info', (req, res) => {
+router.get('/cyrus/status-check', (req, res) => {
   const creds = cyrus.getCredentials();
   success(res, {
     memberId: creds.memberId,
-    pinPrefix: creds.pin ? creds.pin.substring(0, 3) + '***' : 'NONE',
-    pinLength: creds.pin ? creds.pin.length : 0,
-    isKey73A: creds.pin === '73A4DB6556'
+    ready: Boolean(creds.memberId && creds.pin)
   });
 });
 
