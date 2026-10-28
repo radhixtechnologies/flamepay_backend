@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../data/db');
 const way2api = require('../services/way2api');
+const cyrus = require('../services/cyrus');
 
 // Helper wrapper
 const success = (res, data = {}, message = 'Success') => res.json({ success: true, message, data });
@@ -338,14 +339,15 @@ router.get('/dth/plans', async (req, res) => {
   success(res, plans.data || plans);
 });
 
-// Process Mobile / DTH Recharge & Instantly Sync with Admin Dashboard
-router.post('/recharge/pay', (req, res) => {
+// Process Mobile / DTH Recharge & Instantly Sync with Cyrus & Admin Dashboard
+router.post('/recharge/pay', async (req, res) => {
   const {
     amount = 299,
     mobile = '9876543210',
     mobileNumber,
     operator = 'Jio',
     operatorId,
+    circle,
     serviceType = 'Mobile Recharge',
     paymentMode = 'FlamePay Wallet'
   } = req.body;
@@ -354,6 +356,7 @@ router.post('/recharge/pay', (req, res) => {
   const targetOperator = operatorId || operator;
   const user = db.users[0];
   const numAmount = Number(amount);
+  const isDth = (serviceType || '').toLowerCase().includes('dth');
 
   if (user.walletBalance >= numAmount) {
     user.walletBalance -= numAmount;
@@ -361,21 +364,49 @@ router.post('/recharge/pay', (req, res) => {
   }
 
   const txnId = 'FP' + Date.now();
-  const opRef = 'OP' + Math.floor(100000000 + Math.random() * 900000000);
+  let opRef = 'OP' + Math.floor(100000000 + Math.random() * 900000000);
+  let status = 'success';
+  let cyrusInfo = null;
+
+  // Execute Live Recharge via Cyrus Recharge Engine
+  try {
+    const cyrusRes = await cyrus.executeRecharge({
+      number: targetMobile,
+      operator: targetOperator,
+      circle: circle || 'Delhi',
+      amount: numAmount,
+      usertx: txnId,
+      type: isDth ? 'dth' : 'mobile'
+    });
+
+    cyrusInfo = cyrusRes;
+    if (cyrusRes && cyrusRes.operatorRef && cyrusRes.operatorRef.trim() !== '') {
+      opRef = cyrusRes.operatorRef;
+    }
+    if (cyrusRes && cyrusRes.status) {
+      const s = cyrusRes.status.toUpperCase();
+      if (s === 'FAILURE') status = 'failed';
+      else if (s === 'PENDING') status = 'pending';
+      else status = 'success';
+    }
+  } catch (err) {
+    console.error('[Cyrus Execution Error]:', err.message);
+  }
 
   const newTxn = {
     id: txnId,
     userId: user.id,
     userName: user.name,
-    title: `${targetOperator} Recharge`,
+    title: `${targetOperator} ${isDth ? 'DTH' : 'Recharge'}`,
     subtitle: `+91 ${targetMobile} • Just now`,
     amount: numAmount,
     timestamp: new Date().toISOString(),
-    status: 'success',
-    category: 'recharge',
+    status,
+    category: isDth ? 'dth' : 'recharge',
     operatorName: targetOperator,
     operatorRefNumber: opRef,
-    mobile: '+91 ' + targetMobile,
+    apiTransId: cyrusInfo?.apiTransId || '',
+    mobile: targetMobile.startsWith('+91') ? targetMobile : '+91 ' + targetMobile,
     paymentMode
   };
 
@@ -385,19 +416,34 @@ router.post('/recharge/pay', (req, res) => {
   success(res, {
     transactionId: txnId,
     operatorRefNumber: opRef,
+    apiTransId: cyrusInfo?.apiTransId || '',
     amount: numAmount,
     timestamp: new Date().toISOString(),
-    status: 'success',
+    status,
     serviceType,
     targetTitle: `${targetOperator} - ${targetMobile}`,
     paymentMode,
-    cashbackEarned: Math.round(numAmount * 0.02)
-  }, 'Recharge successful');
+    cashbackEarned: Math.round(numAmount * 0.02),
+    cyrusResponse: cyrusInfo
+  }, 'Recharge processed');
 });
 
 router.get('/bills/categories', (req, res) => success(res, db.billCategories));
 
-router.post('/bills/pay', (req, res) => {
+// Live Bill Fetch via Cyrus
+router.post('/bills/fetch', async (req, res) => {
+  const { operator, consumerNumber, number } = req.body;
+  const num = consumerNumber || number;
+  try {
+    const data = await cyrus.fetchBill({ operator, consumerNumber: num });
+    success(res, data, 'Bill details fetched');
+  } catch (err) {
+    fail(res, err.message);
+  }
+});
+
+// Process Live Bill Payment via Cyrus & Instantly Sync with Admin Dashboard
+router.post('/bills/pay', async (req, res) => {
   const {
     category = 'electricity',
     operator = 'Tata Power',
@@ -417,7 +463,31 @@ router.post('/bills/pay', (req, res) => {
   }
 
   const txnId = 'BILL' + Date.now().toString().slice(-6);
-  const opRef = 'REC' + Math.floor(100000 + Math.random() * 900000);
+  let opRef = 'REC' + Math.floor(100000 + Math.random() * 900000);
+  let status = 'success';
+  let cyrusInfo = null;
+
+  try {
+    const cyrusRes = await cyrus.payBill({
+      number: consumerNumber,
+      operator: targetOperator,
+      amount: numAmount,
+      usertx: txnId,
+      account: consumerNumber
+    });
+    cyrusInfo = cyrusRes;
+    if (cyrusRes && cyrusRes.operatorRef && cyrusRes.operatorRef.trim() !== '') {
+      opRef = cyrusRes.operatorRef;
+    }
+    if (cyrusRes && cyrusRes.status) {
+      const s = cyrusRes.status.toUpperCase();
+      if (s === 'FAILURE') status = 'failed';
+      else if (s === 'PENDING') status = 'pending';
+      else status = 'success';
+    }
+  } catch (err) {
+    console.error('[Cyrus Bill Pay Error]:', err.message);
+  }
 
   const newTxn = {
     id: txnId,
@@ -427,10 +497,11 @@ router.post('/bills/pay', (req, res) => {
     subtitle: `Consumer No: ${consumerNumber}`,
     amount: numAmount,
     timestamp: new Date().toISOString(),
-    status: 'success',
+    status,
     category,
     operatorName: targetOperator,
     operatorRefNumber: opRef,
+    apiTransId: cyrusInfo?.apiTransId || '',
     mobile: user.phone,
     paymentMode
   };
@@ -442,14 +513,38 @@ router.post('/bills/pay', (req, res) => {
     transactionId: txnId,
     receiptNo: opRef,
     operatorRefNumber: opRef,
+    apiTransId: cyrusInfo?.apiTransId || '',
     amount: numAmount,
-    status: 'success',
+    status,
     serviceType: `${category.toUpperCase()} Bill Payment`,
     targetTitle: `${targetOperator} - ${consumerNumber}`,
     paymentMode,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    cyrusResponse: cyrusInfo
   }, 'Bill payment processed successfully');
 });
+
+// --- CYRUS DIAGNOSTIC & MANAGEMENT ENDPOINTS ---
+router.get('/cyrus/balance', async (req, res) => {
+  const data = await cyrus.getBalance();
+  success(res, data, 'Cyrus Balance fetched');
+});
+
+router.get('/cyrus/operators', async (req, res) => {
+  const data = await cyrus.getOperators();
+  success(res, data, 'Cyrus Operators fetched');
+});
+
+router.get('/cyrus/circles', async (req, res) => {
+  const data = await cyrus.getCircles();
+  success(res, data, 'Cyrus Circles fetched');
+});
+
+router.get('/cyrus/status/:id', async (req, res) => {
+  const data = await cyrus.checkStatus(req.params.id);
+  success(res, data, 'Cyrus Status checked');
+});
+
 
 // --- FINANCIAL PRODUCTS: LOANS (Personal, Home, Business, LAP) ---
 router.post('/loan/apply', (req, res) => {
