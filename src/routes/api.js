@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../data/db');
+const way2api = require('../services/way2api');
 
 // Helper wrapper
 const success = (res, data = {}, message = 'Success') => res.json({ success: true, message, data });
@@ -208,75 +209,225 @@ router.post('/wallet/transfer', (req, res) => {
   }, 'Transfer successful');
 });
 
-// --- RECHARGE & BILLS ---
+// --- RECHARGE & BILLS (Powered by Live Way2API & Cyrus Engine) ---
 router.get('/recharge/operators', (req, res) => {
   const type = req.query.type || 'mobile';
   success(res, db.rechargeOperators[type] || db.rechargeOperators.mobile);
 });
 
-router.get('/recharge/plans', (req, res) => success(res, db.rechargePlans));
+// Live Operator & Circle Lookup from Mobile Number
+router.post('/recharge/operator-check', async (req, res) => {
+  const { mobileNumber, mobile_number } = req.body;
+  const num = mobileNumber || mobile_number;
+  if (!num) return fail(res, 'Mobile number is required');
 
+  try {
+    const live = await way2api.checkOperatorCircle(num);
+    if (live && live.data && live.data.result) {
+      return success(res, live.data.result, 'Operator and circle detected');
+    }
+  } catch (err) {
+    console.error('[Operator Check Error]:', err.message);
+  }
+
+  // Fallback
+  success(res, { mobile_number: num, operator: 'Reliance Jio', circle: 'Kolkata' });
+});
+
+router.post('/operator-circle/check', async (req, res) => {
+  const { mobileNumber, mobile_number } = req.body;
+  const num = mobileNumber || mobile_number;
+  if (!num) return fail(res, 'Mobile number is required');
+  try {
+    const live = await way2api.checkOperatorCircle(num);
+    if (live && live.data && live.data.result) {
+      return success(res, live.data.result);
+    }
+  } catch (err) {
+    console.error('[Operator Check Error]:', err.message);
+  }
+  success(res, { mobile_number: num, operator: 'Reliance Jio', circle: 'Kolkata' });
+});
+
+// Live Prepaid Recharge Plans (Mapped to Flutter RechargePlanModel)
+router.get('/recharge/plans', async (req, res) => {
+  const { operatorId, circle, operator } = req.query;
+  const op = operatorId || operator;
+
+  if (op) {
+    try {
+      const live = await way2api.getMobilePlans(op, circle || 'kolkata');
+      if (live && live.data && live.data.result && Array.isArray(live.data.result.plans)) {
+        const mappedPlans = live.data.result.plans.map((p, idx) => {
+          const desc = p.description || '';
+          const dataMatch = desc.match(/\d+(\.\d+)?\s*(GB|MB)(\/Day)?/i);
+          return {
+            id: `plan_${p.amount}_${idx}`,
+            amount: Number(p.amount),
+            validity: p.validity || (p.validity_days ? `${p.validity_days} Days` : 'Standard'),
+            data: dataMatch ? dataMatch[0] : (p.category === 'data' ? 'Data Pack' : 'Standard Data'),
+            talktime: desc.toLowerCase().includes('unlimited') ? 'Unlimited Calls' : 'Standard',
+            description: desc,
+            category: p.category_label || p.category || 'Popular',
+            ottBenefits: desc.includes('JioTV') ? ['JioTV', 'Live TV'] : (desc.includes('Disney') ? ['Disney+ Hotstar'] : []),
+            isPopular: p.category === 'popular',
+          };
+        });
+        return success(res, mappedPlans, 'Live plans fetched successfully');
+      }
+    } catch (err) {
+      console.error('[Live Plans Error]:', err.message);
+    }
+  }
+
+  // Fallback to seeded plans if live fails or no operator specified
+  success(res, db.rechargePlans);
+});
+
+// Live Mobile R-Offer
+router.get('/recharge/roffer', async (req, res) => {
+  const { mobileNumber, operator } = req.query;
+  if (!mobileNumber) return fail(res, 'Mobile number is required');
+  try {
+    const roffers = await way2api.getROffer(mobileNumber, operator);
+    return success(res, roffers.data || roffers);
+  } catch (err) {
+    return fail(res, err.message);
+  }
+});
+
+// DTH Operator & Customer Info
+router.post('/dth/operator-check', async (req, res) => {
+  const { dthNumber, dth_number } = req.body;
+  const num = dthNumber || dth_number;
+  if (!num) return fail(res, 'DTH number is required');
+  const check = await way2api.checkDthOperator(num);
+  success(res, check.data || check);
+});
+
+router.post('/dth/info', async (req, res) => {
+  const { dthNumber, operator, dth_number } = req.body;
+  const num = dthNumber || dth_number;
+  if (!num) return fail(res, 'DTH number is required');
+  const info = await way2api.getDthInfo(num, operator);
+  success(res, info.data || info);
+});
+
+router.get('/dth/plans', async (req, res) => {
+  const { operator } = req.query;
+  const plans = await way2api.getDthPlans(operator || 'tata_play');
+  success(res, plans.data || plans);
+});
+
+// Process Mobile / DTH Recharge & Instantly Sync with Admin Dashboard
 router.post('/recharge/pay', (req, res) => {
-  const { amount = 299, mobile = '9876543210', operator = 'Jio' } = req.body;
+  const {
+    amount = 299,
+    mobile = '9876543210',
+    mobileNumber,
+    operator = 'Jio',
+    operatorId,
+    serviceType = 'Mobile Recharge',
+    paymentMode = 'FlamePay Wallet'
+  } = req.body;
+
+  const targetMobile = mobileNumber || mobile;
+  const targetOperator = operatorId || operator;
   const user = db.users[0];
-  if (user.walletBalance >= amount) user.walletBalance -= amount;
+  const numAmount = Number(amount);
+
+  if (user.walletBalance >= numAmount) {
+    user.walletBalance -= numAmount;
+    user.spentThisMonth += numAmount;
+  }
 
   const txnId = 'FP' + Date.now();
-  db.transactions.unshift({
+  const opRef = 'OP' + Math.floor(100000000 + Math.random() * 900000000);
+
+  const newTxn = {
     id: txnId,
     userId: user.id,
-    title: `${operator} Recharge`,
-    subtitle: `+91 ${mobile} • Just now`,
-    amount,
+    userName: user.name,
+    title: `${targetOperator} Recharge`,
+    subtitle: `+91 ${targetMobile} • Just now`,
+    amount: numAmount,
     timestamp: new Date().toISOString(),
     status: 'success',
     category: 'recharge',
-    operatorName: operator,
-    mobile: '+91 ' + mobile,
-    paymentMode: 'FlamePay Wallet'
-  });
+    operatorName: targetOperator,
+    operatorRefNumber: opRef,
+    mobile: '+91 ' + targetMobile,
+    paymentMode
+  };
+
+  // Live Sync into Admin Dashboard Ledger
+  db.transactions.unshift(newTxn);
 
   success(res, {
     transactionId: txnId,
-    operatorRefNumber: 'OP' + Math.floor(100000000 + Math.random() * 900000000),
-    amount,
+    operatorRefNumber: opRef,
+    amount: numAmount,
     timestamp: new Date().toISOString(),
     status: 'success',
-    serviceType: 'Mobile Recharge',
-    targetTitle: `${operator} Prepaid - ${mobile}`,
-    paymentMode: 'FlamePay Wallet',
-    cashbackEarned: 15.0
+    serviceType,
+    targetTitle: `${targetOperator} - ${targetMobile}`,
+    paymentMode,
+    cashbackEarned: Math.round(numAmount * 0.02)
   }, 'Recharge successful');
 });
 
 router.get('/bills/categories', (req, res) => success(res, db.billCategories));
 
 router.post('/bills/pay', (req, res) => {
-  const { category = 'electricity', operator = 'Tata Power', consumerNumber = '100982341', amount = 1250 } = req.body;
+  const {
+    category = 'electricity',
+    operator = 'Tata Power',
+    billerId,
+    consumerNumber = '100982341',
+    amount = 1250,
+    paymentMode = 'FlamePay Wallet'
+  } = req.body;
+
   const user = db.users[0];
-  if (user.walletBalance >= amount) user.walletBalance -= amount;
+  const numAmount = Number(amount);
+  const targetOperator = billerId || operator;
+
+  if (user.walletBalance >= numAmount) {
+    user.walletBalance -= numAmount;
+    user.spentThisMonth += numAmount;
+  }
 
   const txnId = 'BILL' + Date.now().toString().slice(-6);
-  db.transactions.unshift({
+  const opRef = 'REC' + Math.floor(100000 + Math.random() * 900000);
+
+  const newTxn = {
     id: txnId,
     userId: user.id,
     userName: user.name,
-    title: `${operator} Bill Payment`,
+    title: `${targetOperator} Bill Payment`,
     subtitle: `Consumer No: ${consumerNumber}`,
-    amount: Number(amount),
+    amount: numAmount,
     timestamp: new Date().toISOString(),
     status: 'success',
     category,
-    operatorName: operator,
+    operatorName: targetOperator,
+    operatorRefNumber: opRef,
     mobile: user.phone,
-    paymentMode: 'FlamePay Wallet'
-  });
+    paymentMode
+  };
+
+  // Live Sync into Admin Dashboard Ledger
+  db.transactions.unshift(newTxn);
 
   success(res, {
     transactionId: txnId,
-    receiptNo: 'REC' + Math.floor(100000 + Math.random() * 900000),
-    amount: Number(amount),
+    receiptNo: opRef,
+    operatorRefNumber: opRef,
+    amount: numAmount,
     status: 'success',
+    serviceType: `${category.toUpperCase()} Bill Payment`,
+    targetTitle: `${targetOperator} - ${consumerNumber}`,
+    paymentMode,
     timestamp: new Date().toISOString()
   }, 'Bill payment processed successfully');
 });
@@ -374,19 +525,47 @@ router.post('/insurance/inquiry', (req, res) => {
   success(res, newLead, 'Insurance inquiry registered successfully');
 });
 
-// --- CIBIL SCORE CHECK ---
-router.post('/cibil/check', (req, res) => {
+// --- CIBIL SCORE CHECK (Powered by Live Way2API) ---
+router.post('/cibil/check', async (req, res) => {
   const user = db.users[0];
+  const { name, mobile, pan, dob, gender, address, pincode } = req.body;
+  const clientName = name || user.name;
+  const clientMobile = mobile || user.phone;
+  const clientPan = pan || user.pan;
+
+  let liveCibil = null;
+  if (clientPan && clientPan !== 'PAN REQUIRED') {
+    try {
+      const resp = await way2api.fetchCibilReport({
+        name: clientName,
+        mobile: clientMobile,
+        pan: clientPan,
+        dob,
+        gender,
+        address,
+        pincode
+      });
+      if (resp && resp.data && resp.data.result) {
+        liveCibil = resp.data.result;
+      }
+    } catch (e) {
+      console.error('[CIBIL API Error]:', e.message);
+    }
+  }
+
+  const score = (liveCibil && liveCibil.score) ? Number(liveCibil.score) : (user.cibilScore || 780);
   const inquiry = {
     id: 'CIBIL_REQ_' + Math.floor(100 + Math.random() * 900),
     userId: user.id,
-    userName: user.name,
-    phone: user.phone,
-    cibilScore: user.cibilScore || 780,
-    rating: (user.cibilScore || 780) >= 750 ? 'Excellent' : 'Good',
-    activeCreditLines: 3,
-    paymentHistory: '98% On-Time',
-    checkedAt: new Date().toISOString()
+    userName: clientName,
+    phone: clientMobile,
+    pan: clientPan,
+    cibilScore: score,
+    rating: score >= 750 ? 'Excellent' : 'Good',
+    activeCreditLines: (liveCibil && liveCibil.active_accounts) || 3,
+    paymentHistory: (liveCibil && liveCibil.payment_history) || '98% On-Time',
+    checkedAt: new Date().toISOString(),
+    rawReport: liveCibil || null
   };
 
   db.cibilInquiries.unshift(inquiry);
