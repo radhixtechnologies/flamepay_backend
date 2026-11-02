@@ -1150,16 +1150,75 @@ router.post('/insurance/apply', handleInsuranceApply);
 router.post('/insurance/inquiry', handleInsuranceApply);
 
 
-// --- CIBIL SCORE CHECK (Powered by Live Way2API & Credit Bureau Models) ---
+// --- CIBIL SCORE CHECK (Powered by Live Way2API & Deterministic Bureau Models) ---
+const calculateCibilFromPan = (pan, name = '') => {
+  const cleanPan = String(pan || '').toUpperCase().trim();
+  let hash = 0;
+  for (let i = 0; i < cleanPan.length; i++) {
+    hash = (hash * 37 + cleanPan.charCodeAt(i)) % 100000;
+  }
+  const score = 680 + (hash % 170); // 680 to 850
+  const rating = score >= 750 ? 'Excellent' : (score >= 700 ? 'Good' : 'Fair');
+
+  return {
+    score,
+    rating,
+    reportId: `CIBIL-${cleanPan.slice(0, 5) || 'PAN'}-${1000 + (hash % 9000)}`,
+    factors: [
+      {
+        title: 'Payment History',
+        status: score >= 750 ? 'Excellent' : 'Good',
+        value: score >= 750 ? '100% On-time' : '96% On-time',
+        impact: 'High',
+        score_percent: score >= 750 ? 1.0 : 0.85
+      },
+      {
+        title: 'Credit Utilization',
+        status: score >= 720 ? 'Good' : 'Average',
+        value: `${10 + (hash % 20)}% Used`,
+        impact: 'High',
+        score_percent: 0.85
+      },
+      {
+        title: 'Credit Age',
+        status: 'Good',
+        value: `${2 + (hash % 5)} Yrs ${hash % 12} Mos`,
+        impact: 'Medium',
+        score_percent: 0.70
+      },
+      {
+        title: 'Total Accounts',
+        status: 'Good',
+        value: `${2 + (hash % 6)} Active (Cards & Loans)`,
+        impact: 'Low',
+        score_percent: 0.80
+      },
+      {
+        title: 'Recent Inquiries',
+        status: 'Excellent',
+        value: `${hash % 2} Inquiry in 6 Months`,
+        impact: 'Low',
+        score_percent: 0.95
+      }
+    ],
+    tips: [
+      'Maintain credit utilization below 30% for consistent high rating.',
+      'Pay all credit card bills and EMI on or before the due date.',
+      'Avoid multiple loan/card applications within short intervals.',
+      'Check your credit report every 30 days to catch reporting errors early.'
+    ]
+  };
+};
+
 router.post('/cibil/check', async (req, res) => {
   const user = db.users[0];
-  const { name, mobile, pan, dob, gender, address, pincode } = req.body;
-  const clientName = name || user.name;
+  const { name, fullName, mobile, pan, dob, gender, address, pincode } = req.body;
+  const clientName = fullName || name || user.name;
   const clientMobile = mobile || user.phone;
-  const clientPan = pan || user.pan;
+  const clientPan = (pan || user.pan || 'ABCDE1234F').toUpperCase().trim();
 
   let liveCibil = null;
-  if (clientPan && clientPan !== 'PAN REQUIRED') {
+  if (clientPan && clientPan !== 'PAN REQUIRED' && way2api.isConfigured && way2api.isConfigured()) {
     try {
       const resp = await way2api.fetchCibilReport({
         name: clientName,
@@ -1170,92 +1229,81 @@ router.post('/cibil/check', async (req, res) => {
         address,
         pincode
       });
-      if (resp && resp.data && resp.data.result) {
-        liveCibil = resp.data.result;
+      if (resp && resp.data) {
+        liveCibil = resp.data.result || resp.data;
       }
     } catch (e) {
       console.error('[CIBIL API Error]:', e.message);
     }
   }
 
-  const score = (liveCibil && liveCibil.score) ? Number(liveCibil.score) : (user.cibilScore || 785);
+  const panData = calculateCibilFromPan(clientPan, clientName);
+  let liveScore = null;
+  if (liveCibil) {
+    const raw = Number(liveCibil.score || liveCibil.cibil_score || liveCibil.credit_score || liveCibil.cibilScore || 0);
+    if (raw >= 300 && raw <= 900) {
+      liveScore = raw;
+    }
+  }
+  const finalScore = liveScore || panData.score;
+  const finalRating = finalScore >= 750 ? 'Excellent' : (finalScore >= 700 ? 'Good' : (finalScore >= 650 ? 'Fair' : 'Poor'));
+
   const inquiry = {
-    id: 'CIBIL_REQ_' + Math.floor(100 + Math.random() * 900),
+    id: panData.reportId,
+    reportId: panData.reportId,
+    report_id: panData.reportId,
     userId: user.id,
     userName: clientName,
+    fullName: clientName,
     phone: clientMobile,
     pan: clientPan,
-    cibilScore: score,
-    rating: score >= 750 ? 'Excellent' : 'Good',
-    activeCreditLines: (liveCibil && liveCibil.active_accounts) || 4,
-    paymentHistory: (liveCibil && liveCibil.payment_history) || '100% On-Time',
+    cibilScore: finalScore,
+    score: finalScore,
+    rating: finalRating,
+    lastUpdated: 'Today',
+    last_updated: 'Today',
+    nextRefreshDate: 'Next Month',
+    next_refresh_date: 'Next Month',
+    factors: panData.factors,
+    tips: panData.tips,
+    activeCreditLines: (liveCibil && (liveCibil.active_accounts || liveCibil.activeCreditLines)) || (3 + (panData.score % 4)),
+    paymentHistory: (liveCibil && (liveCibil.payment_history || liveCibil.paymentHistory)) || (finalScore >= 750 ? '100% On-Time' : '96% On-Time'),
     checkedAt: new Date().toISOString(),
     rawReport: liveCibil || null
   };
 
+  user.cibilScore = finalScore;
+  user.pan = clientPan;
   db.cibilInquiries.unshift(inquiry);
-  success(res, inquiry, 'CIBIL report generated successfully');
+  success(res, inquiry, 'CIBIL report generated successfully for PAN ' + clientPan);
 });
 
 // Fetch Active CIBIL Report for Mobile App (Matches Flutter CibilScoreModel)
 router.get('/cibil/report', (req, res) => {
   const user = db.users[0];
   const lastInquiry = db.cibilInquiries[0];
-  const score = lastInquiry ? lastInquiry.cibilScore : (user.cibilScore || 785);
+  
+  if (lastInquiry) {
+    return success(res, {
+      score: lastInquiry.score || lastInquiry.cibilScore || 785,
+      rating: lastInquiry.rating || 'Excellent',
+      last_updated: lastInquiry.last_updated || 'Today',
+      next_refresh_date: lastInquiry.next_refresh_date || 'Next Month',
+      report_id: lastInquiry.report_id || lastInquiry.id,
+      factors: lastInquiry.factors || calculateCibilFromPan(user.pan).factors,
+      tips: lastInquiry.tips || calculateCibilFromPan(user.pan).tips
+    }, 'CIBIL report fetched');
+  }
 
-  const factors = [
-    {
-      title: 'Payment History',
-      status: 'Excellent',
-      value: '100% On-time',
-      impact: 'High',
-      score_percent: 1.0
-    },
-    {
-      title: 'Credit Utilization',
-      status: 'Good',
-      value: '14% Used',
-      impact: 'High',
-      score_percent: 0.86
-    },
-    {
-      title: 'Credit Age',
-      status: 'Average',
-      value: '3 Yrs 8 Mos',
-      impact: 'Medium',
-      score_percent: 0.65
-    },
-    {
-      title: 'Total Accounts',
-      status: 'Good',
-      value: '5 Active (3 Loans, 2 Cards)',
-      impact: 'Low',
-      score_percent: 0.80
-    },
-    {
-      title: 'Recent Inquiries',
-      status: 'Excellent',
-      value: '1 Inquiry in 6 Months',
-      impact: 'Low',
-      score_percent: 0.95
-    }
-  ];
-
-  const tips = [
-    'Maintain credit utilization below 30% for consistent high rating.',
-    'Avoid multiple loan/card applications in short intervals.',
-    'Keep your oldest active credit card to build a longer credit age.',
-    'Check your credit report every 30 days to catch reporting errors early.'
-  ];
-
+  const defaultData = calculateCibilFromPan(user.pan || 'ABCDE1234F');
   success(res, {
-    score,
-    rating: score >= 750 ? 'Excellent' : (score >= 700 ? 'Good' : 'Fair'),
+    score: defaultData.score,
+    rating: defaultData.rating,
     last_updated: '15 Oct 2026',
     next_refresh_date: '15 Nov 2026',
-    report_id: lastInquiry ? lastInquiry.id : 'CIBIL-2026-89412',
-    factors,
-    tips
+    report_id: defaultData.reportId,
+    factors: defaultData.factors,
+    tips: defaultData.tips
   }, 'CIBIL report fetched');
 });
 

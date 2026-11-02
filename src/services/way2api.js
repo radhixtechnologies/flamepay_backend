@@ -14,7 +14,7 @@ const post = async (endpoint, body = {}) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
 
     const data = await res.json();
@@ -127,24 +127,75 @@ const getDthPlans = async (operator) => {
 };
 
 /**
- * Fetch CIBIL Credit Report
+ * Check if Way2API key is active and configured
+ */
+const isConfigured = () => {
+  const key = getApiKey();
+  return Boolean(key && key.startsWith('w2a_'));
+};
+
+/**
+ * Verify PAN Card details via official income tax database
+ */
+const verifyPan = async (pan) => {
+  const cleanPan = (pan || '').toUpperCase().trim();
+  return await post('/pan/verify', { pan_number: cleanPan, pan: cleanPan });
+};
+
+/**
+ * Fetch CIBIL / Experian Credit Report
  */
 const fetchCibilReport = async ({ name, mobile, pan, dob, gender, address, pincode }) => {
-  const cleanMobile = String(mobile).replace(/[^0-9]/g, '').slice(-10);
+  const cleanMobile = String(mobile || '9876543210').replace(/[^0-9]/g, '').slice(-10);
+  const cleanPan = (pan || '').toUpperCase().trim();
+
+  const parts = String(name || 'Customer').trim().split(/\s+/);
+  const firstName = parts[0] || 'Customer';
+  const lastName = parts.length > 1 ? parts.slice(1).join(' ') : 'Kumar';
+
+  let formattedDob = dob || '1995-01-01';
+  if (formattedDob.includes('/')) {
+    const p = formattedDob.split('/');
+    if (p.length === 3) {
+      formattedDob = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+    }
+  }
+
   const payload = {
-    name: name || 'User',
+    pan: cleanPan,
+    pan_number: cleanPan,
     mobile: cleanMobile,
-    pan: (pan || '').toUpperCase().trim(),
+    mobile_number: cleanMobile,
+    name: name || `${firstName} ${lastName}`,
+    first_name: firstName,
+    last_name: lastName,
+    dob: formattedDob,
+    date_of_birth: formattedDob,
   };
-  if (dob) payload.dob = dob;
   if (gender) payload.gender = gender;
   if (address) payload.address = address;
   if (pincode) payload.pincode = pincode;
 
-  return await post('/credit-report-cibil/fetch-report', payload);
+  // 1. Try CIBIL Report
+  console.log('[Way2API] Fetching CIBIL for PAN:', cleanPan);
+  let res = await post('/credit-report-cibil/fetch-report', payload);
+  if (res && (res.status === 'success' || res.success) && res.data) {
+    return res;
+  }
+
+  // 2. Fallback to Experian Report (also active in user dashboard)
+  console.log('[Way2API] Trying Experian fallback for PAN:', cleanPan);
+  const expRes = await post('/credit-report-experian/fetch-report', payload);
+  if (expRes && (expRes.status === 'success' || expRes.success) && expRes.data) {
+    return expRes;
+  }
+
+  return res || expRes || { success: false };
 };
 
 module.exports = {
+  isConfigured,
+  verifyPan,
   checkOperatorCircle,
   getMobilePlans,
   getROffer,
