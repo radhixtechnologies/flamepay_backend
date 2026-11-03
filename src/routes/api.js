@@ -170,30 +170,35 @@ router.post('/user/profile/update', (req, res) => {
 // --- KYC ---
 router.get('/user/kyc-status', (req, res) => {
   const user = getAuthenticatedUser(req);
-  success(res, { status: user.kycStatus, monthlyLimit: user.monthlyLimit });
+  success(res, { status: user.kycStatus || 'pending', monthlyLimit: user.monthlyLimit || 50000.00, user });
 });
 
 router.post('/user/kyc-submit', (req, res) => {
-  const { fullName, panNumber, aadhaarNumber, dob, address, annualIncome, occupation } = req.body;
+  const { fullName, name, panNumber, pan, aadhaarNumber, aadhaar, dob, address, annualIncome, occupation } = req.body;
   const user = getAuthenticatedUser(req);
-  user.name = fullName || user.name;
-  user.pan = panNumber || user.pan;
-  user.aadhaar = aadhaarNumber || user.aadhaar;
+
+  const clientName = fullName || name;
+  const clientPan = (panNumber || pan || '').toString().trim().toUpperCase();
+  const clientAadhaar = (aadhaarNumber || aadhaar || '').toString().trim();
+
+  if (clientName) user.name = clientName;
+  if (clientPan) user.pan = clientPan;
+  if (clientAadhaar) user.aadhaar = clientAadhaar;
   user.kycStatus = 'verified';
   user.monthlyLimit = 200000.00;
   user.isVip = true;
 
-  db.kycRequests.push({
+  db.kycRequests.unshift({
     id: 'KYC_REQ_' + Date.now().toString().slice(-4),
     userId: user.id,
     userName: user.name,
     userPhone: user.phone,
     pan: user.pan,
     aadhaar: user.aadhaar,
-    dob,
-    address,
-    annualIncome,
-    occupation,
+    dob: dob || user.dob,
+    address: address || user.address,
+    annualIncome: annualIncome || 'Above 5 Lakhs',
+    occupation: occupation || 'Professional',
     status: 'approved',
     submittedAt: new Date().toISOString()
   });
