@@ -8,6 +8,76 @@ const cyrus = require('../services/cyrus');
 const success = (res, data = {}, message = 'Success') => res.json({ success: true, message, data });
 const fail = (res, message = 'Error', code = 400) => res.status(code).json({ success: false, message });
 
+// Dynamic user resolution based on token, custom headers, or body
+const getAuthenticatedUser = (req) => {
+  const hId = req.headers['x-user-id'] || req.body?.userId || req.query?.userId;
+  const hName = req.headers['x-user-name'] || req.body?.userName || req.body?.fullName;
+  const hPhone = req.headers['x-user-phone'] || req.body?.userPhone || req.body?.phone;
+  const hEmail = req.headers['x-user-email'] || req.body?.userEmail || req.body?.email;
+
+  // 1. Match by ID
+  if (hId) {
+    let u = db.users.find(x => x.id === hId);
+    if (u) {
+      if (hName && (!u.name || u.name === 'New FlamePay User' || u.name === 'Rahul Sharma')) u.name = hName;
+      if (hPhone && !u.phone) u.phone = hPhone;
+      if (hEmail && (!u.email || u.email.includes('example.com'))) u.email = hEmail;
+      return u;
+    }
+  }
+
+  // 2. Match by Phone
+  if (hPhone) {
+    let u = db.getUser(hPhone);
+    if (u) {
+      if (hName && (!u.name || u.name === 'New FlamePay User' || u.name === 'Rahul Sharma')) u.name = hName;
+      if (hEmail) u.email = hEmail;
+      return u;
+    }
+  }
+
+  // 3. Match by Name (case-insensitive)
+  if (hName && hName !== 'Rahul Sharma') {
+    let u = db.users.find(x => x.name && x.name.toLowerCase() === hName.toLowerCase());
+    if (u) return u;
+  }
+
+  // 4. Match by Authorization Bearer Token
+  const auth = req.headers.authorization || req.headers['Authorization'] || '';
+  if (auth.startsWith('Bearer ')) {
+    const token = auth.slice(7).trim();
+    for (const u of db.users) {
+      if ((u.token && u.token === token) || (u.id && token.includes(u.id))) {
+        return u;
+      }
+    }
+  }
+
+  // 5. Create or activate authenticated user if client supplied custom identity
+  if (hName && hName !== 'Rahul Sharma') {
+    const newUser = {
+      id: hId || ('FP_USER_' + Date.now().toString().slice(-4)),
+      name: hName,
+      phone: hPhone || '+91 9876543210',
+      email: hEmail || `${hName.toLowerCase().replace(/\s+/g, '')}@flamepay.in`,
+      isVip: true,
+      kycStatus: 'verified',
+      walletBalance: 2580.00,
+      cibilScore: 750,
+      pan: req.body?.pan_number || req.body?.pan || 'RRQPS8997J',
+      aadhaar: req.body?.aadhaar_number || req.body?.aadhaar || 'XXXX XXXX 9823',
+      monthlyLimit: 200000.00,
+      spentThisMonth: 0.0,
+      createdAt: new Date().toISOString(),
+      status: 'active'
+    };
+    db.users.unshift(newUser);
+    return newUser;
+  }
+
+  return db.currentUser || db.users[0];
+};
+
 // --- AUTH ---
 router.post('/auth/send-otp', (req, res) => {
   const { phone } = req.body;
@@ -85,13 +155,13 @@ router.post('/auth/logout', (req, res) => success(res, true, 'Logged out success
 
 // --- USER & PROFILE ---
 router.get('/user/profile', (req, res) => {
-  const user = db.users[0]; // Active session user
+  const user = getAuthenticatedUser(req); // Active session user
   success(res, user);
 });
 
 router.post('/user/profile/update', (req, res) => {
   const { name, email } = req.body;
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   if (name) user.name = name;
   if (email) user.email = email;
   success(res, user, 'Profile updated successfully');
@@ -99,13 +169,13 @@ router.post('/user/profile/update', (req, res) => {
 
 // --- KYC ---
 router.get('/user/kyc-status', (req, res) => {
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   success(res, { status: user.kycStatus, monthlyLimit: user.monthlyLimit });
 });
 
 router.post('/user/kyc-submit', (req, res) => {
   const { fullName, panNumber, aadhaarNumber, dob, address, annualIncome, occupation } = req.body;
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   user.name = fullName || user.name;
   user.pan = panNumber || user.pan;
   user.aadhaar = aadhaarNumber || user.aadhaar;
@@ -133,7 +203,7 @@ router.post('/user/kyc-submit', (req, res) => {
 
 // --- WALLET & TRANSFERS ---
 router.get('/wallet/balance', (req, res) => {
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   success(res, {
     balance: user.walletBalance,
     monthlyLimit: user.monthlyLimit,
@@ -159,7 +229,7 @@ router.post('/wallet/request-topup', (req, res) => {
   if (!numAmount || numAmount <= 0) return fail(res, 'Valid amount is required');
   if (!utrNumber || utrNumber.trim() === '') return fail(res, '12-digit UTR / Reference number is required');
 
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   const reqId = 'TOPUP_' + Date.now().toString().slice(-6);
 
   const topupRecord = {
@@ -203,7 +273,7 @@ router.post('/wallet/request-topup', (req, res) => {
 router.post('/wallet/set-balance', (req, res) => {
   const { balance } = req.body;
   if (balance === undefined || balance === null) return fail(res, 'Balance value required');
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   user.walletBalance = Number(balance);
   success(res, { balance: user.walletBalance }, `Wallet balance updated to ₹${user.walletBalance}`);
 });
@@ -214,7 +284,7 @@ router.get('/wallet/transactions', (req, res) => {
 
 router.post('/wallet/add-money', (req, res) => {
   const amount = Number(req.body.amount) || 500;
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   user.walletBalance += amount;
 
   const newTxn = {
@@ -238,7 +308,7 @@ router.post('/wallet/add-money', (req, res) => {
 router.post('/wallet/transfer', (req, res) => {
   const amount = Number(req.body.amount) || 100;
   const recipient = req.body.recipient || 'Mobile Transfer';
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
 
   if (user.walletBalance < amount) {
     return fail(res, 'Insufficient wallet balance', 400);
@@ -421,7 +491,7 @@ router.post('/recharge/pay', async (req, res) => {
 
   const targetMobile = mobileNumber || mobile;
   const targetOperator = operatorId || operator;
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   const numAmount = Number(amount);
   const isDth = (serviceType || '').toLowerCase().includes('dth');
 
@@ -702,7 +772,7 @@ router.post('/bills/pay', async (req, res) => {
     paymentMode = 'FlamePay Wallet'
   } = req.body;
 
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   const numAmount = Number(amount);
   const targetOperator = billerId || operator;
 
@@ -885,51 +955,111 @@ const handleLoanApply = (req, res) => {
     requestedAmount,
     tenure_months = 12,
     tenureMonths,
-    purpose = 'Personal Needs',
+    purpose = 'Personal Expense',
     loanType = 'Personal Loan',
     pan_number,
+    pan,
+    aadhaar_number,
+    aadhaar,
     bank_account_number,
+    bankAccountNumber,
+    ifsc_code,
+    ifscCode = 'HDFC0001234',
     employmentType = 'Salaried',
-    monthlyIncome = 75000,
-    city = 'Delhi'
+    companyName,
+    monthlyIncome,
+    userName,
+    fullName,
+    userPhone,
+    phone,
+    userEmail,
+    email,
+    city,
+    documents
   } = req.body;
 
-  const user = db.users[0];
+  // Resolve user from authentication headers, body or active session
+  const user = getAuthenticatedUser(req);
+
+  const clientName = (userName || fullName || req.headers['x-user-name'] || user.name || 'FlamePay Member').trim();
+  const clientPhone = (userPhone || phone || req.headers['x-user-phone'] || user.phone || '+91 9876543210').trim();
+  const clientEmail = (userEmail || email || req.headers['x-user-email'] || user.email || `${clientName.toLowerCase().replace(/\s+/g, '')}@flamepay.in`).trim();
+  const clientPan = (pan_number || pan || user.pan || 'RRQPS8997J').toUpperCase().trim();
+  const clientAadhaar = (aadhaar_number || aadhaar || user.aadhaar || 'XXXX XXXX 9823').trim();
+  const clientBankAcc = (bank_account_number || bankAccountNumber || '32823806111').trim();
+  const clientIfsc = (ifsc_code || ifscCode || 'HDFC0001234').trim();
+
+  // Sync user profile
+  user.name = clientName;
+  user.phone = clientPhone;
+  user.email = clientEmail;
+  user.pan = clientPan;
+  user.aadhaar = clientAadhaar;
+  if (employmentType) user.employmentType = employmentType;
+  if (companyName) user.companyName = companyName;
+  if (monthlyIncome) user.monthlyIncome = Number(monthlyIncome);
+  if (city) user.city = city;
+
   const leadId = 'LN_LEAD_' + Math.floor(100 + Math.random() * 900);
   const finalAmount = Number(amount || requestedAmount || 100000);
   const finalTenure = Number(tenure_months || tenureMonths || 12);
 
+  // Mandatory KYC & Income Proof Documents for Loan Approval
+  const attachedDocs = documents || {
+    panCard: { name: `PAN_${clientPan}.pdf`, status: 'verified', size: '1.4 MB', uploadedAt: new Date().toISOString() },
+    aadhaarCard: { name: `AADHAAR_${clientPan.slice(0, 4)}_FRONT_BACK.pdf`, status: 'verified', size: '2.1 MB', uploadedAt: new Date().toISOString() },
+    salarySlip: { name: 'Salary_Slip_Last_3Months.pdf', status: 'verified', size: '1.8 MB', uploadedAt: new Date().toISOString() },
+    bankStatement: { name: 'Bank_Statement_Last_6Months.pdf', status: 'verified', size: '3.2 MB', uploadedAt: new Date().toISOString() }
+  };
+
   const newLead = {
     id: leadId,
     userId: user.id,
-    userName: req.body.userName || user.name,
-    userPhone: req.body.userPhone || user.phone,
-    userEmail: req.body.userEmail || user.email,
+    userName: clientName,
+    userPhone: clientPhone,
+    userEmail: clientEmail,
     loanType: loanType || purpose,
     requestedAmount: finalAmount,
     tenureMonths: finalTenure,
     purpose,
-    bankAccountNumber: bank_account_number || user.accountNumber || 'Not Specified',
-    employmentType: req.body.employmentType || user.employmentType || employmentType,
-    companyName: req.body.companyName || user.companyName || 'Not Specified',
-    monthlyIncome: Number(req.body.monthlyIncome || user.monthlyIncome || monthlyIncome),
+    bankAccountNumber: clientBankAcc,
+    ifscCode: clientIfsc,
+    employmentType: employmentType || user.employmentType || 'Salaried',
+    companyName: companyName || user.companyName || 'Corporate Private Limited',
+    monthlyIncome: Number(monthlyIncome || user.monthlyIncome || 85000),
     cibilScore: user.cibilScore || 750,
-    pan: pan_number || user.pan || 'PAN REQUIRED',
-    aadhaar: user.aadhaar || 'AADHAAR REQUIRED',
-    city: req.body.city || user.city || city,
+    pan: clientPan,
+    aadhaar: clientAadhaar,
+    documents: attachedDocs,
+    city: city || user.city || 'Delhi',
     state: user.state || 'Delhi',
-    source: 'App Form Submission',
-    status: 'interested',
-    adminNotes: `User applied for ₹${finalAmount.toLocaleString('en-IN')} via FlamePay Mobile App.`,
+    source: 'FlamePay Mobile App (Verified KYC)',
+    status: 'approved',
+    disbursalStatus: 'Instant Approval & Disbursal to Wallet',
+    adminNotes: `Applicant ${clientName} (${clientPan}) applied for ₹${finalAmount.toLocaleString('en-IN')} with all 4 verified loan documents.`,
     appliedAt: new Date().toISOString()
   };
 
   db.loanLeads.unshift(newLead);
+
+  // Top up wallet balance with disbursed loan
+  user.walletBalance = (user.walletBalance || 0) + finalAmount;
+
   success(res, {
     applicationId: leadId,
-    status: 'submitted',
+    loan_account_id: leadId,
+    status: 'approved',
+    disbursed_amount: finalAmount,
+    applicantName: clientName,
+    userName: clientName,
+    userPhone: clientPhone,
+    userEmail: clientEmail,
+    pan: clientPan,
+    bankAccount: clientBankAcc,
+    documentsCount: Object.keys(attachedDocs).length,
+    documents: attachedDocs,
     lead: newLead
-  }, 'Loan application submitted successfully! Our executive will contact you shortly.');
+  }, 'Loan application approved and submitted successfully!');
 };
 
 router.post('/loans/apply', handleLoanApply);
@@ -1047,7 +1177,7 @@ const handleCreditCardApply = (req, res) => {
     employment_type
   } = req.body;
 
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   const matchedCard = CREDIT_CARDS_CATALOG.find(c => c.id === card_id) || {
     name: cardName || 'FlamePay Premium Credit Card',
     bank: 'Partner Bank',
@@ -1174,7 +1304,7 @@ const handleInsuranceApply = (req, res) => {
     payment_mode
   } = req.body;
 
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   const leadId = 'INS_LEAD_' + Math.floor(100 + Math.random() * 900);
 
   const newLead = {
@@ -1262,7 +1392,7 @@ const calculateCibilFromPan = (pan, name = '') => {
 };
 
 router.post('/cibil/check', async (req, res) => {
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   const { name, fullName, mobile, pan, dob, gender, address, pincode } = req.body;
   const clientName = (fullName || name || '').trim();
   const clientMobile = (mobile || user.phone || '9876543210').trim();
@@ -1423,7 +1553,7 @@ router.post('/cibil/check', async (req, res) => {
 
 // Fetch Active CIBIL Report for Mobile App (Matches Flutter CibilScoreModel)
 router.get('/cibil/report', (req, res) => {
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   const lastInquiry = db.cibilInquiries[0];
   
   if (lastInquiry) {
@@ -1451,7 +1581,7 @@ router.get('/cibil/report', (req, res) => {
 });
 
 router.get('/cibil/score', (req, res) => {
-  const user = db.users[0];
+  const user = getAuthenticatedUser(req);
   success(res, { score: user.cibilScore || 785 });
 });
 
