@@ -174,7 +174,7 @@ router.get('/user/kyc-status', (req, res) => {
 });
 
 router.post('/user/kyc-submit', (req, res) => {
-  const { fullName, name, panNumber, pan, aadhaarNumber, aadhaar, dob, address, annualIncome, occupation } = req.body;
+  const { fullName, name, panNumber, pan, aadhaarNumber, aadhaar, dob, address, annualIncome, occupation, documents } = req.body;
   const user = getAuthenticatedUser(req);
 
   const clientName = fullName || name;
@@ -200,6 +200,12 @@ router.post('/user/kyc-submit', (req, res) => {
     annualIncome: annualIncome || 'Above 5 Lakhs',
     occupation: occupation || 'Professional',
     status: 'approved',
+    documents: documents || {
+      aadhaarFront: 'Aadhaar_Front_Verified.jpg',
+      aadhaarBack: 'Aadhaar_Back_Verified.jpg',
+      panCard: 'PAN_Card_Verified.jpg',
+      selfie: 'Live_Selfie_Matched.jpg'
+    },
     submittedAt: new Date().toISOString()
   });
 
