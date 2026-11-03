@@ -1213,13 +1213,105 @@ const calculateCibilFromPan = (pan, name = '') => {
 router.post('/cibil/check', async (req, res) => {
   const user = db.users[0];
   const { name, fullName, mobile, pan, dob, gender, address, pincode } = req.body;
-  const clientName = fullName || name || user.name;
-  const clientMobile = mobile || user.phone;
-  const clientPan = (pan || user.pan || 'ABCDE1234F').toUpperCase().trim();
+  const clientName = (fullName || name || '').trim();
+  const clientMobile = (mobile || user.phone || '9876543210').trim();
+  const clientPan = (pan || '').toUpperCase().trim();
 
+  // 1. Mandatory PAN validation
+  if (!clientPan) {
+    return error(res, 'PAN card number is required', 400);
+  }
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  if (!panRegex.test(clientPan)) {
+    return error(res, 'Invalid PAN format. Must be 10 characters (e.g. ABCDE1234F)', 400);
+  }
+
+  // 2. Mandatory Full Name validation
+  if (!clientName) {
+    return error(res, 'Full name as per PAN card is required', 400);
+  }
+
+  // 3. Indian Income Tax PAN Verification Rules
+  // Character 4: Status of PAN holder ('P' = Individual Personal, 'C' = Company, 'H' = HUF)
+  const panType = clientPan.charAt(3);
+  if (panType !== 'P' && panType !== 'C' && panType !== 'H') {
+    return error(res, 'Only Individual personal PAN cards are eligible for credit health check.', 400);
+  }
+
+  // Character 5: Under Indian Income Tax rules, the 5th character of an individual PAN
+  // MUST match the first letter of the cardholder's surname / last name (or single name).
+  const panFifthChar = clientPan.charAt(4); // e.g. 'S' for Sharma, Sweety, Shivam
+  const nameParts = clientName.split(/\s+/).filter(Boolean);
+  const firstName = nameParts[0].toUpperCase();
+  const lastName = (nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0]).toUpperCase();
+
+  const matchesSurname = lastName.startsWith(panFifthChar);
+  const matchesFirstName = firstName.startsWith(panFifthChar);
+
+  if (!matchesSurname && !matchesFirstName) {
+    return error(
+      res,
+      `Name mismatch! The name "${clientName}" does not match the PAN Card ${clientPan}. According to official Income Tax records, the surname or name must start with letter "${panFifthChar}". Please enter correct PAN or Name.`,
+      400
+    );
+  }
+
+  // 4. Date of Birth Validation
+  if (dob) {
+    let birthDate = null;
+    if (dob.includes('/')) {
+      const parts = dob.split('/');
+      if (parts.length === 3) {
+        // DD/MM/YYYY
+        birthDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      }
+    } else if (dob.includes('-')) {
+      birthDate = new Date(dob);
+    }
+
+    if (!birthDate || isNaN(birthDate.getTime())) {
+      return error(res, 'Invalid Date of Birth format. Please use DD/MM/YYYY format.', 400);
+    }
+
+    const today = new Date();
+    if (birthDate > today) {
+      return error(res, 'Date of Birth cannot be in the future.', 400);
+    }
+    const ageDiff = today.getFullYear() - birthDate.getFullYear();
+    const mDiff = today.getMonth() - birthDate.getMonth();
+    const exactAge = (mDiff < 0 || (mDiff === 0 && today.getDate() < birthDate.getDate())) ? ageDiff - 1 : ageDiff;
+    if (exactAge < 18) {
+      return error(res, 'Applicant must be at least 18 years old to check credit report.', 400);
+    }
+    if (exactAge > 100) {
+      return error(res, 'Invalid Date of Birth. Please check birth year.', 400);
+    }
+  }
+
+  // 5. Way2API Live Verification (if configured)
   let liveCibil = null;
-  if (clientPan && clientPan !== 'PAN REQUIRED' && way2api.isConfigured && way2api.isConfigured()) {
+  if (way2api.isConfigured && way2api.isConfigured()) {
     try {
+      // First verify PAN against Income Tax database
+      if (way2api.verifyPan) {
+        const panVerifyRes = await way2api.verifyPan(clientPan);
+        if (panVerifyRes && panVerifyRes.status === 'failed') {
+          return error(res, `PAN verification failed: ${panVerifyRes.message || 'Invalid PAN number'}`, 400);
+        }
+        if (panVerifyRes && panVerifyRes.data && panVerifyRes.data.full_name) {
+          const officialName = panVerifyRes.data.full_name.toUpperCase();
+          const enteredUpper = clientName.toUpperCase();
+          if (!officialName.includes(firstName) && !officialName.includes(lastName)) {
+            return error(
+              res,
+              `Name mismatch! Income tax records show this PAN belongs to "${officialName}", which does not match "${clientName}".`,
+              400
+            );
+          }
+        }
+      }
+
+      // Fetch Live Credit Report from bureau
       const resp = await way2api.fetchCibilReport({
         name: clientName,
         mobile: clientMobile,
