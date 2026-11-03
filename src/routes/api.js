@@ -1463,8 +1463,15 @@ router.get('/cibil/factors', (req, res) => {
 });
 
 // --- OFFERS, NOTIFICATIONS & HISTORY ---
-router.get('/offers/list', (req, res) => success(res, db.offers));
-router.get('/notifications/list', (req, res) => success(res, db.notifications));
-router.get('/transactions/history', (req, res) => success(res, db.transactions));
+router.get('/offers/list', (req, res) => {
+  const { category } = req.query;
+  let list = db.offers || [];
+  if (category && category !== 'All') {
+    list = list.filter(o => o.category && o.category.toLowerCase() === category.toLowerCase());
+  }
+  success(res, list);
+});
+router.get('/notifications/list', (req, res) => success(res, db.notifications || []));
+router.get('/transactions/history', (req, res) => success(res, db.transactions || []));
 
 module.exports = router;

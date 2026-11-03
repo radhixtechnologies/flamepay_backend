@@ -507,6 +507,66 @@ class Database {
       { id: 'broadband', title: 'Broadband', icon: 'wifi', count: 40 },
       { id: 'dth', title: 'DTH Recharges', icon: 'tv', count: 6 }
     ];
+
+    this.offers = [
+      {
+        id: 'OFFER_1',
+        title: 'Flat ₹50 Cashback',
+        description: 'On first Electricity bill payment above ₹500',
+        code: 'POW50',
+        discount: '₹50 OFF',
+        category: 'Electricity',
+        bannerColor: '0xFF1E88E5'
+      },
+      {
+        id: 'OFFER_2',
+        title: 'Get 10% Cashback',
+        description: 'On Jio and Airtel recharge above ₹299',
+        code: 'FLAME10',
+        discount: '10% OFF',
+        category: 'Recharge',
+        bannerColor: '0xFFFF6F00'
+      },
+      {
+        id: 'OFFER_3',
+        title: 'Zero Fee Credit Card',
+        description: 'Lifetime free cards with 5% shopping cashback',
+        code: 'FREECC',
+        discount: 'Free Lifetime',
+        category: 'Cards',
+        bannerColor: '0xFF43A047'
+      },
+      {
+        id: 'OFFER_4',
+        title: 'Flat ₹25 Off DTH',
+        description: 'On Tata Play, Airtel DTH and Dish TV recharge',
+        code: 'DTH25',
+        discount: '₹25 OFF',
+        category: 'DTH',
+        bannerColor: '0xFF8E24AA'
+      }
+    ];
+
+    this.notifications = [
+      {
+        id: 'NOTIF_1',
+        title: 'Welcome to FlamePay!',
+        message: 'Your account has been successfully verified. Enjoy lightning-fast payments!',
+        timestamp: new Date().toISOString(),
+        isRead: false,
+        category: 'security',
+        actionRoute: '/profile'
+      },
+      {
+        id: 'NOTIF_2',
+        title: 'Cashback Credited',
+        message: '₹10 cashback added to your wallet for recent recharge.',
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        isRead: false,
+        category: 'transaction',
+        actionRoute: '/wallet'
+      }
+    ];
   }
 
   getUser(idOrPhone) {
