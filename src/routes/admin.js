@@ -72,6 +72,31 @@ router.post('/loans/:id/status', (req, res) => {
   if (status) lead.status = status;
   if (adminNotes) lead.adminNotes = adminNotes;
 
+  // Real Disbursal trigger when Admin approves or disburses!
+  if (status === 'disbursed' || status === 'approved') {
+    lead.disbursalStatus = status === 'disbursed' ? 'Funds Disbursed to Bank Account / Wallet' : 'Sanctioned & Approved by Admin';
+    const user = db.users.find(u => u.id === lead.userId) || db.getUser(lead.userPhone) || db.users.find(u => u.name === lead.userName);
+    if (user && !lead.alreadyDisbursed) {
+      user.walletBalance = (user.walletBalance || 0) + (lead.requestedAmount || 0);
+      lead.alreadyDisbursed = true;
+      db.transactions.unshift({
+        id: 'TXN_LN_' + Date.now().toString().slice(-6),
+        userId: user.id,
+        userName: user.name,
+        title: `Loan Sanction - ${lead.loanType || 'Personal Loan'}`,
+        subtitle: `Admin approved Loan #${lead.id} • Disbursed to Wallet`,
+        amount: lead.requestedAmount,
+        type: 'credit',
+        status: 'success',
+        timestamp: new Date().toISOString()
+      });
+    }
+  } else if (status === 'rejected') {
+    lead.disbursalStatus = 'Application Rejected by Admin';
+  } else {
+    lead.disbursalStatus = 'Under Review by Admin';
+  }
+
   res.json({ success: true, message: `Loan lead status updated to ${lead.status}`, data: lead });
 });
 

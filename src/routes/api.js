@@ -1034,22 +1034,19 @@ const handleLoanApply = (req, res) => {
     city: city || user.city || 'Delhi',
     state: user.state || 'Delhi',
     source: 'FlamePay Mobile App (Verified KYC)',
-    status: 'approved',
-    disbursalStatus: 'Instant Approval & Disbursal to Wallet',
-    adminNotes: `Applicant ${clientName} (${clientPan}) applied for ₹${finalAmount.toLocaleString('en-IN')} with all 4 verified loan documents.`,
+    status: 'in_review',
+    disbursalStatus: 'Pending Admin Verification & Sanction',
+    adminNotes: `Applicant ${clientName} (${clientPan}) applied for ₹${finalAmount.toLocaleString('en-IN')}. Pending Admin Sanction.`,
     appliedAt: new Date().toISOString()
   };
 
   db.loanLeads.unshift(newLead);
 
-  // Top up wallet balance with disbursed loan
-  user.walletBalance = (user.walletBalance || 0) + finalAmount;
-
   success(res, {
     applicationId: leadId,
     loan_account_id: leadId,
-    status: 'approved',
-    disbursed_amount: finalAmount,
+    status: 'in_review',
+    requestedAmount: finalAmount,
     applicantName: clientName,
     userName: clientName,
     userPhone: clientPhone,
@@ -1058,16 +1055,23 @@ const handleLoanApply = (req, res) => {
     bankAccount: clientBankAcc,
     documentsCount: Object.keys(attachedDocs).length,
     documents: attachedDocs,
+    disbursalStatus: 'Pending Admin Verification & Sanction',
     lead: newLead
-  }, 'Loan application approved and submitted successfully!');
+  }, 'Loan application submitted successfully! It is under review by Admin. Once sanctioned by Admin, funds will be disbursed to your account.');
 };
 
 router.post('/loans/apply', handleLoanApply);
 router.post('/loan/apply', handleLoanApply);
 
-// GET /loans/history
+// GET /loans/history (Filtered by authenticated user)
 router.get('/loans/history', (req, res) => {
-  success(res, db.loanLeads);
+  const user = getAuthenticatedUser(req);
+  const userLeads = db.loanLeads.filter(l => 
+    (l.userId && l.userId === user.id) ||
+    (l.userPhone && user.phone && (l.userPhone.includes(user.phone) || user.phone.includes(l.userPhone))) ||
+    (l.userName && user.name && l.userName.toLowerCase() === user.name.toLowerCase())
+  );
+  success(res, userLeads.length > 0 ? userLeads : db.loanLeads, 'Loan applications retrieved');
 });
 
 
