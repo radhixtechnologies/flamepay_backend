@@ -15,7 +15,21 @@ const getAuthenticatedUser = (req) => {
   const hPhone = req.headers['x-user-phone'] || req.body?.userPhone || req.body?.phone;
   const hEmail = req.headers['x-user-email'] || req.body?.userEmail || req.body?.email;
 
-  // 1. Match by ID
+  // 1. Match by Authorization Bearer Token
+  const auth = req.headers.authorization || req.headers['Authorization'] || '';
+  if (auth.startsWith('Bearer ')) {
+    const token = auth.slice(7).trim();
+    for (const u of db.users) {
+      if ((u.token && u.token === token) || (u.id && token.includes(u.id))) {
+        if (hName && (!u.name || u.name === 'New FlamePay User' || u.name === 'FlamePay User')) u.name = hName;
+        if (hPhone && !u.phone) u.phone = hPhone;
+        if (hEmail && (!u.email || u.email.includes('example.com'))) u.email = hEmail;
+        return u;
+      }
+    }
+  }
+
+  // 2. Match by ID
   if (hId) {
     let u = db.users.find(x => x.id === hId);
     if (u) {
@@ -26,7 +40,7 @@ const getAuthenticatedUser = (req) => {
     }
   }
 
-  // 2. Match by Phone
+  // 3. Match by Phone
   if (hPhone) {
     let u = db.getUser(hPhone);
     if (u) {
@@ -36,21 +50,10 @@ const getAuthenticatedUser = (req) => {
     }
   }
 
-  // 3. Match by Name (case-insensitive)
+  // 4. Match by Name (case-insensitive)
   if (hName && hName !== 'Rahul Sharma') {
     let u = db.users.find(x => x.name && x.name.toLowerCase() === hName.toLowerCase());
     if (u) return u;
-  }
-
-  // 4. Match by Authorization Bearer Token
-  const auth = req.headers.authorization || req.headers['Authorization'] || '';
-  if (auth.startsWith('Bearer ')) {
-    const token = auth.slice(7).trim();
-    for (const u of db.users) {
-      if ((u.token && u.token === token) || (u.id && token.includes(u.id))) {
-        return u;
-      }
-    }
   }
 
   // 5. Create or activate authenticated user if client supplied custom identity
@@ -58,15 +61,15 @@ const getAuthenticatedUser = (req) => {
     const newUser = {
       id: hId || ('FP_USER_' + Date.now().toString().slice(-4)),
       name: hName,
-      phone: hPhone || '+91 9876543210',
+      phone: hPhone || '',
       email: hEmail || `${hName.toLowerCase().replace(/\s+/g, '')}@flamepay.in`,
-      isVip: true,
-      kycStatus: 'verified',
-      walletBalance: 2580.00,
+      isVip: false,
+      kycStatus: 'pending',
+      walletBalance: 0.0,
       cibilScore: 750,
-      pan: req.body?.pan_number || req.body?.pan || 'RRQPS8997J',
-      aadhaar: req.body?.aadhaar_number || req.body?.aadhaar || 'XXXX XXXX 9823',
-      monthlyLimit: 200000.00,
+      pan: req.body?.pan_number || req.body?.pan || null,
+      aadhaar: req.body?.aadhaar_number || req.body?.aadhaar || null,
+      monthlyLimit: 50000.00,
       spentThisMonth: 0.0,
       createdAt: new Date().toISOString(),
       status: 'active'
@@ -75,7 +78,26 @@ const getAuthenticatedUser = (req) => {
     return newUser;
   }
 
-  return db.currentUser || db.users[0];
+  // If active user is set in current session, use it
+  if (db.currentUser) return db.currentUser;
+
+  // Otherwise, if this is a request from an unauthenticated caller or bearer token not in memory, return guest/fresh user
+  return {
+    id: 'FP_USER_GUEST_' + Date.now().toString().slice(-4),
+    name: 'FlamePay User',
+    phone: '',
+    email: '',
+    isVip: false,
+    kycStatus: 'pending',
+    walletBalance: 0.0,
+    cibilScore: 750,
+    monthlyLimit: 50000.00,
+    spentThisMonth: 0.0,
+    pan: null,
+    aadhaar: null,
+    createdAt: new Date().toISOString(),
+    status: 'active'
+  };
 };
 
 // --- AUTH ---
@@ -97,22 +119,29 @@ router.post('/auth/verify-otp', (req, res) => {
       id: 'FP_USER_' + Date.now().toString().slice(-4),
       name: 'New FlamePay User',
       phone: phone.startsWith('+91') ? phone : '+91 ' + phone,
-      email: 'user@flamepay.com',
+      email: '',
       isVip: false,
       kycStatus: 'pending',
       walletBalance: 0.0,
       cibilScore: 750,
       monthlyLimit: 50000.00,
       spentThisMonth: 0.0,
+      pan: null,
+      aadhaar: null,
       createdAt: new Date().toISOString(),
       status: 'active'
     };
     db.users.push(user);
   }
 
+  const token = `jwt_flamepay_token_${user.id}_${Date.now()}`;
+  const refreshToken = `jwt_flamepay_refresh_${user.id}_${Date.now()}`;
+  user.token = token;
+  db.currentUser = user;
+
   success(res, {
-    token: 'jwt_flamepay_token_' + Date.now(),
-    refreshToken: 'jwt_flamepay_refresh_' + Date.now(),
+    token,
+    refreshToken,
     isNewUser,
     user
   }, 'OTP verified successfully');
@@ -125,14 +154,16 @@ router.post('/auth/register', (req, res) => {
     user = {
       id: 'FP_USER_' + Date.now().toString().slice(-4),
       name: name || 'FlamePay User',
-      phone: phone ? (phone.startsWith('+91') ? phone : '+91 ' + phone) : '+91 9876543210',
-      email: email || 'user@flamepay.com',
+      phone: phone ? (phone.startsWith('+91') ? phone : '+91 ' + phone) : '',
+      email: email || '',
       isVip: false,
       kycStatus: 'pending',
       walletBalance: 0.0,
       cibilScore: 750,
       monthlyLimit: 50000.00,
       spentThisMonth: 0.0,
+      pan: null,
+      aadhaar: null,
       createdAt: new Date().toISOString(),
       status: 'active'
     };
@@ -140,11 +171,17 @@ router.post('/auth/register', (req, res) => {
   } else {
     if (name) user.name = name;
     if (email) user.email = email;
+    if (phone) user.phone = phone.startsWith('+91') ? phone : '+91 ' + phone;
   }
 
+  const token = `jwt_flamepay_token_${user.id}_${Date.now()}`;
+  const refreshToken = `jwt_flamepay_refresh_${user.id}_${Date.now()}`;
+  user.token = token;
+  db.currentUser = user;
+
   success(res, {
-    token: 'jwt_flamepay_token_' + Date.now(),
-    refreshToken: 'jwt_flamepay_refresh_' + Date.now(),
+    token,
+    refreshToken,
     user
   }, 'Registration successful');
 });
@@ -289,8 +326,26 @@ router.post('/wallet/set-balance', (req, res) => {
   success(res, { balance: user.walletBalance }, `Wallet balance updated to ₹${user.walletBalance}`);
 });
 
+// Helper: Filter ledger transactions for authenticated user
+const getUserTransactions = (user) => {
+  if (!user) return [];
+  const uId = user.id;
+  const userPhoneClean = (user.phone || '').replace(/[^0-9]/g, '');
+  return (db.transactions || []).filter(t => {
+    if (t.userId && t.userId === uId) return true;
+    if (t.mobile && userPhoneClean.length >= 10) {
+      const tMobileClean = t.mobile.replace(/[^0-9]/g, '');
+      if (tMobileClean.length >= 10) {
+        return tMobileClean.endsWith(userPhoneClean.slice(-10)) || userPhoneClean.endsWith(tMobileClean.slice(-10));
+      }
+    }
+    return false;
+  });
+};
+
 router.get('/wallet/transactions', (req, res) => {
-  success(res, db.transactions);
+  const user = getAuthenticatedUser(req);
+  success(res, getUserTransactions(user));
 });
 
 router.post('/wallet/add-money', (req, res) => {
@@ -992,20 +1047,32 @@ const handleLoanApply = (req, res) => {
   // Resolve user from authentication headers, body or active session
   const user = getAuthenticatedUser(req);
 
-  const clientName = (userName || fullName || req.headers['x-user-name'] || user.name || 'FlamePay Member').trim();
-  const clientPhone = (userPhone || phone || req.headers['x-user-phone'] || user.phone || '+91 9876543210').trim();
-  const clientEmail = (userEmail || email || req.headers['x-user-email'] || user.email || `${clientName.toLowerCase().replace(/\s+/g, '')}@flamepay.in`).trim();
-  const clientPan = (pan_number || pan || user.pan || 'RRQPS8997J').toUpperCase().trim();
-  const clientAadhaar = (aadhaar_number || aadhaar || user.aadhaar || 'XXXX XXXX 9823').trim();
-  const clientBankAcc = (bank_account_number || bankAccountNumber || '32823806111').trim();
-  const clientIfsc = (ifsc_code || ifscCode || 'HDFC0001234').trim();
+  const clientName = (userName || fullName || req.headers['x-user-name'] || user.name || 'FlamePay User').trim();
+  const clientPhone = (userPhone || phone || req.headers['x-user-phone'] || user.phone || '').trim();
+  const clientEmail = (userEmail || email || req.headers['x-user-email'] || user.email || '').trim();
+  const clientPan = (pan_number || pan || user.pan || '').toUpperCase().trim();
+  const clientAadhaar = (aadhaar_number || aadhaar || user.aadhaar || '').trim();
+  const clientBankAcc = (bank_account_number || bankAccountNumber || '').trim();
+  const clientIfsc = (ifsc_code || ifscCode || '').trim();
+
+  // Validate mandatory fields
+  if (!clientPan) {
+    return fail(res, 'PAN card number is required for loan application', 400);
+  }
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  if (!panRegex.test(clientPan)) {
+    return fail(res, 'Invalid PAN format. Must be 10 characters (e.g. ABCDE1234F)', 400);
+  }
+  if (!clientBankAcc || clientBankAcc.length < 8) {
+    return fail(res, 'Valid Bank Account Number is required for loan disbursal', 400);
+  }
 
   // Sync user profile
   user.name = clientName;
-  user.phone = clientPhone;
-  user.email = clientEmail;
+  if (clientPhone) user.phone = clientPhone;
+  if (clientEmail) user.email = clientEmail;
   user.pan = clientPan;
-  user.aadhaar = clientAadhaar;
+  if (clientAadhaar) user.aadhaar = clientAadhaar;
   if (employmentType) user.employmentType = employmentType;
   if (companyName) user.companyName = companyName;
   if (monthlyIncome) user.monthlyIncome = Number(monthlyIncome);
@@ -1018,7 +1085,7 @@ const handleLoanApply = (req, res) => {
   // Mandatory KYC & Income Proof Documents for Loan Approval
   const attachedDocs = documents || {
     panCard: { name: `PAN_${clientPan}.pdf`, status: 'verified', size: '1.4 MB', uploadedAt: new Date().toISOString() },
-    aadhaarCard: { name: `AADHAAR_${clientPan.slice(0, 4)}_FRONT_BACK.pdf`, status: 'verified', size: '2.1 MB', uploadedAt: new Date().toISOString() },
+    aadhaarCard: { name: `AADHAAR_FRONT_BACK.pdf`, status: 'verified', size: '2.1 MB', uploadedAt: new Date().toISOString() },
     salarySlip: { name: 'Salary_Slip_Last_3Months.pdf', status: 'verified', size: '1.8 MB', uploadedAt: new Date().toISOString() },
     bankStatement: { name: 'Bank_Statement_Last_6Months.pdf', status: 'verified', size: '3.2 MB', uploadedAt: new Date().toISOString() }
   };
@@ -1617,6 +1684,18 @@ router.get('/offers/list', (req, res) => {
   success(res, list);
 });
 router.get('/notifications/list', (req, res) => success(res, db.notifications || []));
-router.get('/transactions/history', (req, res) => success(res, db.transactions || []));
+router.get('/transactions/history', (req, res) => {
+  const user = getAuthenticatedUser(req);
+  const { category, query } = req.query;
+  let txns = getUserTransactions(user);
+  if (category && category !== 'All') {
+    txns = txns.filter(t => (t.category || '').toLowerCase() === category.toLowerCase());
+  }
+  if (query && query.trim()) {
+    const q = query.trim().toLowerCase();
+    txns = txns.filter(t => (t.title || '').toLowerCase().includes(q) || (t.subtitle || '').toLowerCase().includes(q));
+  }
+  success(res, txns);
+});
 
 module.exports = router;
