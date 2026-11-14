@@ -144,6 +144,8 @@ const verifyPan = async (pan) => {
 
 /**
  * Fetch CIBIL / Experian Credit Report
+ * Live Way2API TransUnion CIBIL integration:
+ * Requires pan, mobile, name, gender ('male'/'female'), and consent ('Y')
  */
 const fetchCibilReport = async ({ name, mobile, pan, dob, gender, address, pincode }) => {
   const cleanMobile = String(mobile || '9876543210').replace(/[^0-9]/g, '').slice(-10);
@@ -153,44 +155,61 @@ const fetchCibilReport = async ({ name, mobile, pan, dob, gender, address, pinco
   const firstName = parts[0] || 'Customer';
   const lastName = parts.length > 1 ? parts.slice(1).join(' ') : 'Kumar';
 
-  let formattedDob = dob || '1995-01-01';
-  if (formattedDob.includes('/')) {
-    const p = formattedDob.split('/');
-    if (p.length === 3) {
-      formattedDob = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-    }
-  }
+  const cleanGender = (gender && String(gender).toLowerCase() === 'female') ? 'female' : 'male';
 
   const payload = {
     pan: cleanPan,
-    pan_number: cleanPan,
     mobile: cleanMobile,
-    mobile_number: cleanMobile,
     name: name || `${firstName} ${lastName}`,
-    first_name: firstName,
-    last_name: lastName,
-    dob: formattedDob,
-    date_of_birth: formattedDob,
+    gender: cleanGender,
+    consent: 'Y',
   };
-  if (gender) payload.gender = gender;
+
+  if (dob) {
+    let formattedDob = dob;
+    if (formattedDob.includes('/')) {
+      const p = formattedDob.split('/');
+      if (p.length === 3) {
+        formattedDob = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+      }
+    }
+    payload.dob = formattedDob;
+  }
   if (address) payload.address = address;
   if (pincode) payload.pincode = pincode;
 
-  // 1. Try CIBIL Report
-  console.log('[Way2API] Fetching CIBIL for PAN:', cleanPan);
+  // 1. Try Live CIBIL Report (Way2API POST /api/v1/credit-report-cibil/fetch-report)
+  console.log('[Way2API] Fetching CIBIL for PAN:', cleanPan, 'Payload:', JSON.stringify(payload));
   let res = await post('/credit-report-cibil/fetch-report', payload);
-  if (res && (res.status === 'success' || res.success) && res.data) {
+  if (res && (String(res.status).toUpperCase() === 'SUCCESS' || res.success) && res.data) {
     return res;
   }
 
   // 2. Fallback to Experian Report (also active in user dashboard)
   console.log('[Way2API] Trying Experian fallback for PAN:', cleanPan);
   const expRes = await post('/credit-report-experian/fetch-report', payload);
-  if (expRes && (expRes.status === 'success' || expRes.success) && expRes.data) {
+  if (expRes && (String(expRes.status).toUpperCase() === 'SUCCESS' || expRes.success) && expRes.data) {
     return expRes;
   }
 
   return res || expRes || { success: false };
+};
+
+/**
+ * Fetch CIBIL Credit Report PDF
+ */
+const fetchCibilPdfReport = async ({ name, mobile, pan, gender }) => {
+  const cleanMobile = String(mobile || '9876543210').replace(/[^0-9]/g, '').slice(-10);
+  const cleanPan = (pan || '').toUpperCase().trim();
+  const cleanGender = (gender && String(gender).toLowerCase() === 'female') ? 'female' : 'male';
+
+  return await post('/credit-report-cibil/fetch-report-pdf', {
+    pan: cleanPan,
+    mobile: cleanMobile,
+    name: name || 'Customer',
+    gender: cleanGender,
+    consent: 'Y'
+  });
 };
 
 module.exports = {
@@ -203,4 +222,5 @@ module.exports = {
   getDthInfo,
   getDthPlans,
   fetchCibilReport,
+  fetchCibilPdfReport,
 };

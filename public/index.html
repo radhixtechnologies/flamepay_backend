@@ -3,726 +3,841 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlamePay — Enterprise Admin Portal & Lead Engine</title>
+  <title>FlamePay — One App, Many Possibilities | Official Website</title>
+  
+  <!-- Meta SEO -->
+  <meta name="description" content="FlamePay is India's premier financial super-app. Recharge mobile & DTH, pay utility bills, check free CIBIL score, buy insurance, and apply for instant loans and credit cards. Fast, Secure, Simple.">
+  <meta name="keywords" content="FlamePay, mobile recharge, bill payment, CIBIL score, instant loans, credit card, insurance, UPI wallet, India fintech">
+  <meta name="author" content="FlamePay">
+  <meta property="og:title" content="FlamePay — One App, Many Possibilities">
+  <meta property="og:description" content="Recharge, Pay Bills, Buy Insurance, Check CIBIL, Apply for Credit Card, and Loans — Fast, Secure, Simple. Anytime, Anywhere.">
+  <meta property="og:image" content="/assets/flamepay_icon.png">
+  <meta property="og:url" content="https://flamepay.in/">
+
+  <!-- Favicon -->
   <link rel="icon" type="image/png" href="/assets/flamepay_icon.png">
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/css/landing.css">
 </head>
 <body>
 
-  <!-- LOGIN SCREEN (If not authenticated) -->
-  <div id="login-modal" class="auth-wrapper" style="display: none;">
-    <div class="auth-card">
-      <div class="brand-header">
-        <img src="/assets/flamepay_icon.png" alt="FlamePay Logo" class="brand-logo">
-        <h2>FlamePay Admin</h2>
-        <p>Enterprise Operations & Financial Leads Engine</p>
-      </div>
-      <form id="login-form">
-        <div class="form-group">
-          <label>Username</label>
-          <div class="input-icon">
-            <i class="fa-solid fa-user"></i>
-            <input type="text" id="login-username" value="admin" required placeholder="Enter admin username">
+  <!-- ========================================================================
+       TOP NAVIGATION BAR
+       ======================================================================== -->
+  <header class="site-header">
+    <div class="container">
+      <nav class="navbar">
+        <!-- Brand Logo -->
+        <a href="/" class="brand-logo-container">
+          <div class="brand-flame-icon">
+            <i class="fa-solid fa-fire-flame-curved"></i>
           </div>
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <div class="input-icon">
-            <i class="fa-solid fa-lock"></i>
-            <input type="password" id="login-password" value="password123" required placeholder="Enter password">
+          <div class="brand-text-wrap">
+            <span class="brand-name">Flame<span>Pay</span></span>
+            <span class="brand-tagline">FAST • SECURE • SIMPLE</span>
           </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <ul class="nav-links">
+          <li><a href="#home" class="nav-link active">Home</a></li>
+          <li><a href="#services" class="nav-link">Services</a></li>
+          <li><a href="#why-us" class="nav-link">Why Us</a></li>
+          <li><a href="#offers" class="nav-link">Offers</a></li>
+          <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+
+        <!-- Right Action Button -->
+        <div class="nav-actions">
+          <button class="btn btn-primary trigger-download" data-service="FlamePay App">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+            <span>Download App</span>
+          </button>
         </div>
-        <button type="submit" class="btn btn-primary btn-block">
-          <span>Sign In to Dashboard</span>
-          <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </form>
-      <div class="demo-badge">Default credentials: <b>admin / password123</b></div>
-    </div>
-  </div>
 
-  <!-- MAIN ADMIN APP -->
-  <div id="admin-app" class="dashboard-layout">
-    
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <img src="/assets/flamepay_icon.png" alt="FlamePay Logo">
-        <div>
-          <span class="brand-name">Flame<span>Pay</span></span>
-          <span class="portal-badge">ADMIN</span>
-        </div>
-      </div>
-
-      <nav class="nav-menu">
-        <div class="nav-section-title">CORE OPERATIONS</div>
-        <button class="nav-item active" data-tab="overview">
-          <i class="fa-solid fa-chart-pie"></i>
-          <span>Overview</span>
-        </button>
-        <button class="nav-item" data-tab="loans">
-          <i class="fa-solid fa-sack-dollar"></i>
-          <span>Loan Leads</span>
-          <span class="badge badge-primary" id="loans-badge">0</span>
-        </button>
-        <button class="nav-item" data-tab="credit-cards">
-          <i class="fa-solid fa-credit-card"></i>
-          <span>Credit Cards</span>
-          <span class="badge badge-info" id="cards-badge">0</span>
-        </button>
-        <button class="nav-item" data-tab="insurance">
-          <i class="fa-solid fa-shield-halved"></i>
-          <span>Buy Insurance</span>
-          <span class="badge badge-purple" id="insurance-badge">0</span>
-        </button>
-        <button class="nav-item" data-tab="cibil">
-          <i class="fa-solid fa-gauge-high"></i>
-          <span>CIBIL Reports</span>
-        </button>
-
-        <div class="nav-section-title">PAYMENTS & UTILITIES</div>
-        <button class="nav-item" data-tab="topups">
-          <i class="fa-solid fa-building-columns"></i>
-          <span>Top-Up Requests</span>
-          <span class="badge badge-warning" id="topups-badge">0</span>
-        </button>
-        <button class="nav-item" data-tab="recharges">
-          <i class="fa-solid fa-bolt"></i>
-          <span>Recharges & Bills</span>
-        </button>
-        <button class="nav-item" data-tab="transactions">
-          <i class="fa-solid fa-receipt"></i>
-          <span>Live Transactions</span>
-        </button>
-
-        <div class="nav-section-title">USERS & COMPLIANCE</div>
-        <button class="nav-item" data-tab="users">
-          <i class="fa-solid fa-users"></i>
-          <span>Users & Wallets</span>
-        </button>
-        <button class="nav-item" data-tab="kyc">
-          <i class="fa-solid fa-id-card"></i>
-          <span>KYC Verifications</span>
-          <span class="badge badge-warning" id="kyc-badge">0</span>
-        </button>
-        <button class="nav-item" data-tab="apis">
-          <i class="fa-solid fa-code"></i>
-          <span>API Directory</span>
+        <!-- Mobile Menu Toggle Button -->
+        <button class="mobile-toggle-btn" id="mobile-toggle" aria-label="Toggle Navigation">
+          <i class="fa-solid fa-bars-staggered"></i>
         </button>
       </nav>
+    </div>
+  </header>
 
-      <div class="sidebar-footer">
-        <div class="admin-profile">
-          <div class="avatar">SA</div>
-          <div class="info">
-            <div class="name">Super Admin</div>
-            <div class="role">Root Authority</div>
+  <!-- ========================================================================
+       HERO SECTION: One App Many Possibilities
+       ======================================================================== -->
+  <section class="hero-section" id="home">
+    <div class="container">
+      <div class="hero-grid">
+        <!-- Left Hero Content -->
+        <div class="hero-content">
+          <div class="section-pill">
+            <i class="fa-solid fa-sparkles"></i>
+            <span>All Your Financial Needs</span>
+          </div>
+
+          <h1 class="hero-title">
+            <span class="text-orange">One App</span><br>
+            Many Possibilities
+          </h1>
+
+          <p class="hero-subtitle">
+            Recharge, Pay Bills, Buy Insurance, Check CIBIL, Apply for Credit Card, and Loans — Fast, Secure, Simple. Anytime, Anywhere.
+          </p>
+
+          <!-- 6 Quick Service Pills -->
+          <div class="quick-services-bar">
+            <div class="quick-service-pill trigger-download" data-service="Mobile Recharge">
+              <div class="qs-icon qs-blue">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+              </div>
+              <span>Mobile<br>Recharge</span>
+            </div>
+
+            <div class="quick-service-pill trigger-download" data-service="Bill Payment">
+              <div class="qs-icon qs-orange">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+              </div>
+              <span>Bill<br>Payment</span>
+            </div>
+
+            <div class="quick-service-pill trigger-download" data-service="Insurance">
+              <div class="qs-icon qs-teal">
+                <i class="fa-solid fa-shield-heart"></i>
+              </div>
+              <span>Buy<br>Insurance</span>
+            </div>
+
+            <div class="quick-service-pill trigger-download" data-service="CIBIL Score">
+              <div class="qs-icon qs-purple">
+                <i class="fa-solid fa-gauge-high"></i>
+              </div>
+              <span>CIBIL<br>Score</span>
+            </div>
+
+            <div class="quick-service-pill trigger-download" data-service="Credit Card">
+              <div class="qs-icon qs-red">
+                <i class="fa-solid fa-credit-card"></i>
+              </div>
+              <span>Credit<br>Card</span>
+            </div>
+
+            <div class="quick-service-pill trigger-download" data-service="Loans">
+              <div class="qs-icon qs-amber">
+                <i class="fa-solid fa-sack-dollar"></i>
+              </div>
+              <span>Loan<br>Apply</span>
+            </div>
+          </div>
+
+          <!-- App Store Download Buttons -->
+          <div class="hero-store-buttons">
+            <a href="https://play.google.com/store/apps" target="_blank" class="app-store-badge trigger-download">
+              <i class="fa-brands fa-google-play" style="color: #00E676;"></i>
+              <div class="store-text">
+                <span>GET IT ON</span>
+                <strong>Google Play</strong>
+              </div>
+            </a>
+
+            <a href="https://www.apple.com/app-store/" target="_blank" class="app-store-badge trigger-download">
+              <i class="fa-brands fa-apple"></i>
+              <div class="store-text">
+                <span>Download on the</span>
+                <strong>App Store</strong>
+              </div>
+            </a>
           </div>
         </div>
-        <button class="logout-btn" id="logout-btn" title="Sign Out">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
-        </button>
+
+        <!-- Right Hero Visual (App Screen & Mascot) -->
+        <div class="hero-visual">
+          <div class="hero-phone-wrap">
+            <div class="phone-mockup">
+              <div class="phone-notch"></div>
+              <div class="phone-screen">
+                <div class="phone-app-content">
+                  <!-- In-App Header -->
+                  <div class="phone-app-header">
+                    <div class="top-bar">
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-fire text-orange"></i>
+                        <strong>FlamePay</strong>
+                      </div>
+                      <i class="fa-regular fa-bell"></i>
+                    </div>
+                    <div class="phone-wallet-card">
+                      <span>FlamePay Wallet Balance</span>
+                      <h4>₹ 12,450.00</h4>
+                    </div>
+                  </div>
+
+                  <!-- In-App Quick Services Grid -->
+                  <div class="phone-grid-services">
+                    <div class="phone-service-tile">
+                      <i class="fa-solid fa-bolt" style="color: #1E88E5;"></i>
+                      <span>Electricity</span>
+                    </div>
+                    <div class="phone-service-tile">
+                      <i class="fa-solid fa-mobile-screen" style="color: #FF5722;"></i>
+                      <span>Recharge</span>
+                    </div>
+                    <div class="phone-service-tile">
+                      <i class="fa-solid fa-tv" style="color: #8E24AA;"></i>
+                      <span>DTH</span>
+                    </div>
+                    <div class="phone-service-tile">
+                      <i class="fa-solid fa-shield-halved" style="color: #00897B;"></i>
+                      <span>Insurance</span>
+                    </div>
+                    <div class="phone-service-tile">
+                      <i class="fa-solid fa-gauge-high" style="color: #E53935;"></i>
+                      <span>CIBIL 780</span>
+                    </div>
+                    <div class="phone-service-tile">
+                      <i class="fa-solid fa-hand-holding-dollar" style="color: #F57C00;"></i>
+                      <span>Fast Loan</span>
+                    </div>
+                  </div>
+
+                  <!-- In-App Promo Banner -->
+                  <div class="phone-bottom-promo">
+                    <div>
+                      <strong>Flat ₹50 Cashback</strong>
+                      <div style="font-size: 8.5px; opacity: 0.9;">On your first utility bill</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating Decorative Badge -->
+          <div class="floating-badge floating-badge-top">
+            <div class="fb-icon">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+              <span>Smart Payments</span>
+              <div style="font-size: 10px; color: #64748B;">Brighter Tomorrow</div>
+            </div>
+          </div>
+        </div>
       </div>
-    </aside>
+    </div>
+  </section>
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-      
-      <!-- TOPBAR -->
-      <header class="topbar">
-        <div class="page-title-group">
-          <h1 id="page-title">Operations & Leads Overview</h1>
-          <p id="page-desc">Real-time metrics, financial product leads, and user verifications</p>
-        </div>
-        <div class="topbar-actions">
-          <div class="status-indicator">
-            <span class="pulse-dot"></span>
-            <span id="api-status-badge">API Engine: <b>Live</b></span>
-          </div>
-          <button id="cyrus-sandbox-btn" class="btn btn-warning btn-sm" onclick="toggleCyrusTestMode()" title="Toggle Sandbox Simulation to test recharges without deducting real ₹67.67 Cyrus wallet">
-            <i class="fa-solid fa-flask"></i> <span id="cyrus-sandbox-text">Sandbox: Active (Free Testing)</span>
-          </button>
-          <button class="btn btn-primary btn-sm" onclick="simulateUserLoanTap()">
-            <i class="fa-solid fa-plus-circle"></i>
-            <span>Simulate User Loan Tap</span>
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="refreshCurrentTab()">
-            <i class="fa-solid fa-rotate"></i>
-            <span>Refresh</span>
-          </button>
-        </div>
-      </header>
-
-      <!-- TAB 1: OVERVIEW -->
-      <section id="tab-overview" class="tab-pane active">
-        <!-- STAT CARDS -->
-        <div class="stats-grid">
-          <div class="stat-card stat-accent-gold">
-            <div class="stat-icon icon-gold"><i class="fa-solid fa-sack-dollar"></i></div>
-            <div class="stat-details">
-              <span class="stat-label">Loan Inquiries / Leads</span>
-              <h2 class="stat-value" id="stat-loans">0</h2>
-              <span class="stat-sub text-success" id="stat-loan-volume">₹0 Requested</span>
-            </div>
-          </div>
-          <div class="stat-card stat-accent-blue">
-            <div class="stat-icon icon-blue"><i class="fa-solid fa-credit-card"></i></div>
-            <div class="stat-details">
-              <span class="stat-label">Credit Card Leads</span>
-              <h2 class="stat-value" id="stat-cards">0</h2>
-              <span class="stat-sub text-blue">HDFC, SBI, ICICI, Axis</span>
-            </div>
-          </div>
-          <div class="stat-card stat-accent-purple">
-            <div class="stat-icon icon-purple"><i class="fa-solid fa-shield-halved"></i></div>
-            <div class="stat-details">
-              <span class="stat-label">Insurance Inquiries</span>
-              <h2 class="stat-value" id="stat-insurance">0</h2>
-              <span class="stat-sub text-purple">Health, Motor, Life</span>
-            </div>
-          </div>
-          <div class="stat-card stat-accent-green">
-            <div class="stat-icon icon-green"><i class="fa-solid fa-wallet"></i></div>
-            <div class="stat-details">
-              <span class="stat-label">Total Txn Volume</span>
-              <h2 class="stat-value" id="stat-volume">₹0.00</h2>
-              <span class="stat-sub text-success" id="stat-txns">0 Transactions</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-columns">
-          <!-- RECENT LOAN LEADS IN OVERVIEW -->
-          <div class="panel flex-2">
-            <div class="panel-header">
-              <div class="panel-title-block">
-                <h3>🔥 High-Priority Loan Leads (Users Tapped in App)</h3>
-                <p>Instant leads captured when customers tap on Loan Apply in FlamePay</p>
-              </div>
-              <button class="btn btn-outline btn-sm" onclick="switchTab('loans')">View All Leads →</button>
-            </div>
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Customer Name</th>
-                    <th>Loan Type</th>
-                    <th>Requested</th>
-                    <th>CIBIL</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="overview-loans-tbody">
-                  <tr><td colspan="6" class="loading-state">Loading loan leads...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- PENDING KYC -->
-          <div class="panel flex-1">
-            <div class="panel-header">
-              <div class="panel-title-block">
-                <h3>Pending KYC Submissions</h3>
-                <p>Identity & PAN review</p>
-              </div>
-              <button class="btn btn-outline btn-sm" onclick="switchTab('kyc')">Review</button>
-            </div>
-            <div id="overview-pending-kyc" class="kyc-mini-list">
-              <p class="loading-state">Checking KYC submissions...</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 2: LOAN LEADS & APPLICATIONS -->
-      <section id="tab-loans" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header flex-wrap">
-            <div class="panel-title-block">
-              <h3>💰 Loan Leads & Customer Inquiries</h3>
-              <p>When a user taps on Personal, Home, Business, or LAP in the mobile app, their complete financial profile is instantly captured here.</p>
-            </div>
-            <div class="panel-actions-group">
-              <button class="btn btn-primary" onclick="simulateUserLoanTap()">
-                <i class="fa-solid fa-plus-circle"></i>
-                <span>Simulate User Tap In App</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- FILTER BAR -->
-          <div class="filter-toolbar">
-            <div class="filter-pills" id="loan-type-filters">
-              <button class="pill active" onclick="filterLoansByType('all')">All Loans</button>
-              <button class="pill" onclick="filterLoansByType('Personal Loan')">Personal Loan</button>
-              <button class="pill" onclick="filterLoansByType('Business Loan')">Business Loan</button>
-              <button class="pill" onclick="filterLoansByType('Home Loan')">Home Loan</button>
-              <button class="pill" onclick="filterLoansByType('Loan Against Property')">Loan Against Property</button>
-            </div>
-            <div class="search-box">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="loan-search-input" placeholder="Search by name, phone, city..." onkeyup="filterLoansTable()">
-            </div>
-          </div>
-
-          <!-- LOANS TABLE -->
-          <div class="table-responsive">
-            <table class="data-table" id="loans-table">
-              <thead>
-                <tr>
-                  <th>Lead ID / Date</th>
-                  <th>Customer Information</th>
-                  <th>Loan Category</th>
-                  <th>Amount & Tenure</th>
-                  <th>Income & Employment</th>
-                  <th>CIBIL Score</th>
-                  <th>Lead Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="loans-tbody">
-                <tr><td colspan="8" class="loading-state">Loading loan applications...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 3: CREDIT CARDS -->
-      <section id="tab-credit-cards" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>💳 Credit Card Applications & Leads</h3>
-              <p>Compare & apply leads for HDFC, SBI, ICICI, and Axis credit cards</p>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Lead Ref</th>
-                  <th>Applicant Name</th>
-                  <th>Phone / Email</th>
-                  <th>Preferred Card & Bank</th>
-                  <th>Monthly Income</th>
-                  <th>CIBIL</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="cards-tbody">
-                <tr><td colspan="8" class="loading-state">Loading credit card leads...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 4: BUY INSURANCE -->
-      <section id="tab-insurance" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>🛡️ Buy Insurance Leads & Quotes</h3>
-              <p>Health, Motor/Vehicle, Term Life, and Travel insurance policy inquiries</p>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Inquiry Ref</th>
-                  <th>Customer</th>
-                  <th>Phone Number</th>
-                  <th>Insurance Category</th>
-                  <th>Sum Insured / Vehicle</th>
-                  <th>Provider / Premium</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="insurance-tbody">
-                <tr><td colspan="8" class="loading-state">Loading insurance inquiries...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 5: CIBIL SCORE REPORTS -->
-      <section id="tab-cibil" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>📈 CIBIL Score Reports & Credit Inquiries</h3>
-              <p>Real-time credit health analytics of users who checked their CIBIL score in FlamePay</p>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>User ID</th>
-                  <th>Customer Name</th>
-                  <th>Mobile Number</th>
-                  <th>CIBIL Score</th>
-                  <th>Credit Rating</th>
-                  <th>Active Loans/Cards</th>
-                  <th>On-Time Repayment</th>
-                  <th>Checked At</th>
-                </tr>
-              </thead>
-              <tbody id="cibil-tbody">
-                <tr><td colspan="8" class="loading-state">Loading CIBIL score inquiries...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 6: RECHARGES & UTILITY BILLS -->
-      <section id="tab-recharges" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>⚡ Recharges & Utility Bill Payments</h3>
-              <p>Mobile recharges (Jio, Airtel, Vi, BSNL) and utility bill settlements (Electricity, Gas, Water, Broadband)</p>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Txn ID</th>
-                  <th>Customer</th>
-                  <th>Service Category</th>
-                  <th>Operator / Provider</th>
-                  <th>Mobile / Consumer No.</th>
-                  <th>Amount</th>
-                  <th>Payment Mode</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="recharges-tbody">
-                <tr><td colspan="8" class="loading-state">Loading utility bills & recharges...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 7: USERS & WALLETS -->
-      <section id="tab-users" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>👥 Registered Customers & Wallet Management</h3>
-              <p>Manage user balances, KYC status, limits, and account access</p>
-            </div>
-            <div class="panel-tools">
-              <input type="text" id="user-search-input" placeholder="Search by name, phone or email..." class="search-input" onkeyup="filterUsersTable()">
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table" id="users-table">
-              <thead>
-                <tr>
-                  <th>User ID</th>
-                  <th>Customer Name</th>
-                  <th>Phone Number</th>
-                  <th>Wallet Balance</th>
-                  <th>KYC Status</th>
-                  <th>CIBIL</th>
-                  <th>Account Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="users-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 8: KYC VERIFICATIONS -->
-      <section id="tab-kyc" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>🪪 Identity & Compliance Documents</h3>
-              <p>Approve or Reject full Tier-2 KYC requests submitted from Flutter super-app.</p>
-            </div>
-          </div>
-          <div class="kyc-full-grid" id="kyc-full-list"></div>
-        </div>
-      </section>
-
-      <!-- TAB 9: TRANSACTIONS -->
-      <section id="tab-transactions" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>🧾 Complete Audit Ledger</h3>
-              <p>End-to-end payment journal with timestamps and status codes</p>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="fetchTransactions()"><i class="fa-solid fa-rotate"></i> Sync</button>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table" id="transactions-table">
-              <thead>
-                <tr>
-                  <th>Ref ID</th>
-                  <th>Timestamp</th>
-                  <th>Customer / Target</th>
-                  <th>Category</th>
-                  <th>Payment Mode</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="txns-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB: TOP-UP REQUESTS (SHIVAM SHIVAM SBI / UPI DEPOSITS) -->
-      <section id="tab-topups" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>🏦 Wallet Deposit Requests (SBI Bank / UPI Verification)</h3>
-              <p>Verify customer payments sent to <b>SHIVAM SHIVAM (SBI: 32823806111 | IFSC: SBIN0013209)</b> and credit user wallet.</p>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="fetchTopups()"><i class="fa-solid fa-rotate"></i> Sync</button>
-          </div>
-
-          <!-- BANK DETAILS INFO BANNER -->
-          <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid var(--border-color, #334155); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
-            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">BENEFICIARY NAME</span><div style="font-weight: 700; color: #fff;">SHIVAM SHIVAM</div></div>
-            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">BANK NAME</span><div style="font-weight: 600; color: #f97316;">State Bank of India (SBI)</div></div>
-            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">ACCOUNT NUMBER</span><div style="font-family: monospace; font-weight: 700; font-size: 14px; color: #22c55e;">32823806111</div></div>
-            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">IFSC CODE</span><div style="font-family: monospace; font-weight: 700; color: #fff;">SBIN0013209</div></div>
-            <div><span style="color: var(--text-muted, #94a3b8); font-size: 11px;">UPI ID</span><div style="font-family: monospace; font-weight: 700; color: #38bdf8;">32823806111@sbi</div></div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="data-table" id="topups-table">
-              <thead>
-                <tr>
-                  <th>Request ID</th>
-                  <th>Date & Time</th>
-                  <th>Customer</th>
-                  <th>Amount</th>
-                  <th>UTR / Reference No</th>
-                  <th>Method</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="topups-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 10: APIS DIRECTORY -->
-      <section id="tab-apis" class="tab-pane">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title-block">
-              <h3>🔌 Flutter Super-App REST Endpoints</h3>
-              <p>Ready to integrate into the Flutter mobile application via Dio/HTTP</p>
-            </div>
-          </div>
-          <div class="api-grid">
-            <div class="api-card">
-              <div class="api-badge post">POST</div>
-              <code>/api/v1/loan/apply</code>
-              <p>Triggered when user taps on Loan Apply or submits inquiry. Captures full lead details.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge post">POST</div>
-              <code>/api/v1/credit-card/apply</code>
-              <p>Registers customer interest for HDFC, SBI, ICICI credit cards.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge post">POST</div>
-              <code>/api/v1/insurance/inquiry</code>
-              <p>Captures Health, Motor, Term Life, and Travel insurance quotes.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge post">POST</div>
-              <code>/api/v1/cibil/check</code>
-              <p>Fetches credit score report (300-900) and logs inquiry for admin.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge post">POST</div>
-              <code>/api/v1/recharge/pay</code>
-              <p>Executes prepaid recharge for Jio, Airtel, Vi, and BSNL.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge post">POST</div>
-              <code>/api/v1/bills/pay</code>
-              <p>Executes electricity, gas, broadband, and water bill settlements.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge post">POST</div>
-              <code>/api/v1/auth/verify-otp</code>
-              <p>Authenticates user and returns JWT token and customer profile.</p>
-            </div>
-            <div class="api-card">
-              <div class="api-badge post">POST</div>
-              <code>/api/v1/wallet/transfer</code>
-              <p>Transfers wallet funds via Mobile number or UPI ID.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- MODAL: DETAILED LOAN LEAD INSPECTOR -->
-  <div id="loan-details-modal" class="modal-backdrop" style="display: none;">
-    <div class="modal-card modal-lg">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <span class="badge badge-gold" id="modal-lead-id">LEAD_ID</span>
-          <h2 id="modal-lead-title">Customer Loan Application Details</h2>
-          <span class="modal-timestamp" id="modal-lead-timestamp">Timestamp</span>
-        </div>
-        <button class="modal-close-btn" onclick="closeLoanModal()"><i class="fa-solid fa-xmark"></i></button>
+  <!-- ========================================================================
+       SECTION: OUR SERVICES (Complete Financial Solutions In One Place)
+       ======================================================================== -->
+  <section class="services-section" id="services">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-pill">Our Services</div>
+        <h2>Complete Financial Solutions <span class="text-orange">In One Place</span></h2>
+        <p>FlamePay brings together multiple financial services to make your life easier, smarter and more secure.</p>
       </div>
 
-      <div class="modal-body">
-        <!-- QUICK CONTACT HEADER -->
-        <div class="lead-hero-banner">
-          <div class="lead-customer-avatar" id="modal-customer-avatar">RS</div>
-          <div class="lead-hero-info">
-            <h3 id="modal-customer-name">Rahul Sharma</h3>
-            <p id="modal-customer-contact"><i class="fa-solid fa-phone"></i> +91 9876543210 &nbsp;•&nbsp; <i class="fa-solid fa-envelope"></i> rahul.sharma@example.com</p>
-            <div class="lead-hero-tags">
-              <span class="pill-tag" id="modal-customer-location"><i class="fa-solid fa-location-dot"></i> Mumbai, Maharashtra</span>
-              <span class="pill-tag text-purple" id="modal-customer-source"><i class="fa-solid fa-mobile-screen"></i> App Screen Tap (Instant Lead)</span>
-            </div>
+      <div class="services-grid-6">
+        <!-- 1. Mobile Recharge -->
+        <div class="service-card">
+          <div class="service-icon-box" style="background: #E3F2FD; color: #1E88E5;">
+            <i class="fa-solid fa-bolt"></i>
           </div>
-          <div class="lead-quick-actions">
-            <a href="#" id="modal-call-btn" class="btn btn-success btn-sm"><i class="fa-solid fa-phone"></i> Direct Call</a>
-            <a href="#" id="modal-wa-btn" target="_blank" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-          </div>
+          <h3>Mobile Recharge</h3>
+          <p>Instant prepaid & postpaid recharge for all major telecom operators.</p>
+          <a href="#" class="btn-card-action trigger-download" data-service="Mobile Recharge">
+            <span>Recharge</span> <i class="fa-solid fa-arrow-right"></i>
+          </a>
         </div>
 
-        <!-- 3 COLUMN INFORMATION GRID -->
-        <div class="modal-info-grid">
-          
-          <!-- BOX 1: LOAN REQUEST SPECS -->
-          <div class="info-box">
-            <h4><i class="fa-solid fa-sack-dollar text-gold"></i> Loan Request Particulars</h4>
-            <div class="info-row">
-              <span class="info-lbl">Loan Category:</span>
-              <span class="info-val font-bold text-primary" id="modal-loan-type">Personal Loan</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">Requested Amount:</span>
-              <span class="info-val font-bold text-success font-lg" id="modal-loan-amount">₹5,00,000</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">Preferred Tenure:</span>
-              <span class="info-val" id="modal-loan-tenure">36 Months (3 Years)</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">Est. Monthly EMI:</span>
-              <span class="info-val" id="modal-loan-emi">₹16,250/mo approx</span>
-            </div>
+        <!-- 2. Bill Payment -->
+        <div class="service-card">
+          <div class="service-icon-box" style="background: #FFF3E0; color: #FB8C00;">
+            <i class="fa-solid fa-file-invoice"></i>
           </div>
-
-          <!-- BOX 2: FINANCIALS & INCOME -->
-          <div class="info-box">
-            <h4><i class="fa-solid fa-briefcase text-blue"></i> Employment & Income</h4>
-            <div class="info-row">
-              <span class="info-lbl">Employment Type:</span>
-              <span class="info-val" id="modal-employment-type">Salaried Professional</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">Company / Business:</span>
-              <span class="info-val" id="modal-company-name">Tata Consultancy Services</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">Monthly In-Hand:</span>
-              <span class="info-val font-bold" id="modal-monthly-income">₹85,000 / month</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">Annual CTC:</span>
-              <span class="info-val" id="modal-annual-income">₹10,20,000</span>
-            </div>
-          </div>
-
-          <!-- BOX 3: CIBIL & KYC -->
-          <div class="info-box">
-            <h4><i class="fa-solid fa-shield-halved text-purple"></i> CIBIL & Compliance</h4>
-            <div class="info-row">
-              <span class="info-lbl">CIBIL Score:</span>
-              <span class="info-val font-bold text-success font-lg" id="modal-cibil-score">780 (Excellent)</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">PAN Number:</span>
-              <span class="info-val font-mono" id="modal-pan">ABCDE1234F</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">Aadhaar:</span>
-              <span class="info-val font-mono" id="modal-aadhaar">XXXX XXXX 9823</span>
-            </div>
-            <div class="info-row">
-              <span class="info-lbl">KYC Status:</span>
-              <span class="info-val" id="modal-kyc-status"><span class="badge badge-success">Verified</span></span>
-            </div>
-          </div>
-
+          <h3>Bill Payment</h3>
+          <p>Pay electricity, DTH, water, piped gas, broadband and municipal tax.</p>
+          <a href="#" class="btn-card-action trigger-download" data-service="Bill Payment">
+            <span>Pay Bills</span> <i class="fa-solid fa-arrow-right"></i>
+          </a>
         </div>
 
-        <!-- LEAD STATUS & ADMIN NOTES -->
-        <div class="lead-action-section">
-          <h4>Lead Status & Executive Notes</h4>
-          <div class="lead-controls-row">
-            <div class="form-group-inline">
-              <label>Update Status:</label>
-              <select id="modal-status-select" class="form-select">
-                <option value="interested">Interested (New Tap in App)</option>
-                <option value="contacted">Contacted Customer</option>
-                <option value="in_review">In Review / Docs Collected</option>
-                <option value="approved">Approved & Sanctioned</option>
-                <option value="rejected">Rejected / Ineligible</option>
-                <option value="disbursed">Disbursed Successfully</option>
-              </select>
-            </div>
-            <button class="btn btn-primary" onclick="saveLoanModalStatus()">
-              <i class="fa-solid fa-check"></i> Save Status
+        <!-- 3. Buy Insurance -->
+        <div class="service-card">
+          <div class="service-icon-box" style="background: #E0F2F1; color: #00897B;">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h3>Buy Insurance</h3>
+          <p>Compare & buy health, term, motor, and travel insurance instantly.</p>
+          <a href="#" class="btn-card-action trigger-download" data-service="Insurance">
+            <span>Buy Now</span> <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- 4. CIBIL Score -->
+        <div class="service-card">
+          <div class="service-icon-box" style="background: #F3E5F5; color: #8E24AA;">
+            <i class="fa-solid fa-gauge"></i>
+          </div>
+          <h3>CIBIL Score</h3>
+          <p>Check your TransUnion CIBIL credit score and detailed report for free.</p>
+          <a href="#" class="btn-card-action trigger-download" data-service="CIBIL Score">
+            <span>Check Score</span> <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- 5. Credit Card -->
+        <div class="service-card">
+          <div class="service-icon-box" style="background: #FFEBEE; color: #E53935;">
+            <i class="fa-solid fa-credit-card"></i>
+          </div>
+          <h3>Apply for Card</h3>
+          <p>Compare lifetime-free credit cards with exclusive cashback rewards.</p>
+          <a href="#" class="btn-card-action trigger-download" data-service="Credit Card">
+            <span>Apply Now</span> <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- 6. Loan Apply -->
+        <div class="service-card">
+          <div class="service-icon-box" style="background: #FFF8E1; color: #FFA000;">
+            <i class="fa-solid fa-sack-dollar"></i>
+          </div>
+          <h3>Loan Apply</h3>
+          <p>Personal, Home, Business Loan & Loan Against Property in minutes.</p>
+          <a href="#" class="btn-card-action trigger-download" data-service="Loans">
+            <span>Apply Now</span> <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       MID-PAGE BANNER: Fast Payments For a Smarter You
+       ======================================================================== -->
+  <section class="mid-banner-section" id="why-us">
+    <div class="container">
+      <div class="mid-banner-card">
+        <div class="mid-banner-grid">
+          <!-- Left Text & CTA -->
+          <div class="mid-banner-text">
+            <h2>Fast Payments<br>For a <span class="text-orange">Smarter You</span></h2>
+            <p>Recharge, Pay, Insure, Check, Apply. All in One App with lightning-speed processing.</p>
+            <button class="btn btn-primary trigger-download" data-service="FlamePay App">
+              <span>Download FlamePay App</span>
+              <i class="fa-solid fa-arrow-right"></i>
             </button>
           </div>
 
-          <div class="notes-group">
-            <label>Internal Follow-up Notes:</label>
-            <textarea id="modal-notes-input" rows="3" class="form-textarea" placeholder="Add follow-up details, banker remarks, interest rate offered..."></textarea>
-            <div class="notes-footer">
-              <button class="btn btn-secondary btn-sm" onclick="saveLoanModalNotes()">Save Notes</button>
+          <!-- Center Smartphone Visual -->
+          <div class="mid-phone-center">
+            <div class="floating-icon-pill fip-1"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            <div class="floating-icon-pill fip-2"><i class="fa-solid fa-shield"></i></div>
+            <div class="floating-icon-pill fip-3"><i class="fa-solid fa-wallet"></i></div>
+            <div class="floating-icon-pill fip-4"><i class="fa-solid fa-credit-card"></i></div>
+
+            <div class="mid-phone-wrap">
+              <div class="mid-phone-inner">
+                <div class="mid-phone-screen">
+                  <div style="font-size: 32px; color: #FF5722; margin-bottom: 6px;">
+                    <i class="fa-solid fa-fire"></i>
+                  </div>
+                  <h4 style="font-size: 16px; font-weight: 800; color: #0A1931;">FlamePay</h4>
+                  <div style="font-size: 10px; color: #64748B; margin-top: 4px;">FAST • SECURE • SIMPLE</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Feature Highlights -->
+          <div class="mid-features-list">
+            <div class="mid-feature-item">
+              <div class="mfi-icon"><i class="fa-solid fa-lock"></i></div>
+              <div class="mfi-text">
+                <h4>100% Secure Transactions</h4>
+                <p>256-Bit bank-grade encrypted security protocols</p>
+              </div>
+            </div>
+
+            <div class="mid-feature-item">
+              <div class="mfi-icon"><i class="fa-solid fa-gift"></i></div>
+              <div class="mfi-text">
+                <h4>Best Offers & Cashback</h4>
+                <p>Assured cashback on electricity, recharges & bills</p>
+              </div>
+            </div>
+
+            <div class="mid-feature-item">
+              <div class="mfi-icon"><i class="fa-solid fa-headset"></i></div>
+              <div class="mfi-text">
+                <h4>24/7 Customer Support</h4>
+                <p>Dedicated customer support team at your fingertips</p>
+              </div>
+            </div>
+
+            <div class="mid-feature-item">
+              <div class="mfi-icon"><i class="fa-solid fa-handshake"></i></div>
+              <div class="mfi-text">
+                <h4>Trusted Partners & Services</h4>
+                <p>BBPS integrated & authorized financial partners</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       DETAILED SERVICES SHOWCASE (2 Columns x 3 Rows)
+       ======================================================================== -->
+  <section class="detailed-showcase-section" id="offers">
+    <div class="container">
+      <div class="detailed-cards-grid">
+        <!-- 1. Mobile Recharge -->
+        <div class="detailed-card trigger-download" data-service="Mobile Recharge">
+          <div class="detailed-card-visual">
+            <div class="dc-icon-art" style="background: #E3F2FD; color: #1565C0;">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+            </div>
+          </div>
+          <div class="detailed-card-info">
+            <h3>Mobile Recharge</h3>
+            <p>Recharge any prepaid or postpaid number in seconds with personalized 5G plans.</p>
+            <div class="detailed-card-badges">
+              <span class="operator-badge">Jio</span>
+              <span class="operator-badge">Airtel</span>
+              <span class="operator-badge">Vi</span>
+              <span class="operator-badge">BSNL</span>
+            </div>
+          </div>
+          <div class="arrow-circle-btn">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- 2. Bill Payment -->
+        <div class="detailed-card trigger-download" data-service="Bill Payment">
+          <div class="detailed-card-visual">
+            <div class="dc-icon-art" style="background: #FFF3E0; color: #E65100;">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+          </div>
+          <div class="detailed-card-info">
+            <h3>Bill Payment</h3>
+            <p>Pay all your utility bills easily with instant payment receipts & reminders.</p>
+            <div class="detailed-card-badges">
+              <span class="operator-badge"><i class="fa-solid fa-bolt"></i> Power</span>
+              <span class="operator-badge"><i class="fa-solid fa-tv"></i> DTH</span>
+              <span class="operator-badge"><i class="fa-solid fa-fire"></i> Gas</span>
+              <span class="operator-badge"><i class="fa-solid fa-wifi"></i> Broadband</span>
+            </div>
+          </div>
+          <div class="arrow-circle-btn">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- 3. Buy Insurance -->
+        <div class="detailed-card trigger-download" data-service="Insurance">
+          <div class="detailed-card-visual">
+            <div class="dc-icon-art" style="background: #E0F2F1; color: #00897B;">
+              <i class="fa-solid fa-umbrella"></i>
+            </div>
+          </div>
+          <div class="detailed-card-info">
+            <h3>Buy Insurance</h3>
+            <p>Health, Term, Motor, Travel and more. Compare top IRDAI insurers and get cashless claims.</p>
+            <div class="detailed-card-badges">
+              <span class="operator-badge">Health</span>
+              <span class="operator-badge">Term Life</span>
+              <span class="operator-badge">Car & Bike</span>
+            </div>
+          </div>
+          <div class="arrow-circle-btn">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- 4. CIBIL Score -->
+        <div class="detailed-card trigger-download" data-service="CIBIL Score">
+          <div class="detailed-card-visual">
+            <div class="dc-icon-art" style="background: #F3E5F5; color: #7B1FA2;">
+              <i class="fa-solid fa-gauge-high"></i>
+            </div>
+          </div>
+          <div class="detailed-card-info">
+            <h3>CIBIL Score</h3>
+            <p>Check your CIBIL score, detailed report and personalized tips to boost your credit health.</p>
+            <div class="detailed-card-badges">
+              <span class="operator-badge" style="color: #10B981; background: #D1FAE5;">780 Good</span>
+              <span class="operator-badge">Free Monthly Refresh</span>
+            </div>
+          </div>
+          <div class="arrow-circle-btn">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- 5. Apply for Credit Card -->
+        <div class="detailed-card trigger-download" data-service="Credit Card">
+          <div class="detailed-card-visual">
+            <div class="dc-icon-art" style="background: #FFEBEE; color: #C62828;">
+              <i class="fa-solid fa-credit-card"></i>
+            </div>
+          </div>
+          <div class="detailed-card-info">
+            <h3>Apply for Credit Card</h3>
+            <p>Compare best credit cards from top banks and apply 100% paperless in minutes.</p>
+            <div class="detailed-card-badges">
+              <span class="operator-badge">Zero Annual Fee</span>
+              <span class="operator-badge">Up to 5% Cashback</span>
+            </div>
+          </div>
+          <div class="arrow-circle-btn">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- 6. Loan Apply -->
+        <div class="detailed-card trigger-download" data-service="Loans">
+          <div class="detailed-card-visual">
+            <div class="dc-icon-art" style="background: #FFF8E1; color: #FF8F00;">
+              <i class="fa-solid fa-house-chimney-user"></i>
+            </div>
+          </div>
+          <div class="detailed-card-info">
+            <h3>Loan Apply</h3>
+            <p>Personal, Home, Business Loan & Loan Against Property with low interest rates.</p>
+            <div class="detailed-card-badges">
+              <span class="operator-badge">Fast Sanction</span>
+              <span class="operator-badge">Flexible Tenure</span>
+            </div>
+          </div>
+          <div class="arrow-circle-btn">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION: HOW IT WORKS (Get Started in 3 Simple Steps)
+       ======================================================================== -->
+  <section class="how-it-works-section" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-pill">How It Works</div>
+        <h2>Get Started in <span class="text-orange">3 Simple Steps</span></h2>
+        <p>Start your seamless financial journey with FlamePay today.</p>
+      </div>
+
+      <div class="steps-grid">
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div class="step-badge">1</div>
+          <div class="step-icon-wrap">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+          </div>
+          <h3>Download App</h3>
+          <p>Install FlamePay from Google Play Store or Apple App Store for free.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div class="step-badge">2</div>
+          <div class="step-icon-wrap">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <h3>Register</h3>
+          <p>Create your verified account in a few seconds using just your mobile number & OTP.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div class="step-badge">3</div>
+          <div class="step-icon-wrap" style="color: #10B981;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3>Start Using</h3>
+          <p>Recharge, pay bills, buy insurance, check free CIBIL score, and apply for cards & loans.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION: STATS & TRUST BAR
+       ======================================================================== -->
+  <section class="stats-bar-section">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+          <h3>10L+</h3>
+          <p>Happy Users</p>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon"><i class="fa-solid fa-network-wired"></i></div>
+          <h3>500+</h3>
+          <p>Service Providers</p>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <h3>99.9%</h3>
+          <p>Secure Transactions</p>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <h3>24/7</h3>
+          <p>Customer Support</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION: TESTIMONIALS (What Our Users Say)
+       ======================================================================== -->
+  <section class="testimonials-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-pill">Testimonials</div>
+        <h2>What <span class="text-orange">Our Users</span> Say</h2>
+        <p>Trusted by thousands across India every day.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <!-- Testimonial 1 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="stars-row">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <p class="testimonial-quote">"FlamePay makes bill payments so easy and fast. Love the smooth UI and instant cashback on my electricity bills!"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #1E88E5, #1565C0);">RM</div>
+            <div class="author-info">
+              <h4>Rahul Mehta</h4>
+              <span>Delhi, India</span>
             </div>
           </div>
         </div>
 
+        <!-- Testimonial 2 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="stars-row">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <p class="testimonial-quote">"I checked my CIBIL score and applied for a credit card in minutes. Amazing experience and quick sanction process."</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #FF6B00, #FF3D00);">PS</div>
+            <div class="author-info">
+              <h4>Priya Sharma</h4>
+              <span>Mumbai, Maharashtra</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 3 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="stars-row">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <p class="testimonial-quote">"Best app for mobile recharge, bill payments and health insurance. Highly recommended to everyone!"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #00897B, #004D40);">AD</div>
+            <div class="author-info">
+              <h4>Amit Das</h4>
+              <span>Kolkata, West Bengal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       PRE-FOOTER APP DOWNLOAD CTA BANNER
+       ======================================================================== -->
+  <section class="pre-footer-cta">
+    <div class="container">
+      <div class="pre-footer-content">
+        <div class="pfc-brand">
+          <div class="pfc-logo">FlamePay</div>
+        </div>
+        <div class="pfc-center">
+          <h3>Download FlamePay App Now</h3>
+          <p>Experience a faster, safer and simpler way to manage your finances.</p>
+        </div>
+        <div class="pfc-buttons">
+          <a href="https://play.google.com/store/apps" target="_blank" class="app-store-badge trigger-download">
+            <i class="fa-brands fa-google-play" style="color: #00E676;"></i>
+            <div class="store-text">
+              <span>GET IT ON</span>
+              <strong>Google Play</strong>
+            </div>
+          </a>
+          <a href="https://www.apple.com/app-store/" target="_blank" class="app-store-badge trigger-download">
+            <i class="fa-brands fa-apple"></i>
+            <div class="store-text">
+              <span>Download on the</span>
+              <strong>App Store</strong>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       FOOTER
+       ======================================================================== -->
+  <footer class="site-footer" id="contact">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Col 1: Brand Info -->
+        <div class="footer-col footer-col-brand">
+          <div class="footer-brand-title">Flame<span>Pay</span></div>
+          <span class="footer-tagline">FAST • SECURE • SIMPLE</span>
+          <p>FlamePay is your trusted partner for mobile recharge, bill payments, insurance, CIBIL score, credit card and loan services. Fast, Secure, Simple.</p>
+          
+          <div class="social-links-row">
+            <a href="https://facebook.com" target="_blank" class="social-link-btn" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://instagram.com" target="_blank" class="social-link-btn" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://youtube.com" target="_blank" class="social-link-btn" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+            <a href="https://linkedin.com" target="_blank" class="social-link-btn" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+
+        <!-- Col 2: Quick Links -->
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <div class="footer-links-list">
+            <a href="#home">Home</a>
+            <a href="#services">Services</a>
+            <a href="#why-us">Why Us</a>
+            <a href="#offers">Offers</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="/admin" target="_blank">Admin Portal</a>
+          </div>
+        </div>
+
+        <!-- Col 3: Our Services -->
+        <div class="footer-col">
+          <h4>Our Services</h4>
+          <div class="footer-links-list">
+            <a href="#services">Mobile Recharge</a>
+            <a href="#services">Bill Payment</a>
+            <a href="#services">Buy Insurance</a>
+            <a href="#services">CIBIL Score</a>
+            <a href="#services">Credit Card</a>
+            <a href="#services">Loan Apply</a>
+          </div>
+        </div>
+
+        <!-- Col 4: Support & Legal -->
+        <div class="footer-col">
+          <h4>Support & Legal</h4>
+          <div class="footer-links-list">
+            <a href="#">FAQ</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms & Conditions</a>
+            <a href="#">Disclaimer</a>
+            <a href="#">Grievance Redressal</a>
+            <a href="#">Contact Us</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Copyright Bar -->
+      <div class="footer-bottom-bar">
+        <div>© 2026 FlamePay. All Rights Reserved.</div>
+        <div>FAST • SECURE • SIMPLE</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       DOWNLOAD APP MODAL POPUP
+       ======================================================================== -->
+  <div class="modal-overlay" id="download-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="close-modal-btn" aria-label="Close Modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="modal-icon">
+        <i class="fa-solid fa-mobile-screen-button"></i>
+      </div>
+
+      <h3 id="modal-service-name">Get the FlamePay Super App</h3>
+      <p>Download the FlamePay app on Android or iOS to experience lightning-fast payments, instant loans, and cashback rewards.</p>
+
+      <!-- SMS Link Box -->
+      <form id="sms-link-form">
+        <div class="sms-input-row">
+          <input type="tel" id="sms-phone-input" placeholder="Enter 10-digit mobile number" maxlength="10">
+          <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Send Link</button>
+        </div>
+        <div id="sms-feedback" style="font-size: 13px; font-weight: 700; display: none; margin-bottom: 16px;"></div>
+      </form>
+
+      <!-- Store Badges -->
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <a href="https://play.google.com/store/apps" target="_blank" class="app-store-badge">
+          <i class="fa-brands fa-google-play" style="color: #00E676;"></i>
+          <div class="store-text">
+            <span>GET IT ON</span>
+            <strong>Google Play</strong>
+          </div>
+        </a>
+        <a href="https://www.apple.com/app-store/" target="_blank" class="app-store-badge">
+          <i class="fa-brands fa-apple"></i>
+          <div class="store-text">
+            <span>Download on the</span>
+            <strong>App Store</strong>
+          </div>
+        </a>
       </div>
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION CONTAINER -->
-  <div id="toast-container" class="toast-container"></div>
-
-  <script src="/js/app.js"></script>
+  <!-- Scripts -->
+  <script src="/js/landing.js"></script>
 </body>
 </html>

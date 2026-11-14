@@ -501,11 +501,21 @@ class Database {
     ];
 
     this.billCategories = [
-      { id: 'electricity', title: 'Electricity', icon: 'bolt', count: 58 },
-      { id: 'water', title: 'Water', icon: 'water_drop', count: 32 },
-      { id: 'gas', title: 'Piped Gas', icon: 'local_gas_station', count: 24 },
-      { id: 'broadband', title: 'Broadband', icon: 'wifi', count: 40 },
-      { id: 'dth', title: 'DTH Recharges', icon: 'tv', count: 6 }
+      { id: 'mobile_postpaid', title: 'Mobile Postpaid', icon: 'phone_android', count: 4, label: 'Postpaid Bill' },
+      { id: 'electricity', title: 'Electricity', icon: 'bolt', count: 58, label: 'Electricity Bill' },
+      { id: 'loan_emi', title: 'Loan EMI', icon: 'account_balance', count: 45, label: 'Loan EMI Payment' },
+      { id: 'insurance_premium', title: 'Insurance Premium', icon: 'health_and_safety', count: 38, label: 'Insurance Policy' },
+      { id: 'gas_cylinder', title: 'Gas Cylinder Booking', icon: 'propane_tank', count: 3, label: 'LPG Cylinder' },
+      { id: 'subscription', title: 'Subscription', icon: 'subscriptions', count: 20, label: 'OTT & Digital Services' },
+      { id: 'rental', title: 'Rental Payment', icon: 'home_work', count: 12, label: 'House / Shop Rent' },
+      { id: 'municipal_tax', title: 'Municipal Tax', icon: 'account_balance', count: 28, label: 'Property Tax' },
+      { id: 'education', title: 'Education Fees', icon: 'school', count: 35, label: 'School & College Fees' },
+      { id: 'hospital', title: 'Hospital Bills', icon: 'local_hospital', count: 18, label: 'Hospital & Healthcare' },
+      { id: 'cable_tv', title: 'Cable TV', icon: 'tv', count: 15, label: 'Cable TV Network' },
+      { id: 'water', title: 'Water', icon: 'water_drop', count: 32, label: 'Water Utility' },
+      { id: 'gas', title: 'Piped Gas', icon: 'local_gas_station', count: 24, label: 'PNG Utility' },
+      { id: 'broadband', title: 'Broadband', icon: 'wifi', count: 40, label: 'Broadband & Fiber' },
+      { id: 'dth', title: 'DTH Recharges', icon: 'tv', count: 6, label: 'DTH Recharge' }
     ];
 
     this.offers = [
