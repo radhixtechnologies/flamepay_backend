@@ -22,7 +22,7 @@ const getCreditCardProducts = async (forceRefresh = false) => {
   }
 
   try {
-    const url = `${CHEAPKART_CONFIG.baseUrl}/products.php?category=credit_card`;
+    const url = `${CHEAPKART_CONFIG.baseUrl}/products.php`;
     const res = await fetch(url, {
       method: 'GET',
       headers: {
@@ -38,9 +38,15 @@ const getCreditCardProducts = async (forceRefresh = false) => {
 
     const data = await res.json();
     if (data && (data.status === true || Array.isArray(data.products))) {
-      cachedCreditCards = data.products || [];
+      const all = data.products || [];
+      const cardsOnly = all.filter(p => 
+        p.category === 'credit' || 
+        p.category === 'secured_cards' || 
+        p.category === 'credit_card'
+      );
+      cachedCreditCards = cardsOnly.length > 0 ? cardsOnly : all;
       lastCacheTime = now;
-      console.log(`[CheapKart] Successfully loaded ${cachedCreditCards.length} credit card products`);
+      console.log(`[CheapKart] Successfully loaded ${cachedCreditCards.length} credit card products (from ${all.length} total products)`);
       return cachedCreditCards;
     }
     return cachedCreditCards || [];
