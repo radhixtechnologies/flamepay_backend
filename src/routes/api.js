@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../data/db');
 const way2api = require('../services/way2api');
 const cyrus = require('../services/cyrus');
+const cheapkart = require('../services/cheapkart');
 
 // Helper wrapper
 const success = (res, data = {}, message = 'Success') => res.json({ success: true, message, data });
@@ -1337,64 +1338,197 @@ const CREDIT_CARDS_CATALOG = [
   }
 ];
 
-// GET /credit-cards/list
-router.get('/credit-cards/list', (req, res) => {
-  const { category } = req.query;
-  let list = CREDIT_CARDS_CATALOG;
-  if (category && category !== 'All') {
-    list = list.filter(c => c.category.toLowerCase() === category.toLowerCase());
+function mapCheapkartToCreditCard(item) {
+  const pId = item.product_id || item.id;
+  const title = item.product_name || item.title || 'Credit Card';
+  let bank = 'Partner Bank';
+  if (/hdfc/i.test(title)) bank = 'HDFC Bank';
+  else if (/sbi/i.test(title)) bank = 'SBI Card';
+  else if (/axis/i.test(title)) bank = 'Axis Bank';
+  else if (/icici/i.test(title)) bank = 'ICICI Bank';
+  else if (/kotak/i.test(title)) bank = 'Kotak Mahindra';
+  else if (/idfc/i.test(title)) bank = 'IDFC FIRST Bank';
+  else if (/indusind/i.test(title)) bank = 'IndusInd Bank';
+  else if (/au\b|au small/i.test(title)) bank = 'AU Small Finance Bank';
+  else if (/yes\b|yes bank/i.test(title)) bank = 'YES Bank';
+  else if (/standard chartered/i.test(title)) bank = 'Standard Chartered';
+  else if (/hsbc/i.test(title)) bank = 'HSBC';
+  else if (/federal/i.test(title)) bank = 'Federal Bank';
+  else if (/rbl/i.test(title)) bank = 'RBL Bank';
+  else if (/kiwi/i.test(title)) bank = 'Kiwi RuPay';
+  else if (/novio/i.test(title)) bank = 'Novio Card';
+  else {
+    const words = title.split(' ');
+    bank = words.slice(0, 2).join(' ');
   }
-  success(res, list);
+
+  // Determine category
+  let category = 'Rewards';
+  if (/cashback|moneyback|shopping/i.test(title)) category = 'Cashback';
+  else if (/fuel|petrol|bpcl|hpcl|iocl/i.test(title)) category = 'Fuel';
+  else if (/travel|miles|vistara|air|indigo/i.test(title)) category = 'Travel';
+  else if (/rupay|upi/i.test(title)) category = 'RuPay/UPI';
+  else if (/fd|secured/i.test(title)) category = 'Secured';
+
+  // Bank Gradients
+  let gradientHex = ['#0F172A', '#1E3A8A'];
+  if (/hdfc/i.test(bank)) gradientHex = ['#003366', '#001A33'];
+  else if (/sbi/i.test(bank)) gradientHex = ['#0A2540', '#0070BA'];
+  else if (/axis/i.test(bank)) gradientHex = ['#861F41', '#4A0E23'];
+  else if (/icici/i.test(bank)) gradientHex = ['#B82B2B', '#E5533D'];
+  else if (/idfc/i.test(bank)) gradientHex = ['#9D1C1C', '#5B0E0E'];
+  else if (/kotak/i.test(bank)) gradientHex = ['#DA291C', '#002B49'];
+  else if (/au/i.test(bank)) gradientHex = ['#6B21A8', '#9333EA'];
+  else if (/indusind/i.test(bank)) gradientHex = ['#85144b', '#4A0829'];
+  else if (/yes/i.test(bank)) gradientHex = ['#003399', '#CC0000'];
+  else if (/kiwi|novio/i.test(bank)) gradientHex = ['#059669', '#10B981'];
+
+  const features = Array.isArray(item.key_features)
+    ? item.key_features
+    : ((item.details && Array.isArray(item.details.key_features)) ? item.details.key_features : []);
+    
+  const eligibility = Array.isArray(item.eligibility_criteria)
+    ? item.eligibility_criteria
+    : ((item.details && Array.isArray(item.details.eligibility_criteria)) ? item.details.eligibility_criteria : []);
+
+  let cardNetwork = 'VISA';
+  if (/rupay/i.test(title) || /rupay/i.test(features.join(' '))) cardNetwork = 'RuPay';
+  else if (/mastercard/i.test(title) || /mastercard/i.test(features.join(' '))) cardNetwork = 'Mastercard';
+
+  return {
+    id: `ck_${pId}`,
+    productId: pId,
+    name: title,
+    bank: bank,
+    category: category,
+    annual_fee: /lifetime free|zero/i.test(features.join(' ')) ? 'Lifetime FREE' : '₹499 + GST',
+    joining_fee: /lifetime free|zero/i.test(features.join(' ')) ? 'Lifetime FREE' : '₹499 + GST',
+    reward_rate: item.earn_up_to || 'Best Rewards',
+    earn_up_to: item.earn_up_to || '',
+    image_url: item.image_url || '',
+    min_cibil: 700,
+    min_income: 25000,
+    gradient_hex: gradientHex,
+    card_network: cardNetwork,
+    benefits: features.length > 0 ? features : [
+      'Instant digital application with high approval rate',
+      'Complimentary lounge access & lifestyle privileges',
+      '1% Fuel surcharge waiver across all fuel stations'
+    ],
+    eligibility_criteria: eligibility
+  };
+}
+
+// GET /credit-cards/list
+router.get('/credit-cards/list', async (req, res) => {
+  const { category, search } = req.query;
+  try {
+    const cheapkartProducts = await cheapkart.getCreditCardProducts();
+    let list = [];
+    if (Array.isArray(cheapkartProducts) && cheapkartProducts.length > 0) {
+      list = cheapkartProducts.map(mapCheapkartToCreditCard);
+    } else {
+      list = CREDIT_CARDS_CATALOG;
+    }
+
+    if (category && category !== 'All') {
+      list = list.filter(c => c.category.toLowerCase() === category.toLowerCase());
+    }
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter(c => c.name.toLowerCase().includes(q) || c.bank.toLowerCase().includes(q));
+    }
+
+    return success(res, list);
+  } catch (err) {
+    console.error('[CreditCards List Error]:', err.message);
+    let list = CREDIT_CARDS_CATALOG;
+    if (category && category !== 'All') {
+      list = list.filter(c => c.category.toLowerCase() === category.toLowerCase());
+    }
+    return success(res, list);
+  }
 });
 
 // GET /credit-cards/categories
 router.get('/credit-cards/categories', (req, res) => {
-  success(res, ['All', 'Cashback', 'Rewards', 'Travel', 'Fuel']);
+  success(res, ['All', 'Cashback', 'Rewards', 'Travel', 'Fuel', 'RuPay/UPI']);
 });
 
 // Apply for Credit Card (Supports both /credit-cards/apply and /credit-card/apply)
-const handleCreditCardApply = (req, res) => {
+const handleCreditCardApply = async (req, res) => {
   const {
     card_id,
+    productId,
     cardName,
     full_name,
+    fullName,
+    phone,
+    mobile,
+    email,
     pan_number,
+    panCard,
+    pincode,
     monthly_income,
     employment_type
   } = req.body;
 
   const user = getAuthenticatedUser(req);
-  const matchedCard = CREDIT_CARDS_CATALOG.find(c => c.id === card_id) || {
-    name: cardName || 'FlamePay Premium Credit Card',
-    bank: 'Partner Bank',
-    annual_fee: '₹1,000'
-  };
+  const applicantName = (fullName || full_name || user.name || 'Applicant').trim();
+  const applicantPhone = (phone || mobile || user.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10);
+  const applicantEmail = (email || user.email || 'applicant@flamepay.in').trim();
+  const applicantPan = (panCard || pan_number || user.pan || 'ABCDE1234F').trim().toUpperCase();
+  const applicantPincode = (pincode || '110001').toString().replace(/[^0-9]/g, '').slice(0, 6);
 
-  const leadId = 'CC_LEAD_' + Math.floor(100 + Math.random() * 900);
+  // Determine productId
+  let targetProductId = Number(productId);
+  if (!targetProductId && card_id && String(card_id).startsWith('ck_')) {
+    targetProductId = Number(String(card_id).replace('ck_', ''));
+  }
+  if (!targetProductId) {
+    targetProductId = 88; // Default HDFC Bank Credit Card
+  }
+
+  // Call CheapKart B2B API with HMAC-SHA256 signature
+  const ckResult = await cheapkart.submitApplicantLead({
+    fullName: applicantName,
+    phone: applicantPhone,
+    email: applicantEmail,
+    panCard: applicantPan,
+    pincode: applicantPincode,
+    productId: targetProductId
+  });
+
+  const leadId = ckResult?.lead_id ? `CK_LEAD_${ckResult.lead_id}` : ('CC_LEAD_' + Math.floor(100 + Math.random() * 900));
   const newLead = {
     id: leadId,
+    leadId: ckResult?.lead_id || null,
     userId: user.id,
-    userName: full_name || user.name,
-    userPhone: user.phone,
-    userEmail: user.email,
-    cardName: matchedCard.name,
-    bankName: matchedCard.bank,
-    cardCategory: matchedCard.category || 'Cashback',
+    userName: applicantName,
+    userPhone: applicantPhone,
+    userEmail: applicantEmail,
+    cardName: cardName || `Product #${targetProductId}`,
+    productId: targetProductId,
     monthlyIncome: Number(monthly_income || user.monthlyIncome || 50000),
     cibilScore: user.cibilScore || 780,
-    pan: pan_number || user.pan || 'ABCDE1234F',
+    pan: applicantPan,
+    pincode: applicantPincode,
     employmentType: employment_type || user.employmentType || 'Salaried',
-    status: 'interested',
-    annualFee: matchedCard.annual_fee,
+    status: ckResult?.status ? 'submitted' : 'interested',
+    redirectUrl: ckResult?.redirect_url || '',
     appliedAt: new Date().toISOString()
   };
 
   db.creditCardLeads.unshift(newLead);
-  success(res, {
+
+  return success(res, {
     applicationId: leadId,
+    leadId: ckResult?.lead_id || null,
     status: 'approved_in_principle',
+    redirect_url: ckResult?.redirect_url || '',
+    redirectUrl: ckResult?.redirect_url || '',
     lead: newLead
-  }, 'Credit card application submitted successfully! Pre-approval processed.');
+  }, ckResult?.message || 'Credit card application submitted successfully! Pre-approval processed.');
 };
 
 router.post('/credit-cards/apply', handleCreditCardApply);
