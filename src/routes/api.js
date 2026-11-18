@@ -273,7 +273,7 @@ router.post('/user/kyc-submit', async (req, res) => {
       return fail(res, 'Invalid Aadhaar number format. Must be a valid 12-digit UIDAI number.', 400);
     }
     try {
-      const uidCheck = await way2api.verifyAadhaar(clientAadhaar);
+      const uidCheck = await way2api.verifyAadhaar(clientAadhaar, clientPan);
       const uidOk = Boolean(uidCheck && uidCheck.success === true && (!uidCheck.status_code || Number(uidCheck.status_code) === 200) && uidCheck.data);
       const uidRes = uidCheck?.data?.result || uidCheck?.data || null;
       if (!uidOk || !uidRes) {
@@ -1818,12 +1818,13 @@ router.post('/pan/verify', async (req, res) => {
   return success(res, verificationResult, 'PAN Card verified successfully via Way2API (Income Tax Department records).');
 });
 
-// --- GOVERNMENT AADHAAR VERIFICATION (STRICT WAY2API LIVE) ---
+// --- GOVERNMENT AADHAAR VERIFICATION (STRICT WAY2API LIVE via Approved /aadhaar/aadhaar_pan_link_check) ---
 router.post('/aadhaar/verify', async (req, res) => {
-  const { aadhaar, aadhaarNumber, aadhaar_number, pan, panNumber } = req.body;
+  const { aadhaar, aadhaarNumber, aadhaar_number, pan, panNumber, pan_number } = req.body;
   const user = getAuthenticatedUser(req);
 
   const cleanAadhaar = String(aadhaar || aadhaarNumber || aadhaar_number || '').replace(/\D/g, '').trim();
+  const cleanPan = String(pan || panNumber || pan_number || user.pan || '').trim().toUpperCase();
   const aadhaarRegex = /^[2-9]{1}[0-9]{11}$/;
   if (!cleanAadhaar || !aadhaarRegex.test(cleanAadhaar)) {
     return fail(res, 'Invalid Aadhaar format! Aadhaar must be a valid 12-digit number (cannot start with 0 or 1).', 400);
@@ -1831,8 +1832,8 @@ router.post('/aadhaar/verify', async (req, res) => {
 
   let liveCheck = null;
   try {
-    console.log(`[Way2API Aadhaar Verify] Calling live API for Aadhaar: XXXXXXXX${cleanAadhaar.slice(-4)}`);
-    liveCheck = await way2api.verifyAadhaar(cleanAadhaar);
+    console.log(`[Way2API Aadhaar Verify] Calling live /aadhaar/aadhaar_pan_link_check for Aadhaar: XXXXXXXX${cleanAadhaar.slice(-4)}`);
+    liveCheck = await way2api.verifyAadhaar(cleanAadhaar, cleanPan);
     console.log(`[Way2API Aadhaar Verify] Raw Response:`, JSON.stringify(liveCheck));
   } catch (err) {
     console.error('[Way2API Aadhaar Verify Error]:', err.message);
@@ -1853,27 +1854,16 @@ router.post('/aadhaar/verify', async (req, res) => {
     return fail(res, apiErrMsg, 400);
   }
 
-  // Optional Aadhaar-PAN link check if PAN is also provided
-  let panLinkResult = null;
-  const cleanPan = String(pan || panNumber || '').trim().toUpperCase();
-  if (/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanPan)) {
-    try {
-      const linkResp = await way2api.checkAadhaarPanLink(cleanAadhaar, cleanPan);
-      console.log(`[Way2API Aadhaar-PAN Link] Raw Response:`, JSON.stringify(linkResp));
-      if (linkResp && linkResp.success === true && linkResp.data) {
-        panLinkResult = linkResp.data.result || linkResp.data;
-      }
-    } catch (err) {
-      console.warn('[Way2API Aadhaar-PAN Link Notice]:', err.message);
-    }
-  }
-
   const orderId = liveCheck.order_id || liveCheck.data?.order_id || '';
   const state = (result.state || result.address_state || '').toString().trim();
   const gender = (result.gender || '').toString().trim();
   const ageRange = (result.age_band || result.age_range || result.ageBand || '').toString().trim();
   const mobileLastDigits = (result.mobile_number || result.last_digits || result.masked_mobile || '').toString().trim();
   const isMobileVerified = Boolean(result.is_mobile_verified ?? result.mobile_verified ?? mobileLastDigits);
+  const isLinked = result.is_linked === true || result.pan_linked === true || String(result.status || result.link_status || '').toUpperCase().includes('LINK');
+  const panLinkStatus = result.pan_linked !== undefined || result.is_linked !== undefined
+    ? (isLinked ? 'LINKED' : 'NOT LINKED')
+    : (result.status_desc || result.message || 'VERIFIED');
 
   user.aadhaar = cleanAadhaar;
 
@@ -1881,24 +1871,24 @@ router.post('/aadhaar/verify', async (req, res) => {
     aadhaar: cleanAadhaar,
     aadhaarNumber: cleanAadhaar,
     maskedAadhaar: `XXXX XXXX ${cleanAadhaar.slice(-4)}`,
-    status: result.status || result.aadhaar_status || 'VERIFIED & ACTIVE',
+    status: result.status_desc || result.aadhaar_status || result.status || 'VERIFIED & ACTIVE',
     state: state,
     gender: gender,
     ageRange: ageRange,
     mobileLastDigits: mobileLastDigits,
     isMobileVerified: isMobileVerified,
-    panLinkStatus: panLinkResult ? (panLinkResult.is_linked === true || panLinkResult.status === 'LINKED' ? 'LINKED' : (panLinkResult.message || 'CHECKED')) : null,
-    panLinkDetails: panLinkResult,
+    panLinkStatus: panLinkStatus,
+    panLinkDetails: result,
     orderId: orderId,
     referenceId: orderId || ('W2A-UID-' + Date.now().toString().slice(-8)),
-    verificationAgency: 'UIDAI (via Way2API Live)',
+    verificationAgency: 'UIDAI / Income Tax (via Way2API Live)',
     verificationSource: 'way2api_live',
     isGovernmentVerified: true,
     isLiveVerified: true,
     verifiedAt: new Date().toISOString()
   };
 
-  return success(res, verificationResult, 'Aadhaar verified successfully via Way2API (UIDAI records).');
+  return success(res, verificationResult, 'Aadhaar verified successfully via Way2API live records.');
 });
 
 // --- AADHAAR-PAN LINK CHECK (STRICT WAY2API LIVE) ---

@@ -151,14 +151,19 @@ const verifyPan = async (pan) => {
 };
 
 /**
- * Verify 12-digit Aadhaar number via Way2API Live
+ * Verify 12-digit Aadhaar number via Way2API Live (Approved /aadhaar/aadhaar_pan_link_check endpoint)
  */
-const verifyAadhaar = async (aadhaarNumber) => {
+const verifyAadhaar = async (aadhaarNumber, panNumber = '') => {
   const cleanAadhaar = String(aadhaarNumber || '').replace(/\D/g, '').trim();
-  return await post('/aadhaar/verify', {
+  const cleanPan = String(panNumber || '').toUpperCase().trim();
+  const body = {
     aadhaar_number: cleanAadhaar,
     consent: 'Y',
-  });
+  };
+  if (/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanPan)) {
+    body.pan_number = cleanPan;
+  }
+  return await post('/aadhaar/aadhaar_pan_link_check', body);
 };
 
 /**
@@ -167,11 +172,12 @@ const verifyAadhaar = async (aadhaarNumber) => {
 const checkAadhaarPanLink = async (aadhaarNumber, panNumber) => {
   const cleanAadhaar = String(aadhaarNumber || '').replace(/\D/g, '').trim();
   const cleanPan = (panNumber || '').toUpperCase().trim();
-  return await post('/aadhaar/aadhaar_pan_link_check', {
+  const body = {
     aadhaar_number: cleanAadhaar,
-    pan_number: cleanPan,
     consent: 'Y',
-  });
+  };
+  if (cleanPan) body.pan_number = cleanPan;
+  return await post('/aadhaar/aadhaar_pan_link_check', body);
 };
 
 /**
@@ -257,7 +263,20 @@ const fetchCibilReport = async ({ name, mobile, pan, dob, gender, address, pinco
     return expRes;
   }
 
-  return res || expRes || { success: false, message: 'Way2API CIBIL/Experian verification failed.' };
+  // 3. Fallback to Equifax Report (POST /api/v1/credit-report/fetch — Approved & Active)
+  console.log('[Way2API] Trying Equifax fallback for PAN:', cleanPan);
+  const eqRes = await post('/credit-report/fetch', {
+    name: payload.name,
+    number: cleanPan,
+    mobile: cleanMobile,
+    fetch_by: 'pan',
+    consent: 'Y',
+  });
+  if (eqRes && eqRes.success === true && (!eqRes.status_code || eqRes.status_code === 200) && eqRes.data) {
+    return eqRes;
+  }
+
+  return eqRes?.message ? eqRes : (res || expRes || { success: false, message: 'Way2API CIBIL/Experian/Equifax verification failed.' });
 };
 
 /**
