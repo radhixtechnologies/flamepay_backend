@@ -813,6 +813,32 @@ async function fetchKycRequests() {
                 </div>
               ` : ''}
 
+              <!-- Way2API Live Verification Proofs (PAN & Aadhaar) -->
+              ${(k.panVerification || k.aadhaarVerification) ? `
+                <div style="margin-top:14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:14px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                    <div style="font-weight:700; color:#1e40af; display:flex; align-items:center; gap:8px; font-size:13px;">
+                      <i class="fa-solid fa-circle-check" style="color:#2563eb;"></i> Way2API Live Government Verification
+                    </div>
+                    <span class="badge badge-primary"><i class="fa-solid fa-bolt"></i> Way2API Live</span>
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; font-size:12px; color:#1e3a8a;">
+                    ${k.panVerification ? `
+                      <div>
+                        <b>PAN Verified (NSDL):</b> ${k.panVerification.name || k.userName} (${k.panVerification.status || 'VALID'})<br>
+                        <span style="font-size:11px; color:#3b82f6;">Order ID: ${k.panVerification.orderId || 'N/A'} • Aadhaar Link: ${k.panVerification.aadhaarSeedingStatus || 'Checked'}</span>
+                      </div>
+                    ` : ''}
+                    ${k.aadhaarVerification ? `
+                      <div>
+                        <b>Aadhaar Verified (UIDAI):</b> ${k.aadhaarVerification.maskedAadhaar || k.aadhaar} (${k.aadhaarVerification.state || 'Verified'})<br>
+                        <span style="font-size:11px; color:#3b82f6;">Order ID: ${k.aadhaarVerification.orderId || 'N/A'} ${k.aadhaarVerification.gender ? '• ' + k.aadhaarVerification.gender : ''} ${k.aadhaarVerification.ageRange ? '• Age ' + k.aadhaarVerification.ageRange : ''}</span>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              ` : ''}
+
               <!-- Biometric Match Status -->
               <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <span class="badge ${k.isBiometricVerified ? 'badge-success' : 'badge-secondary'}">

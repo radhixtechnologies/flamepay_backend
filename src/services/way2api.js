@@ -147,6 +147,63 @@ const verifyPan = async (pan) => {
 };
 
 /**
+ * Verify 12-digit Aadhaar number via Way2API Live
+ */
+const verifyAadhaar = async (aadhaarNumber) => {
+  const cleanAadhaar = String(aadhaarNumber || '').replace(/\D/g, '').trim();
+  return await post('/aadhaar/verify', {
+    aadhaar_number: cleanAadhaar,
+    consent: 'Y',
+  });
+};
+
+/**
+ * Check Aadhaar-PAN Link status via Way2API Live
+ */
+const checkAadhaarPanLink = async (aadhaarNumber, panNumber) => {
+  const cleanAadhaar = String(aadhaarNumber || '').replace(/\D/g, '').trim();
+  const cleanPan = (panNumber || '').toUpperCase().trim();
+  return await post('/aadhaar/aadhaar_pan_link_check', {
+    aadhaar_number: cleanAadhaar,
+    pan_number: cleanPan,
+    consent: 'Y',
+  });
+};
+
+/**
+ * Verify Bank Account + IFSC via Way2API Live
+ */
+const verifyBankAccount = async (accountNumber, ifscCode) => {
+  return await post('/bank/account_validation', {
+    account_number: String(accountNumber || '').trim(),
+    ifsc_code: String(ifscCode || '').toUpperCase().trim(),
+    consent: 'Y',
+  });
+};
+
+/**
+ * Verify UPI VPA via Way2API Live
+ */
+const verifyUpiVpa = async (vpa) => {
+  return await post('/upi/vpa_validation', {
+    vpa: String(vpa || '').trim().toLowerCase(),
+    consent: 'Y',
+  });
+};
+
+/**
+ * Mobile Prefill (Fetch identity & PAN linked to mobile) via Way2API Live
+ */
+const mobilePrefill = async (mobileNumber, name) => {
+  const cleanMobile = String(mobileNumber || '').replace(/\D/g, '').slice(-10);
+  return await post('/mobile/prefill', {
+    mobile_number: cleanMobile,
+    name: String(name || '').trim(),
+    consent: 'Y',
+  });
+};
+
+/**
  * Fetch CIBIL / Experian Credit Report
  * Live Way2API TransUnion CIBIL integration:
  * Requires pan, mobile, name, gender ('male'/'female'), and consent ('Y')
@@ -185,18 +242,18 @@ const fetchCibilReport = async ({ name, mobile, pan, dob, gender, address, pinco
   // 1. Try Live CIBIL Report (Way2API POST /api/v1/credit-report-cibil/fetch-report)
   console.log('[Way2API] Fetching CIBIL for PAN:', cleanPan, 'Payload:', JSON.stringify(payload));
   let res = await post('/credit-report-cibil/fetch-report', payload);
-  if (res && (String(res.status).toUpperCase() === 'SUCCESS' || res.success) && res.data) {
+  if (res && res.success === true && (!res.status_code || res.status_code === 200) && res.data) {
     return res;
   }
 
-  // 2. Fallback to Experian Report (also active in user dashboard)
+  // 2. Fallback to Experian Report (also active in Way2API dashboard)
   console.log('[Way2API] Trying Experian fallback for PAN:', cleanPan);
   const expRes = await post('/credit-report-experian/fetch-report', payload);
-  if (expRes && (String(expRes.status).toUpperCase() === 'SUCCESS' || expRes.success) && expRes.data) {
+  if (expRes && expRes.success === true && (!expRes.status_code || expRes.status_code === 200) && expRes.data) {
     return expRes;
   }
 
-  return res || expRes || { success: false };
+  return res || expRes || { success: false, message: 'Way2API CIBIL/Experian verification failed.' };
 };
 
 /**
@@ -219,6 +276,11 @@ const fetchCibilPdfReport = async ({ name, mobile, pan, gender }) => {
 module.exports = {
   isConfigured,
   verifyPan,
+  verifyAadhaar,
+  checkAadhaarPanLink,
+  verifyBankAccount,
+  verifyUpiVpa,
+  mobilePrefill,
   checkOperatorCircle,
   getMobilePlans,
   getROffer,
