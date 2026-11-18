@@ -540,6 +540,34 @@ router.post('/wallet/transfer', (req, res) => {
   };
   db.transactions.unshift(newTxn);
 
+  // Instant Wallet-to-Wallet Credit if recipient is a registered FlamePay user (by verified VPA, phone, or ID)
+  const cleanRecip = String(recipient || '').trim().toLowerCase();
+  const cleanDigits = cleanRecip.replace(/\D/g, '').slice(-10);
+  const receiver = db.users.find(u =>
+    u.id !== user.id && (
+      (u.upiId && String(u.upiId).toLowerCase() === cleanRecip) ||
+      (cleanDigits.length === 10 && String(u.phone || '').replace(/\D/g, '').endsWith(cleanDigits)) ||
+      (u.id && String(u.id).toLowerCase() === cleanRecip)
+    )
+  );
+  if (receiver) {
+    receiver.walletBalance = (receiver.walletBalance || 0) + amount;
+    db.transactions.unshift({
+      id: txnId + '_CR',
+      userId: receiver.id,
+      title: `Received from ${user.name || 'FlamePay User'}`,
+      subtitle: `Personal QR / UPI Transfer • ${new Date().toLocaleTimeString()}`,
+      amount,
+      type: 'credit',
+      timestamp: new Date().toISOString(),
+      status: 'success',
+      category: 'wallet',
+      operatorName: 'FlamePay Receive QR',
+      mobile: user.phone,
+      paymentMode: 'FlamePay QR'
+    });
+  }
+
   success(res, {
     transactionId: txnId,
     operatorRefNumber: 'TXN' + Math.floor(10000000 + Math.random() * 90000000),
@@ -547,9 +575,10 @@ router.post('/wallet/transfer', (req, res) => {
     timestamp: new Date().toISOString(),
     status: 'success',
     serviceType: 'Money Transfer',
-    targetTitle: `Transfer to ${recipient}`,
+    targetTitle: `Transfer to ${receiver ? (receiver.upiVerifiedName || receiver.name) : recipient}`,
     paymentMode: 'FlamePay Wallet',
     cashbackEarned: 5.0,
+    creditedReceiver: Boolean(receiver),
     newBalance: user.walletBalance
   }, 'Transfer successful');
 });
@@ -2013,17 +2042,21 @@ router.post('/bank/verify', async (req, res) => {
   }
 });
 
-// --- UPI VPA VERIFICATION (LIVE) ---
+// --- UPI VPA VERIFICATION & PERSONAL RECEIVE QR (LIVE vpa_upi_validate) ---
 router.post('/upi/verify', async (req, res) => {
   const { vpa, upiId } = req.body;
+  const user = getAuthenticatedUser(req);
   const cleanVpa = String(vpa || upiId || '').trim().toLowerCase();
 
-  if (!cleanVpa || !cleanVpa.includes('@')) {
-    return fail(res, 'Valid UPI ID / VPA is required (e.g. name@upi).', 400);
+  if (!cleanVpa || !/^[a-z0-9._-]{2,}@[a-z0-9.-]{2,}$/i.test(cleanVpa)) {
+    return fail(res, 'Valid UPI ID / VPA is required (e.g. name@okaxis, number@ybl).', 400);
   }
 
   try {
+    console.log(`[UPI VPA Verify] Calling live /upi/vpa_validation for: ${cleanVpa}`);
     const liveCheck = await way2api.verifyUpiVpa(cleanVpa);
+    console.log('[UPI VPA Verify] Raw Response:', JSON.stringify(liveCheck));
+
     const isSuccess = Boolean(
       liveCheck &&
       liveCheck.success === true &&
@@ -2032,18 +2065,70 @@ router.post('/upi/verify', async (req, res) => {
     );
     const result = liveCheck?.data?.result || liveCheck?.data || null;
     if (!isSuccess || !result) {
-      return fail(res, liveCheck?.message || 'UPI VPA verification failed.', 400);
+      return fail(res, liveCheck?.message || 'UPI VPA verification failed. Please enter a valid active UPI ID.', 400);
     }
+
+    const vpaStatus = String(result.status || result.vpa_status || '').toUpperCase();
+    if (result.is_valid === false || result.vpa_valid === false || result.account_exists === false || vpaStatus === 'INVALID') {
+      return fail(res, result.message || `UPI ID "${cleanVpa}" is not active or does not exist.`, 400);
+    }
+
+    const holderName = String(
+      result.account_holder_name ||
+      result.full_name ||
+      result.customer_name ||
+      result.verified_name ||
+      result.bene_name ||
+      result.name ||
+      user.name ||
+      ''
+    ).trim();
+
+    const bankName = String(result.bank_name || result.bank || result.psp_name || '').trim();
+    const orderId = liveCheck.order_id || liveCheck.data?.order_id || '';
+
+    // Persist verified VPA on user profile for Personal Receive QR & Wallet-to-Wallet transfers
+    user.upiId = cleanVpa;
+    if (holderName) user.upiVerifiedName = holderName;
+
+    const upiUri = `upi://pay?pa=${encodeURIComponent(cleanVpa)}&pn=${encodeURIComponent(holderName || user.name || 'FlamePay User')}&cu=INR`;
+
     return success(res, {
       ...result,
       vpa: cleanVpa,
-      accountHolderName: result.account_holder_name || result.full_name || result.name || '',
-      orderId: liveCheck.order_id || liveCheck.data?.order_id || '',
+      upiId: cleanVpa,
+      accountHolderName: holderName,
+      bankName: bankName,
+      upiUri: upiUri,
+      orderId: orderId,
+      verificationAgency: 'NPCI UPI Network',
+      isVerified: true,
       isLiveVerified: true,
-    }, 'UPI ID verified successfully.');
+      verifiedAt: new Date().toISOString()
+    }, 'UPI ID verified successfully with NPCI records.');
   } catch (err) {
-    return fail(res, `UPI verification unreachable: ${err.message}`, 502);
+    return fail(res, `UPI verification service unreachable: ${err.message}`, 502);
   }
+});
+
+// Get logged-in user's saved Personal Receive QR details
+router.get('/user/my-qr', (req, res) => {
+  const user = getAuthenticatedUser(req);
+  const vpa = user.upiId || '';
+  const holderName = user.upiVerifiedName || user.name || 'FlamePay User';
+  const upiUri = vpa
+    ? `upi://pay?pa=${encodeURIComponent(vpa)}&pn=${encodeURIComponent(holderName)}&cu=INR`
+    : '';
+
+  return success(res, {
+    hasPersonalQr: Boolean(vpa),
+    vpa,
+    upiId: vpa,
+    accountHolderName: holderName,
+    upiUri,
+    phone: user.phone || '',
+    walletBalance: user.walletBalance || 0,
+  }, 'Personal QR profile fetched');
 });
 
 
