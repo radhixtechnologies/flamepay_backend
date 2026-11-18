@@ -1644,9 +1644,9 @@ router.get('/credit-cards/my-applications', (req, res) => {
   success(res, userLeads, 'User credit card applications fetched');
 });
 
-// --- GOVERNMENT PAN CARD VERIFICATION ---
+// --- GOVERNMENT PAN CARD VERIFICATION (STRICT WAY2API LIVE) ---
 router.post('/pan/verify', async (req, res) => {
-  const { pan, panNumber, fullName, name, dob, panImage } = req.body;
+  const { pan, panNumber, dob, panImage } = req.body;
   const user = getAuthenticatedUser(req);
 
   const cleanPan = (pan || panNumber || user.pan || '').toString().trim().toUpperCase();
@@ -1656,7 +1656,7 @@ router.post('/pan/verify', async (req, res) => {
     return fail(res, 'Invalid PAN format! PAN must be exactly 10 alphanumeric characters (e.g. ABCDE1234F).', 400);
   }
 
-  // 4th character validation
+  // 4th character fallback category label
   const fourthChar = cleanPan[3];
   const panTypeMap = {
     'P': 'Individual',
@@ -1670,50 +1670,89 @@ router.post('/pan/verify', async (req, res) => {
     'J': 'Artificial Juridical Person',
     'G': 'Government'
   };
-  const category = panTypeMap[fourthChar] || 'Individual';
+  const fallbackCategory = panTypeMap[fourthChar] || 'Individual';
 
-  const applicantName = (fullName || name || user.name || 'Rohit Kumar').trim();
-  const nameParts = applicantName.split(/\s+/).filter(Boolean);
-  const surname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0];
-
-  let isLiveVerified = false;
-  let way2Data = null;
-
+  let liveCheck = null;
   try {
-    const liveCheck = await way2api.verifyPan(cleanPan);
-    if (liveCheck && (liveCheck.status === 'SUCCESS' || liveCheck.success) && liveCheck.data) {
-      isLiveVerified = true;
-      way2Data = liveCheck.data;
-    }
+    console.log(`[Way2API PAN Verify] Calling live API for PAN: ${cleanPan}`);
+    liveCheck = await way2api.verifyPan(cleanPan);
+    console.log(`[Way2API PAN Verify] Raw Response:`, JSON.stringify(liveCheck));
   } catch (err) {
-    console.warn('[Way2API PAN Verify]:', err.message);
+    console.error('[Way2API PAN Verify Error]:', err.message);
+    return fail(res, `Way2API PAN verification service unreachable: ${err.message}`, 502);
   }
 
-  const verifiedName = (way2Data?.name || way2Data?.fullName || applicantName).toUpperCase();
-  const fatherName = way2Data?.fatherName || way2Data?.father_name || ('Shri ' + (nameParts.length > 1 ? nameParts[0] : 'S.') + ' ' + (surname || 'Kumar'));
-  const verifiedDob = dob || way2Data?.dob || '15/08/1995';
+  const isSuccess = Boolean(
+    liveCheck &&
+    (liveCheck.success === true || String(liveCheck.status || '').toUpperCase() === 'SUCCESS') &&
+    liveCheck.data
+  );
 
-  // Save verified details on user
-  user.pan = cleanPan;
-  user.name = applicantName;
+  const result = liveCheck?.data?.result || liveCheck?.data || null;
+
+  if (!isSuccess || !result) {
+    const apiErrMsg = liveCheck?.message || liveCheck?.error || 'PAN verification failed with Way2API. Please check your PAN number and try again.';
+    return fail(res, apiErrMsg, 400);
+  }
+
+  // Verify official PAN status code ('E' = EXISTING AND VALID)
+  const panStatusCode = (result.pan_status || '').toString().toUpperCase();
+  const panStatusDesc = (result.pan_status_desc || '').toString().trim();
+  if (panStatusCode && panStatusCode !== 'E') {
+    return fail(
+      res,
+      `PAN ${cleanPan} is not active (${panStatusDesc || panStatusCode}). Please enter a valid and active PAN card.`,
+      400
+    );
+  }
+
+  const verifiedNameRaw = (result.full_name || result.fullName || result.name || result.registered_name || '').toString().trim();
+  if (!verifiedNameRaw) {
+    return fail(res, `No registered PAN holder record found for ${cleanPan} in Income Tax Department records.`, 404);
+  }
+
+  const rawCategory = (result.category || '').toString().trim();
+  const category = rawCategory.toLowerCase() === 'person'
+    ? 'Individual'
+    : (rawCategory ? rawCategory.charAt(0).toUpperCase() + rawCategory.slice(1) : fallbackCategory);
+
+  const seedingCode = (result.aadhaar_seeding_status || '').toString().toUpperCase();
+  const aadhaarSeedingStatus = seedingCode === 'Y'
+    ? 'LINKED'
+    : (seedingCode === 'N' ? 'NOT LINKED' : (result.aadhaar_seeding_status_desc || 'UNKNOWN'));
+
+  const orderId = liveCheck.order_id || liveCheck.data?.order_id || '';
+
+  // Save real verified details on user
+  user.pan = result.pan_number || cleanPan;
+  user.name = verifiedNameRaw;
   user.kycStatus = 'verified';
 
   const verificationResult = {
-    pan: cleanPan,
-    name: verifiedName,
-    fatherName: fatherName,
-    dob: verifiedDob,
-    status: 'VALID & ACTIVE',
+    pan: result.pan_number || cleanPan,
+    name: verifiedNameRaw.toUpperCase(),
+    fullName: verifiedNameRaw,
+    title: result.title || '',
+    fullNameSplit: Array.isArray(result.full_name_split) ? result.full_name_split : [],
+    fatherName: result.father_name || result.fatherName || '',
+    dob: result.dob || dob || '',
+    panStatus: panStatusCode || 'E',
+    status: panStatusDesc || 'EXISTING AND VALID',
     category: category,
-    aadhaarSeedingStatus: 'LINKED',
-    verificationAgency: 'Income Tax Department (NSDL/UTIITSL)',
-    referenceId: 'ITD-VERIF-' + Date.now().toString().slice(-8),
+    rawCategory: rawCategory,
+    aadhaarSeedingStatus: aadhaarSeedingStatus,
+    aadhaarSeedingDesc: result.aadhaar_seeding_status_desc || '',
+    orderId: orderId,
+    referenceId: orderId || ('W2A-' + Date.now().toString().slice(-8)),
+    verificationAgency: 'Income Tax Department (NSDL via Way2API)',
+    verificationSource: 'way2api_live',
     hasImageAttached: Boolean(panImage),
     isGovernmentVerified: true,
+    isLiveVerified: true,
     verifiedAt: new Date().toISOString()
   };
 
-  return success(res, verificationResult, 'PAN Card verified successfully with Income Tax Department records.');
+  return success(res, verificationResult, 'PAN Card verified successfully via Way2API (Income Tax Department records).');
 });
 
 

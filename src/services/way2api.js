@@ -135,11 +135,15 @@ const isConfigured = () => {
 };
 
 /**
- * Verify PAN Card details via official income tax database
+ * Verify PAN Card details via official income tax database (Way2API Live)
  */
 const verifyPan = async (pan) => {
   const cleanPan = (pan || '').toUpperCase().trim();
-  return await post('/pan/verify', { pan_number: cleanPan, pan: cleanPan });
+  return await post('/pan/verify', {
+    pan: cleanPan,
+    pan_number: cleanPan,
+    consent: 'Y',
+  });
 };
 
 /**
