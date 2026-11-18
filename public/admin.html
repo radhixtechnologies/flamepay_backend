@@ -98,6 +98,11 @@
           <i class="fa-solid fa-receipt"></i>
           <span>Live Transactions</span>
         </button>
+        <button class="nav-item" data-tab="offers">
+          <i class="fa-solid fa-gift"></i>
+          <span>Offers & Rewards</span>
+          <span class="badge badge-success" id="offers-badge">0</span>
+        </button>
 
         <div class="nav-section-title">USERS & COMPLIANCE</div>
         <button class="nav-item" data-tab="users">
@@ -586,6 +591,50 @@
         </div>
       </section>
 
+      <!-- TAB: OFFERS & REWARDS MANAGER -->
+      <section id="tab-offers" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3><i class="fa-solid fa-gift text-orange"></i> App Offers & Coupon Manager</h3>
+              <p style="font-size:12px; color:#64748b; margin-top:4px;">Add, edit, pause or delete cashback offers & coupon codes. Changes sync live to the FlamePay mobile app.</p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <select id="offers-category-filter" class="form-select" style="width:auto; min-width:150px;" onchange="renderOffersTable()">
+                <option value="All">All Categories</option>
+                <option value="Recharge">Recharge</option>
+                <option value="Bills">Bills</option>
+                <option value="Electricity">Electricity</option>
+                <option value="DTH">DTH</option>
+                <option value="Cards">Cards</option>
+                <option value="Loans">Loans</option>
+              </select>
+              <button class="btn btn-primary" onclick="openOfferModal()">
+                <i class="fa-solid fa-plus"></i> Add New Offer
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Offer Preview</th>
+                  <th>Coupon Code</th>
+                  <th>Discount</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="offers-tbody">
+                <tr><td colspan="6" class="loading-state">Loading offers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -750,6 +799,82 @@
             </a>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT OFFER -->
+  <div id="offer-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card" style="max-width: 560px; width: 92%;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="badge badge-primary" id="offer-modal-badge">NEW OFFER</span>
+          <h2 id="offer-modal-title">Add New Offer</h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeOfferModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <form id="offer-form" onsubmit="saveOffer(event)">
+          <input type="hidden" id="offer-id">
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="display:block; font-size:12.5px; font-weight:700; color:#334155; margin-bottom:6px;">Offer Title *</label>
+            <input type="text" id="offer-title-input" required placeholder="e.g. Flat ₹50 Cashback" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px;">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label style="display:block; font-size:12.5px; font-weight:700; color:#334155; margin-bottom:6px;">Coupon Code *</label>
+              <input type="text" id="offer-code-input" required placeholder="e.g. FLAME50" oninput="this.value=this.value.toUpperCase().replace(/\s+/g,'')" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px; font-weight:700; letter-spacing:1px;">
+            </div>
+            <div class="form-group">
+              <label style="display:block; font-size:12.5px; font-weight:700; color:#334155; margin-bottom:6px;">Discount Label *</label>
+              <input type="text" id="offer-discount-input" required placeholder="e.g. ₹50 OFF / 10% OFF" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px;">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label style="display:block; font-size:12.5px; font-weight:700; color:#334155; margin-bottom:6px;">Category</label>
+              <select id="offer-category-input" class="form-select" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px;">
+                <option value="Recharge">Recharge</option>
+                <option value="Bills">Bills</option>
+                <option value="Electricity">Electricity</option>
+                <option value="DTH">DTH</option>
+                <option value="Cards">Cards</option>
+                <option value="Loans">Loans</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="display:block; font-size:12.5px; font-weight:700; color:#334155; margin-bottom:6px;">Banner Color</label>
+              <select id="offer-color-input" class="form-select" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px;">
+                <option value="0xFF1E88E5">Royal Blue (#1E88E5)</option>
+                <option value="0xFFFF6F00">Flame Orange (#FF6F00)</option>
+                <option value="0xFF43A047">Emerald Green (#43A047)</option>
+                <option value="0xFF8E24AA">Royal Purple (#8E24AA)</option>
+                <option value="0xFFE53935">Crimson Red (#E53935)</option>
+                <option value="0xFF00897B">Teal (#00897B)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="display:block; font-size:12.5px; font-weight:700; color:#334155; margin-bottom:6px;">Description *</label>
+            <textarea id="offer-desc-input" required rows="3" placeholder="e.g. On first Electricity bill payment above ₹500" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13.5px; font-family:inherit;"></textarea>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom: 18px;">
+            <input type="checkbox" id="offer-active-input" checked style="width:16px; height:16px;">
+            <label for="offer-active-input" style="font-size:13px; font-weight:600; color:#1e293b; cursor:pointer;">Active (Visible live in FlamePay App)</label>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn btn-secondary" onclick="closeOfferModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="offer-save-btn">
+              <i class="fa-solid fa-check"></i> Save Offer
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

@@ -9,6 +9,7 @@ let cachedCibil = [];
 let cachedUsers = [];
 let cachedKyc = [];
 let cachedTxns = [];
+let cachedOffers = [];
 let selectedLoanId = null;
 let currentLoanFilter = 'all';
 
@@ -100,6 +101,7 @@ function switchTab(tabId) {
     users: 'Customers & Wallet Balances',
     kyc: 'Tier-2 KYC Verifications',
     transactions: 'Live Financial Ledger',
+    offers: 'Offers & Rewards Manager',
     apis: 'REST API Endpoints'
   };
   const desc = {
@@ -108,6 +110,7 @@ function switchTab(tabId) {
     insurance: 'Health, Motor, Life insurance quotes & policy requests',
     cibil: 'Credit scores, repayment discipline & creditworthiness',
     topups: 'Verify payments sent to SHIVAM SHIVAM (SBI: 32823806111) and approve wallet credit',
+    offers: 'Create, edit, pause or delete cashback offers & coupon codes displayed in the mobile app',
     overview: 'Real-time metrics, financial product leads, and user verifications'
   };
 
@@ -126,6 +129,7 @@ function switchTab(tabId) {
   if (tabId === 'users') fetchUsers();
   if (tabId === 'kyc') fetchKycRequests();
   if (tabId === 'transactions') fetchTransactions();
+  if (tabId === 'offers') fetchOffers();
 }
 
 function refreshCurrentTab() {
@@ -145,6 +149,7 @@ async function loadAllData() {
   fetchUsers();
   fetchKycRequests();
   fetchTransactions();
+  fetchOffers();
 }
 
 // 1. STATS
@@ -1168,5 +1173,214 @@ async function toggleCyrusTestMode() {
     }
   } catch (e) {
     alert('Error toggling test mode: ' + e.message);
+  }
+}
+
+// ======================================================
+// OFFERS & REWARDS MANAGER (ADD / EDIT / DELETE / TOGGLE)
+// ======================================================
+function flutterColorToCss(hex) {
+  if (!hex) return '#1E88E5';
+  const cleaned = String(hex).replace(/^0x/i, '').replace(/^#/, '');
+  if (cleaned.length === 8) return '#' + cleaned.slice(2);
+  if (cleaned.length === 6) return '#' + cleaned;
+  return '#1E88E5';
+}
+
+async function fetchOffers() {
+  try {
+    const res = await fetch(`${API_BASE}/admin/offers`);
+    const json = await res.json();
+    if (!json.success) return;
+    cachedOffers = json.data || [];
+    const badge = document.getElementById('offers-badge');
+    if (badge) {
+      const activeCount = cachedOffers.filter(o => o.isActive !== false).length;
+      badge.innerText = activeCount;
+    }
+    renderOffersTable();
+  } catch (e) {
+    console.error('Error fetching offers:', e);
+  }
+}
+
+function renderOffersTable() {
+  const tbody = document.getElementById('offers-tbody');
+  if (!tbody) return;
+
+  const filterEl = document.getElementById('offers-category-filter');
+  const filterCat = filterEl ? filterEl.value : 'All';
+
+  let list = cachedOffers;
+  if (filterCat && filterCat !== 'All') {
+    list = list.filter(o => (o.category || '').toLowerCase() === filterCat.toLowerCase());
+  }
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:28px; color:#64748b;">No offers found. Click <b>"Add New Offer"</b> to create one!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(o => {
+    const cssColor = flutterColorToCss(o.bannerColor);
+    const isActive = o.isActive !== false;
+    const safeId = String(o.id).replace(/'/g, "\\'");
+    const safeTitle = String(o.title || '').replace(/'/g, "\\'");
+
+    return `
+      <tr>
+        <td>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:42px; height:42px; border-radius:10px; background:${cssColor}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; box-shadow:0 4px 10px rgba(0,0,0,0.12);">
+              <i class="fa-solid fa-tag"></i>
+            </div>
+            <div>
+              <div style="font-weight:700; color:#0f172a; font-size:13.5px;">${o.title || 'Untitled Offer'}</div>
+              <div style="font-size:11.5px; color:#64748b; max-width:280px;">${o.description || ''}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span style="display:inline-block; padding:4px 10px; background:#f1f5f9; border:1px dashed #94a3b8; border-radius:6px; font-family:monospace; font-weight:800; color:#0f172a; letter-spacing:0.8px;">${o.code || '-'}</span>
+        </td>
+        <td><b style="color:${cssColor};">${o.discount || '-'}</b></td>
+        <td><span class="badge badge-info">${o.category || 'General'}</span></td>
+        <td>
+          <span class="badge ${isActive ? 'badge-success' : 'badge-secondary'}">
+            ${isActive ? 'Active (Live)' : 'Paused'}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-outline btn-xs" title="${isActive ? 'Pause Offer' : 'Activate Offer'}" onclick="toggleOfferStatus('${safeId}', ${isActive})">
+              <i class="fa-solid ${isActive ? 'fa-pause' : 'fa-play'}"></i> ${isActive ? 'Pause' : 'Live'}
+            </button>
+            <button class="btn btn-primary btn-xs" onclick="openOfferModal('${safeId}')">
+              <i class="fa-solid fa-pen"></i> Edit
+            </button>
+            <button class="btn btn-danger btn-xs" onclick="deleteOffer('${safeId}', '${safeTitle}')">
+              <i class="fa-solid fa-trash"></i> Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openOfferModal(offerId = null) {
+  const modal = document.getElementById('offer-modal');
+  const badge = document.getElementById('offer-modal-badge');
+  const titleEl = document.getElementById('offer-modal-title');
+  const idInput = document.getElementById('offer-id');
+  const titleInput = document.getElementById('offer-title-input');
+  const codeInput = document.getElementById('offer-code-input');
+  const discountInput = document.getElementById('offer-discount-input');
+  const catInput = document.getElementById('offer-category-input');
+  const colorInput = document.getElementById('offer-color-input');
+  const descInput = document.getElementById('offer-desc-input');
+  const activeInput = document.getElementById('offer-active-input');
+
+  if (offerId) {
+    const existing = cachedOffers.find(o => o.id === offerId);
+    if (!existing) return;
+    badge.innerText = 'EDIT OFFER';
+    titleEl.innerText = `Edit Offer (${existing.code})`;
+    idInput.value = existing.id;
+    titleInput.value = existing.title || '';
+    codeInput.value = existing.code || '';
+    discountInput.value = existing.discount || '';
+    catInput.value = existing.category || 'Recharge';
+    colorInput.value = existing.bannerColor || '0xFF1E88E5';
+    descInput.value = existing.description || '';
+    activeInput.checked = existing.isActive !== false;
+  } else {
+    badge.innerText = 'NEW OFFER';
+    titleEl.innerText = 'Add New Offer';
+    idInput.value = '';
+    titleInput.value = '';
+    codeInput.value = '';
+    discountInput.value = '';
+    catInput.value = 'Recharge';
+    colorInput.value = '0xFF1E88E5';
+    descInput.value = '';
+    activeInput.checked = true;
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeOfferModal() {
+  const modal = document.getElementById('offer-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveOffer(event) {
+  event.preventDefault();
+  const id = document.getElementById('offer-id').value.trim();
+  const payload = {
+    title: document.getElementById('offer-title-input').value.trim(),
+    code: document.getElementById('offer-code-input').value.trim().toUpperCase(),
+    discount: document.getElementById('offer-discount-input').value.trim(),
+    category: document.getElementById('offer-category-input').value,
+    bannerColor: document.getElementById('offer-color-input').value,
+    description: document.getElementById('offer-desc-input').value.trim(),
+    isActive: document.getElementById('offer-active-input').checked
+  };
+
+  const url = id ? `${API_BASE}/admin/offers/${encodeURIComponent(id)}` : `${API_BASE}/admin/offers`;
+  const method = id ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.success) {
+      closeOfferModal();
+      showToast(id ? 'Offer updated & synced live to app!' : 'New offer added & live in app!');
+      fetchOffers();
+    } else {
+      alert(json.message || 'Could not save offer');
+    }
+  } catch (e) {
+    alert('Error saving offer: ' + e.message);
+  }
+}
+
+async function toggleOfferStatus(id, currentActive) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/offers/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: !currentActive })
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast(!currentActive ? 'Offer activated in app!' : 'Offer paused from app');
+      fetchOffers();
+    }
+  } catch (e) {
+    alert('Error updating offer status: ' + e.message);
+  }
+}
+
+async function deleteOffer(id, title) {
+  if (!confirm(`Delete offer "${title}" permanently? It will be removed from the FlamePay app immediately.`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/offers/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast('Offer deleted successfully');
+      fetchOffers();
+    } else {
+      alert(json.message || 'Could not delete offer');
+    }
+  } catch (e) {
+    alert('Error deleting offer: ' + e.message);
   }
 }

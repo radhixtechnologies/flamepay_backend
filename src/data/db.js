@@ -1,4 +1,9 @@
-// In-Memory Database with Comprehensive Seed Data for FlamePay Super-App
+const fs = require('fs');
+const path = require('path');
+
+const OFFERS_FILE = path.join(__dirname, 'offers.json');
+
+// In-Memory Database with Persistent Offers & Comprehensive Seed Data for FlamePay Super-App
 class Database {
   constructor() {
     this.admin = {
@@ -518,15 +523,17 @@ class Database {
       { id: 'dth', title: 'DTH Recharges', icon: 'tv', count: 6, label: 'DTH Recharge' }
     ];
 
-    this.offers = [
+    const defaultOffers = [
       {
         id: 'OFFER_1',
         title: 'Flat ₹50 Cashback',
         description: 'On first Electricity bill payment above ₹500',
         code: 'POW50',
         discount: '₹50 OFF',
-        category: 'Electricity',
-        bannerColor: '0xFF1E88E5'
+        category: 'Bills',
+        bannerColor: '0xFF1E88E5',
+        isActive: true,
+        createdAt: new Date().toISOString()
       },
       {
         id: 'OFFER_2',
@@ -535,7 +542,9 @@ class Database {
         code: 'FLAME10',
         discount: '10% OFF',
         category: 'Recharge',
-        bannerColor: '0xFFFF6F00'
+        bannerColor: '0xFFFF6F00',
+        isActive: true,
+        createdAt: new Date().toISOString()
       },
       {
         id: 'OFFER_3',
@@ -544,7 +553,9 @@ class Database {
         code: 'FREECC',
         discount: 'Free Lifetime',
         category: 'Cards',
-        bannerColor: '0xFF43A047'
+        bannerColor: '0xFF43A047',
+        isActive: true,
+        createdAt: new Date().toISOString()
       },
       {
         id: 'OFFER_4',
@@ -552,10 +563,24 @@ class Database {
         description: 'On Tata Play, Airtel DTH and Dish TV recharge',
         code: 'DTH25',
         discount: '₹25 OFF',
-        category: 'DTH',
-        bannerColor: '0xFF8E24AA'
+        category: 'Bills',
+        bannerColor: '0xFF8E24AA',
+        isActive: true,
+        createdAt: new Date().toISOString()
       }
     ];
+
+    this.offers = defaultOffers;
+    try {
+      if (fs.existsSync(OFFERS_FILE)) {
+        const parsed = JSON.parse(fs.readFileSync(OFFERS_FILE, 'utf8'));
+        if (Array.isArray(parsed)) {
+          this.offers = parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('[DB] Could not load offers.json, using defaults:', e.message);
+    }
 
     this.notifications = [
       {
@@ -577,6 +602,14 @@ class Database {
         actionRoute: '/wallet'
       }
     ];
+  }
+
+  saveOffers() {
+    try {
+      fs.writeFileSync(OFFERS_FILE, JSON.stringify(this.offers, null, 2), 'utf8');
+    } catch (e) {
+      console.warn('[DB] Could not save offers.json:', e.message);
+    }
   }
 
   getUser(idOrPhone) {

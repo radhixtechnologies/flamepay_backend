@@ -294,4 +294,76 @@ router.post('/system/test-mode', (req, res) => {
   });
 });
 
+// --- OFFERS & REWARDS MANAGEMENT (Add / Edit / Delete) ---
+router.get('/offers', (req, res) => {
+  res.json({ success: true, count: db.offers.length, data: db.offers });
+});
+
+router.post('/offers', (req, res) => {
+  const { title, description, code, discount, category, bannerColor, isActive } = req.body;
+  if (!title || !String(title).trim()) {
+    return res.status(400).json({ success: false, message: 'Offer title is required' });
+  }
+  if (!code || !String(code).trim()) {
+    return res.status(400).json({ success: false, message: 'Coupon code is required' });
+  }
+
+  const newOffer = {
+    id: 'OFFER_' + Date.now().toString().slice(-6),
+    title: String(title).trim(),
+    description: String(description || '').trim(),
+    code: String(code).trim().toUpperCase().replace(/\s+/g, ''),
+    discount: String(discount || 'Special Offer').trim(),
+    category: String(category || 'Recharge').trim(),
+    bannerColor: String(bannerColor || '0xFF1E88E5').trim(),
+    isActive: isActive !== false && isActive !== 'false',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  db.offers.unshift(newOffer);
+  if (typeof db.saveOffers === 'function') db.saveOffers();
+
+  res.status(201).json({ success: true, message: 'Offer created successfully', data: newOffer });
+});
+
+router.put('/offers/:id', (req, res) => {
+  const idx = db.offers.findIndex(o => o.id === req.params.id);
+  if (idx === -1) {
+    return res.status(404).json({ success: false, message: 'Offer not found' });
+  }
+
+  const existing = db.offers[idx];
+  const { title, description, code, discount, category, bannerColor, isActive } = req.body;
+
+  const updated = {
+    ...existing,
+    ...(title !== undefined ? { title: String(title).trim() } : {}),
+    ...(description !== undefined ? { description: String(description).trim() } : {}),
+    ...(code !== undefined ? { code: String(code).trim().toUpperCase().replace(/\s+/g, '') } : {}),
+    ...(discount !== undefined ? { discount: String(discount).trim() } : {}),
+    ...(category !== undefined ? { category: String(category).trim() } : {}),
+    ...(bannerColor !== undefined ? { bannerColor: String(bannerColor).trim() } : {}),
+    ...(isActive !== undefined ? { isActive: isActive === true || isActive === 'true' } : {}),
+    updatedAt: new Date().toISOString()
+  };
+
+  db.offers[idx] = updated;
+  if (typeof db.saveOffers === 'function') db.saveOffers();
+
+  res.json({ success: true, message: 'Offer updated successfully', data: updated });
+});
+
+router.delete('/offers/:id', (req, res) => {
+  const idx = db.offers.findIndex(o => o.id === req.params.id);
+  if (idx === -1) {
+    return res.status(404).json({ success: false, message: 'Offer not found' });
+  }
+
+  const [removed] = db.offers.splice(idx, 1);
+  if (typeof db.saveOffers === 'function') db.saveOffers();
+
+  res.json({ success: true, message: 'Offer deleted successfully', data: removed });
+});
+
 module.exports = router;

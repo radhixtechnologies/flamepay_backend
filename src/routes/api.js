@@ -2389,9 +2389,17 @@ router.get('/cibil/factors', (req, res) => {
 // --- OFFERS, NOTIFICATIONS & HISTORY ---
 router.get('/offers/list', (req, res) => {
   const { category } = req.query;
-  let list = db.offers || [];
+  let list = (db.offers || []).filter(o => o.isActive !== false);
   if (category && category !== 'All') {
-    list = list.filter(o => o.category && o.category.toLowerCase() === category.toLowerCase());
+    const target = category.toLowerCase().trim();
+    list = list.filter(o => {
+      const cat = (o.category || '').toLowerCase().trim();
+      if (cat === target) return true;
+      if (target === 'bills' && ['electricity', 'dth', 'water', 'gas', 'broadband', 'fastag'].includes(cat)) {
+        return true;
+      }
+      return false;
+    });
   }
   success(res, list);
 });
