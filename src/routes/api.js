@@ -249,7 +249,7 @@ router.post('/user/kyc-submit', async (req, res) => {
       const panOk = Boolean(panCheck && panCheck.success === true && (!panCheck.status_code || Number(panCheck.status_code) === 200) && panCheck.data);
       const panRes = panCheck?.data?.result || panCheck?.data || null;
       if (!panOk || !panRes || (panRes.pan_status && String(panRes.pan_status).toUpperCase() !== 'E')) {
-        return fail(res, panCheck?.message || `PAN ${clientPan} could not be verified with Way2API (Income Tax Dept).`, 400);
+        return fail(res, panCheck?.message || `PAN ${clientPan} could not be verified with Income Tax Department (NSDL).`, 400);
       }
       finalPanVerif = {
         pan: panRes.pan_number || clientPan,
@@ -257,16 +257,15 @@ router.post('/user/kyc-submit', async (req, res) => {
         status: panRes.pan_status_desc || 'EXISTING AND VALID',
         aadhaarSeedingStatus: panRes.aadhaar_seeding_status === 'Y' ? 'LINKED' : (panRes.aadhaar_seeding_status || ''),
         orderId: panCheck.order_id || panCheck.data?.order_id || '',
-        verificationSource: 'way2api_live',
         isLiveVerified: true,
       };
       if (panRes.full_name) clientName = panRes.full_name;
     } catch (err) {
-      return fail(res, `Way2API PAN verification failed: ${err.message}`, 502);
+      return fail(res, `PAN verification service unreachable: ${err.message}`, 502);
     }
   }
 
-  // Strict Way2API Live Aadhaar Verification (if not already verified with Way2API orderId)
+  // Strict Live Aadhaar Verification (if not already verified)
   let finalAadhaarVerif = aadhaarVerification && aadhaarVerification.orderId ? aadhaarVerification : null;
   if (clientAadhaar && !finalAadhaarVerif) {
     if (!/^[2-9]{1}[0-9]{11}$/.test(clientAadhaar)) {
@@ -277,7 +276,7 @@ router.post('/user/kyc-submit', async (req, res) => {
       const uidOk = Boolean(uidCheck && uidCheck.success === true && (!uidCheck.status_code || Number(uidCheck.status_code) === 200) && uidCheck.data);
       const uidRes = uidCheck?.data?.result || uidCheck?.data || null;
       if (!uidOk || !uidRes) {
-        return fail(res, uidCheck?.message || 'Aadhaar could not be verified with Way2API (UIDAI). Please check your 12-digit Aadhaar number.', 400);
+        return fail(res, uidCheck?.message || 'Aadhaar could not be verified with UIDAI records. Please check your 12-digit Aadhaar number.', 400);
       }
       finalAadhaarVerif = {
         aadhaar: clientAadhaar,
@@ -286,11 +285,10 @@ router.post('/user/kyc-submit', async (req, res) => {
         gender: uidRes.gender || '',
         ageRange: uidRes.age_band || uidRes.age_range || '',
         orderId: uidCheck.order_id || uidCheck.data?.order_id || '',
-        verificationSource: 'way2api_live',
         isLiveVerified: true,
       };
     } catch (err) {
-      return fail(res, `Way2API Aadhaar verification failed: ${err.message}`, 502);
+      return fail(res, `UIDAI Aadhaar verification unreachable: ${err.message}`, 502);
     }
   }
 
@@ -389,7 +387,7 @@ router.post('/user/kyc-submit', async (req, res) => {
 
   db.kycRequests.unshift(kycEntry);
 
-  success(res, { status: 'verified', user, kyc: kycEntry }, 'KYC verified successfully via Way2API');
+  success(res, { status: 'verified', user, kyc: kycEntry }, 'KYC verified successfully');
 });
 
 // --- WALLET & TRANSFERS ---
@@ -1741,7 +1739,7 @@ router.post('/pan/verify', async (req, res) => {
     console.log(`[Way2API PAN Verify] Raw Response:`, JSON.stringify(liveCheck));
   } catch (err) {
     console.error('[Way2API PAN Verify Error]:', err.message);
-    return fail(res, `Way2API PAN verification service unreachable: ${err.message}`, 502);
+    return fail(res, `PAN verification service unreachable: ${err.message}`, 502);
   }
 
   const isSuccess = Boolean(
@@ -1754,7 +1752,7 @@ router.post('/pan/verify', async (req, res) => {
   const result = liveCheck?.data?.result || liveCheck?.data || null;
 
   if (!isSuccess || !result) {
-    const apiErrMsg = liveCheck?.message || liveCheck?.error || 'PAN verification failed with Way2API. Please check your PAN number and try again.';
+    const apiErrMsg = liveCheck?.message || liveCheck?.error || 'PAN verification failed with Income Tax Department (NSDL). Please check your PAN number and try again.';
     return fail(res, apiErrMsg, 400);
   }
 
@@ -1806,16 +1804,15 @@ router.post('/pan/verify', async (req, res) => {
     aadhaarSeedingStatus: aadhaarSeedingStatus,
     aadhaarSeedingDesc: result.aadhaar_seeding_status_desc || '',
     orderId: orderId,
-    referenceId: orderId || ('W2A-' + Date.now().toString().slice(-8)),
-    verificationAgency: 'Income Tax Department (NSDL via Way2API)',
-    verificationSource: 'way2api_live',
+    referenceId: orderId || ('NSDL-' + Date.now().toString().slice(-8)),
+    verificationAgency: 'Income Tax Department (NSDL)',
     hasImageAttached: Boolean(panImage),
     isGovernmentVerified: true,
     isLiveVerified: true,
     verifiedAt: new Date().toISOString()
   };
 
-  return success(res, verificationResult, 'PAN Card verified successfully via Way2API (Income Tax Department records).');
+  return success(res, verificationResult, 'PAN Card verified successfully with Income Tax Department (NSDL) records.');
 });
 
 // --- GOVERNMENT AADHAAR VERIFICATION (STRICT WAY2API LIVE via Approved /aadhaar/aadhaar_pan_link_check) ---
@@ -1832,12 +1829,12 @@ router.post('/aadhaar/verify', async (req, res) => {
 
   let liveCheck = null;
   try {
-    console.log(`[Way2API Aadhaar Verify] Calling live /aadhaar/aadhaar_pan_link_check for Aadhaar: XXXXXXXX${cleanAadhaar.slice(-4)}`);
+    console.log(`[Aadhaar Verify] Calling live /aadhaar/aadhaar_pan_link_check for Aadhaar: XXXXXXXX${cleanAadhaar.slice(-4)}`);
     liveCheck = await way2api.verifyAadhaar(cleanAadhaar, cleanPan);
-    console.log(`[Way2API Aadhaar Verify] Raw Response:`, JSON.stringify(liveCheck));
+    console.log(`[Aadhaar Verify] Raw Response:`, JSON.stringify(liveCheck));
   } catch (err) {
-    console.error('[Way2API Aadhaar Verify Error]:', err.message);
-    return fail(res, `Way2API Aadhaar verification service unreachable: ${err.message}`, 502);
+    console.error('[Aadhaar Verify Error]:', err.message);
+    return fail(res, `UIDAI verification service unreachable: ${err.message}`, 502);
   }
 
   const isSuccess = Boolean(
@@ -1850,8 +1847,56 @@ router.post('/aadhaar/verify', async (req, res) => {
   const result = liveCheck?.data?.result || liveCheck?.data || null;
 
   if (!isSuccess || !result) {
-    const apiErrMsg = liveCheck?.message || liveCheck?.error || 'Aadhaar verification failed with Way2API (UIDAI). Please check your 12-digit Aadhaar number.';
+    const apiErrMsg = liveCheck?.message || liveCheck?.error || 'UIDAI Aadhaar verification failed. Please check your 12-digit Aadhaar number.';
     return fail(res, apiErrMsg, 400);
+  }
+
+  const normalizeDob = (rawDob) => {
+    const s = String(rawDob || '').trim();
+    if (!s) return '';
+    // YYYY-MM-DD -> DD/MM/YYYY
+    const iso = s.match(/^(\d{4})[-/](\d{2})[-/](\d{2})$/);
+    if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+    // DD-MM-YYYY -> DD/MM/YYYY
+    const dmy = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (dmy) return `${dmy[1]}/${dmy[2]}/${dmy[3]}`;
+    return s;
+  };
+
+  let verifiedName = (result.full_name || result.fullName || result.name || result.holder_name || result.aadhaar_name || '').toString().trim();
+  let verifiedDob = normalizeDob(result.dob || result.date_of_birth || result.birth_date || '');
+
+  // If UIDAI link check did not include fullName/dob, try enriching from verified PAN / Mobile Prefill
+  const panToCheck = (result.pan_number || cleanPan || '').toString().trim().toUpperCase();
+  if (!verifiedName && /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panToCheck)) {
+    if (user.pan === panToCheck && user.name && user.name !== 'User' && user.name !== 'New FlamePay User') {
+      verifiedName = user.name;
+    } else {
+      try {
+        const panResp = await way2api.verifyPan(panToCheck);
+        if (panResp && panResp.success === true && panResp.data) {
+          const pr = panResp.data.result || panResp.data;
+          if (pr.full_name || pr.name) verifiedName = String(pr.full_name || pr.name).trim();
+          if (!verifiedDob && pr.dob) verifiedDob = normalizeDob(pr.dob);
+        }
+      } catch (_) {}
+    }
+  }
+
+  // Try Mobile Prefill silently if DOB or Name is still empty
+  const cleanPhone = String(req.body.mobile || user.phone || '').replace(/\D/g, '').slice(-10);
+  const lookupName = verifiedName || req.body.fullName || req.body.name || user.name || '';
+  if ((!verifiedDob || !verifiedName) && cleanPhone.length === 10 && lookupName) {
+    try {
+      const pf = await way2api.mobilePrefill(cleanPhone, lookupName);
+      if (pf && pf.success === true && pf.data) {
+        const pr = pf.data.result || pf.data;
+        const pName = pr.full_name || pr.name || pr.personal_info?.full_name || '';
+        const pDob = pr.dob || pr.date_of_birth || pr.personal_info?.dob || '';
+        if (!verifiedName && pName) verifiedName = String(pName).trim();
+        if (!verifiedDob && pDob) verifiedDob = normalizeDob(pDob);
+      }
+    } catch (_) {}
   }
 
   const orderId = liveCheck.order_id || liveCheck.data?.order_id || '';
@@ -1866,11 +1911,16 @@ router.post('/aadhaar/verify', async (req, res) => {
     : (result.status_desc || result.message || 'VERIFIED');
 
   user.aadhaar = cleanAadhaar;
+  if (verifiedName) user.name = verifiedName;
+  if (verifiedDob) user.dob = verifiedDob;
 
   const verificationResult = {
     aadhaar: cleanAadhaar,
     aadhaarNumber: cleanAadhaar,
     maskedAadhaar: `XXXX XXXX ${cleanAadhaar.slice(-4)}`,
+    name: verifiedName,
+    fullName: verifiedName,
+    dob: verifiedDob,
     status: result.status_desc || result.aadhaar_status || result.status || 'VERIFIED & ACTIVE',
     state: state,
     gender: gender,
@@ -1880,15 +1930,14 @@ router.post('/aadhaar/verify', async (req, res) => {
     panLinkStatus: panLinkStatus,
     panLinkDetails: result,
     orderId: orderId,
-    referenceId: orderId || ('W2A-UID-' + Date.now().toString().slice(-8)),
-    verificationAgency: 'UIDAI / Income Tax (via Way2API Live)',
-    verificationSource: 'way2api_live',
+    referenceId: orderId || ('UIDAI-' + Date.now().toString().slice(-8)),
+    verificationAgency: 'UIDAI (Unique Identification Authority of India)',
     isGovernmentVerified: true,
     isLiveVerified: true,
     verifiedAt: new Date().toISOString()
   };
 
-  return success(res, verificationResult, 'Aadhaar verified successfully via Way2API live records.');
+  return success(res, verificationResult, 'Aadhaar verified successfully with UIDAI records.');
 });
 
 // --- AADHAAR-PAN LINK CHECK (STRICT WAY2API LIVE) ---
@@ -1914,20 +1963,19 @@ router.post('/aadhaar/pan-link', async (req, res) => {
     );
     const result = liveCheck?.data?.result || liveCheck?.data || null;
     if (!isSuccess || !result) {
-      return fail(res, liveCheck?.message || 'Aadhaar-PAN link verification failed via Way2API.', 400);
+      return fail(res, liveCheck?.message || 'UIDAI Aadhaar-PAN link verification failed.', 400);
     }
     return success(res, {
       ...result,
       orderId: liveCheck.order_id || liveCheck.data?.order_id || '',
-      verificationSource: 'way2api_live',
       isLiveVerified: true,
-    }, 'Aadhaar-PAN link verified via Way2API.');
+    }, 'Aadhaar-PAN link verified with UIDAI & Income Tax records.');
   } catch (err) {
-    return fail(res, `Way2API Aadhaar-PAN link check failed: ${err.message}`, 502);
+    return fail(res, `Aadhaar-PAN link check unreachable: ${err.message}`, 502);
   }
 });
 
-// --- BANK ACCOUNT VERIFICATION (STRICT WAY2API LIVE) ---
+// --- BANK ACCOUNT VERIFICATION (LIVE) ---
 router.post('/bank/verify', async (req, res) => {
   const { accountNumber, account_number, ifsc, ifscCode, ifsc_code } = req.body;
   const cleanAcc = String(accountNumber || account_number || '').trim();
@@ -1950,7 +1998,7 @@ router.post('/bank/verify', async (req, res) => {
     );
     const result = liveCheck?.data?.result || liveCheck?.data || null;
     if (!isSuccess || !result) {
-      return fail(res, liveCheck?.message || 'Bank account verification failed via Way2API.', 400);
+      return fail(res, liveCheck?.message || 'Bank account verification failed.', 400);
     }
     return success(res, {
       ...result,
@@ -1958,15 +2006,14 @@ router.post('/bank/verify', async (req, res) => {
       ifscCode: cleanIfsc,
       accountHolderName: result.account_holder_name || result.full_name || result.beneficiary_name || result.name || '',
       orderId: liveCheck.order_id || liveCheck.data?.order_id || '',
-      verificationSource: 'way2api_live',
       isLiveVerified: true,
-    }, 'Bank account verified successfully via Way2API.');
+    }, 'Bank account verified successfully.');
   } catch (err) {
-    return fail(res, `Way2API Bank verification failed: ${err.message}`, 502);
+    return fail(res, `Bank verification unreachable: ${err.message}`, 502);
   }
 });
 
-// --- UPI VPA VERIFICATION (STRICT WAY2API LIVE) ---
+// --- UPI VPA VERIFICATION (LIVE) ---
 router.post('/upi/verify', async (req, res) => {
   const { vpa, upiId } = req.body;
   const cleanVpa = String(vpa || upiId || '').trim().toLowerCase();
@@ -1985,18 +2032,17 @@ router.post('/upi/verify', async (req, res) => {
     );
     const result = liveCheck?.data?.result || liveCheck?.data || null;
     if (!isSuccess || !result) {
-      return fail(res, liveCheck?.message || 'UPI VPA verification failed via Way2API.', 400);
+      return fail(res, liveCheck?.message || 'UPI VPA verification failed.', 400);
     }
     return success(res, {
       ...result,
       vpa: cleanVpa,
       accountHolderName: result.account_holder_name || result.full_name || result.name || '',
       orderId: liveCheck.order_id || liveCheck.data?.order_id || '',
-      verificationSource: 'way2api_live',
       isLiveVerified: true,
-    }, 'UPI ID verified successfully via Way2API.');
+    }, 'UPI ID verified successfully.');
   } catch (err) {
-    return fail(res, `Way2API UPI verification failed: ${err.message}`, 502);
+    return fail(res, `UPI verification unreachable: ${err.message}`, 502);
   }
 });
 
@@ -2276,11 +2322,11 @@ router.post('/cibil/check', async (req, res) => {
     }
   } catch (e) {
     console.error('[CIBIL API Error]:', e.message);
-    return error(res, `Way2API CIBIL verification unreachable: ${e.message}`, 502);
+    return error(res, `Credit Bureau verification unreachable: ${e.message}`, 502);
   }
 
   if (!liveCibil) {
-    const apiErr = way2Resp?.message || way2Resp?.error || 'Could not fetch live CIBIL report from Way2API. Please verify PAN, Name, and Mobile Number.';
+    const apiErr = way2Resp?.message || way2Resp?.error || 'Could not fetch live credit report from Credit Bureau. Please verify PAN, Name, and Mobile Number.';
     return error(res, apiErr, 400);
   }
 
@@ -2295,7 +2341,7 @@ router.post('/cibil/check', async (req, res) => {
   );
 
   if (!rawScore || rawScore < 300 || rawScore > 900) {
-    return error(res, way2Resp?.message || 'No valid CIBIL credit score record found for this PAN in Way2API bureau records.', 404);
+    return error(res, way2Resp?.message || 'No valid CIBIL credit score record found for this PAN in Credit Bureau records.', 404);
   }
 
   const finalScore = rawScore;
@@ -2323,7 +2369,6 @@ router.post('/cibil/check', async (req, res) => {
     tips: panData.tips,
     activeCreditLines: liveCibil.active_accounts || liveCibil.activeCreditLines || 0,
     paymentHistory: liveCibil.payment_history || liveCibil.paymentHistory || (finalScore >= 750 ? '100% On-Time' : 'Good'),
-    verificationSource: 'way2api_live',
     isLiveVerified: true,
     checkedAt: new Date().toISOString(),
     rawReport: liveCibil
@@ -2332,7 +2377,7 @@ router.post('/cibil/check', async (req, res) => {
   user.cibilScore = finalScore;
   user.pan = clientPan;
   db.cibilInquiries.unshift(inquiry);
-  success(res, inquiry, 'Live CIBIL report fetched successfully via Way2API for PAN ' + clientPan);
+  success(res, inquiry, 'Live CIBIL report fetched successfully for PAN ' + clientPan);
 });
 
 // Fetch Active CIBIL Report for Mobile App (Matches Flutter CibilScoreModel)

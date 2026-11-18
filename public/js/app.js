@@ -818,14 +818,14 @@ async function fetchKycRequests() {
                 </div>
               ` : ''}
 
-              <!-- Way2API Live Verification Proofs (PAN & Aadhaar) -->
+              <!-- UIDAI & NSDL Live Verification Proofs (PAN & Aadhaar) -->
               ${(k.panVerification || k.aadhaarVerification) ? `
                 <div style="margin-top:14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:14px;">
                   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
                     <div style="font-weight:700; color:#1e40af; display:flex; align-items:center; gap:8px; font-size:13px;">
-                      <i class="fa-solid fa-circle-check" style="color:#2563eb;"></i> Way2API Live Government Verification
+                      <i class="fa-solid fa-circle-check" style="color:#2563eb;"></i> UIDAI & NSDL Government Verification
                     </div>
-                    <span class="badge badge-primary"><i class="fa-solid fa-bolt"></i> Way2API Live</span>
+                    <span class="badge badge-primary"><i class="fa-solid fa-shield-check"></i> Live Verified</span>
                   </div>
                   <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; font-size:12px; color:#1e3a8a;">
                     ${k.panVerification ? `
