@@ -689,21 +689,111 @@ router.get('/recharge/roffer', async (req, res) => {
   }
 });
 
-// DTH Operator & Customer Info
+// DTH Operator Check (Live dth_operator_check)
 router.post('/dth/operator-check', async (req, res) => {
-  const { dthNumber, dth_number } = req.body;
-  const num = dthNumber || dth_number;
-  if (!num) return fail(res, 'DTH number is required');
-  const check = await way2api.checkDthOperator(num);
-  success(res, check.data || check);
+  const { dthNumber, dth_number, subscriberId } = req.body;
+  const num = String(dthNumber || dth_number || subscriberId || '').replace(/\s+/g, '').trim();
+  if (!num || num.length < 6) return fail(res, 'Valid DTH Subscriber ID is required', 400);
+
+  try {
+    console.log(`[DTH Operator Check] Checking subscriber ID: ${num}`);
+    const check = await way2api.checkDthOperator(num);
+    console.log('[DTH Operator Check] Raw Response:', JSON.stringify(check));
+
+    const isSuccess = Boolean(
+      check &&
+      check.success === true &&
+      (!check.status_code || Number(check.status_code) === 200) &&
+      check.data
+    );
+    const result = check?.data?.result || check?.data || null;
+    if (!isSuccess || !result) {
+      return fail(res, check?.message || 'Could not detect DTH operator for this Subscriber ID.', 400);
+    }
+
+    const opName = String(result.operator || result.operator_name || result.dth_operator || result.provider || '').trim();
+    const opCode = String(result.operator_code || result.code || opName).trim().toLowerCase();
+
+    return success(res, {
+      ...result,
+      dthNumber: num,
+      operator: opName || opCode,
+      operatorCode: opCode,
+      orderId: check.order_id || check.data?.order_id || '',
+      isLiveVerified: true,
+    }, 'DTH operator detected successfully');
+  } catch (err) {
+    return fail(res, `DTH operator check failed: ${err.message}`, 502);
+  }
 });
 
+// DTH Advance Information (Live dth_info_advance)
 router.post('/dth/info', async (req, res) => {
-  const { dthNumber, operator, dth_number } = req.body;
-  const num = dthNumber || dth_number;
-  if (!num) return fail(res, 'DTH number is required');
-  const info = await way2api.getDthInfo(num, operator);
-  success(res, info.data || info);
+  const { dthNumber, dth_number, subscriberId, operator } = req.body;
+  const num = String(dthNumber || dth_number || subscriberId || '').replace(/\s+/g, '').trim();
+  if (!num || num.length < 6) return fail(res, 'Valid DTH Subscriber ID is required', 400);
+
+  try {
+    let resolvedOperator = String(operator || '').trim();
+
+    // Auto-detect DTH operator first if not provided
+    if (!resolvedOperator) {
+      try {
+        const opCheck = await way2api.checkDthOperator(num);
+        if (opCheck && opCheck.success === true && opCheck.data) {
+          const opRes = opCheck.data.result || opCheck.data;
+          resolvedOperator = String(opRes.operator || opRes.operator_name || opRes.dth_operator || '').trim();
+        }
+      } catch (_) {}
+    }
+
+    console.log(`[DTH Advance Info] Fetching for ${num} (operator: ${resolvedOperator || 'auto'})`);
+    const info = await way2api.getDthInfo(num, resolvedOperator || 'tata_play');
+    console.log('[DTH Advance Info] Raw Response:', JSON.stringify(info));
+
+    const isSuccess = Boolean(
+      info &&
+      info.success === true &&
+      (!info.status_code || Number(info.status_code) === 200) &&
+      info.data
+    );
+    const result = info?.data?.result || info?.data || null;
+    if (!isSuccess || !result) {
+      return fail(res, info?.message || 'Could not fetch DTH customer info. Please verify Subscriber ID and Operator.', 400);
+    }
+
+    // Handle cases where Way2API returns result as array (e.g. [ { customerName: ... } ])
+    const rec = Array.isArray(result) ? (result[0] || {}) : result;
+
+    const customerName = String(rec.customer_name || rec.customerName || rec.name || rec.CustomerName || '').trim();
+    const balance = String(rec.balance ?? rec.account_balance ?? rec.Balance ?? rec.bal ?? '').trim();
+    const monthlyRecharge = String(rec.monthly_recharge ?? rec.monthlyRecharge ?? rec.MonthlyRecharge ?? rec.monthly_pack ?? rec.recommended_amount ?? '').trim();
+    const nextRechargeDate = String(rec.next_recharge_date || rec.nextRechargeDate || rec.NextRechargeDate || rec.expiry_date || rec.due_date || '').trim();
+    const lastRechargeAmount = String(rec.last_recharge_amount ?? rec.lastRechargeAmount ?? rec.LastRechargeAmount ?? '').trim();
+    const lastRechargeDate = String(rec.last_recharge_date || rec.lastRechargeDate || rec.LastRechargeDate || '').trim();
+    const planName = String(rec.plan_name || rec.planName || rec.planname || rec.active_plan || rec.package_name || '').trim();
+    const status = String(rec.status || rec.Status || rec.account_status || 'Active').trim();
+    const rmn = String(rec.rmn || rec.RMN || rec.registered_mobile || rec.mobile || '').trim();
+
+    return success(res, {
+      dthNumber: num,
+      operator: resolvedOperator || rec.operator || '',
+      customerName,
+      balance,
+      monthlyRecharge,
+      nextRechargeDate,
+      lastRechargeAmount,
+      lastRechargeDate,
+      planName,
+      status,
+      rmn,
+      orderId: info.order_id || info.data?.order_id || '',
+      isLiveVerified: true,
+      raw: rec,
+    }, 'DTH customer information fetched successfully');
+  } catch (err) {
+    return fail(res, `DTH customer info fetch failed: ${err.message}`, 502);
+  }
 });
 
 router.get('/dth/plans', async (req, res) => {

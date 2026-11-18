@@ -96,24 +96,34 @@ const getROffer = async (mobileNumber, operator) => {
 };
 
 /**
- * Check DTH operator for subscriber ID
+ * Check DTH operator for subscriber ID (Row #21: dth_operator_check)
  */
 const checkDthOperator = async (dthNumber) => {
-  return await post('/dth/operator-check', { dth_number: String(dthNumber).trim() });
+  return await post('/dth/operator-check', {
+    dth_number: String(dthNumber || '').replace(/\s+/g, '').trim(),
+  });
+};
+
+const normalizeDthOperator = (operator) => {
+  const op = String(operator || '').toLowerCase().trim();
+  if (op.includes('tata') || op.includes('sky')) return 'tata_play';
+  if (op.includes('airtel')) return 'airtel_dth';
+  if (op.includes('dish')) return 'dish_tv';
+  if (op.includes('sun')) return 'sun_direct';
+  if (op.includes('videocon') || op.includes('d2h')) return 'videocon_d2h';
+  if (op.includes('reliance') || op.includes('big')) return 'reliance_bigtv';
+  return op || 'tata_play';
 };
 
 /**
- * Fetch DTH Customer info (Balance, customer name, status, plan expiry)
+ * Fetch DTH Advance Customer Info (Row #20: dth_info_advance -> Balance, Name, Status, Monthly Pack, Expiry)
  */
 const getDthInfo = async (dthNumber, operator) => {
-  let op = String(operator || 'tata_play').toLowerCase();
-  if (op.includes('tata')) op = 'tata_play';
-  else if (op.includes('dish')) op = 'dish_tv';
-  else if (op.includes('sun')) op = 'sun_direct';
-  else if (op.includes('airtel')) op = 'airtel_dth';
-  else if (op.includes('d2h') || op.includes('videocon')) op = 'videocon_d2h';
-
-  return await post('/dth/info', { dth_number: String(dthNumber).trim(), operator: op });
+  const op = normalizeDthOperator(operator);
+  return await post('/dth/info', {
+    dth_number: String(dthNumber || '').replace(/\s+/g, '').trim(),
+    operator: op,
+  });
 };
 
 /**
