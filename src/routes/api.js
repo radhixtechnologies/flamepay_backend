@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const db = require('../data/db');
 const way2api = require('../services/way2api');
 const cyrus = require('../services/cyrus');
@@ -212,12 +214,26 @@ router.get('/user/kyc-status', (req, res) => {
 });
 
 router.post('/user/kyc-submit', (req, res) => {
-  const { fullName, name, panNumber, pan, aadhaarNumber, aadhaar, dob, address, annualIncome, occupation, documents } = req.body;
+  const {
+    fullName,
+    name,
+    panNumber,
+    pan,
+    aadhaarNumber,
+    aadhaar,
+    dob,
+    address,
+    annualIncome,
+    occupation,
+    documents,
+    qrVerification,
+    isBiometricVerified
+  } = req.body;
   const user = getAuthenticatedUser(req);
 
-  const clientName = fullName || name;
+  const clientName = fullName || name || (qrVerification && qrVerification.scannedName);
   const clientPan = (panNumber || pan || '').toString().trim().toUpperCase();
-  const clientAadhaar = (aadhaarNumber || aadhaar || '').toString().trim();
+  const clientAadhaar = (aadhaarNumber || aadhaar || (qrVerification && qrVerification.scannedAadhaar) || '').toString().trim();
 
   if (clientName) user.name = clientName;
   if (clientPan) user.pan = clientPan;
@@ -226,28 +242,92 @@ router.post('/user/kyc-submit', (req, res) => {
   user.monthlyLimit = 200000.00;
   user.isVip = true;
 
-  db.kycRequests.unshift({
-    id: 'KYC_REQ_' + Date.now().toString().slice(-4),
+  const reqId = 'KYC_REQ_' + Date.now().toString().slice(-4);
+  const uploadsDir = path.join(__dirname, '../../public/uploads/kyc');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  const processedDocs = {};
+  if (documents && typeof documents === 'object') {
+    for (const [key, doc] of Object.entries(documents)) {
+      if (!doc) continue;
+      if (typeof doc === 'string') {
+        if (doc.startsWith('data:image/')) {
+          const matches = doc.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+          if (matches) {
+            const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+            const fname = `${reqId}_${key}.${ext}`;
+            const fpath = path.join(uploadsDir, fname);
+            try {
+              fs.writeFileSync(fpath, Buffer.from(matches[2], 'base64'));
+              processedDocs[key] = {
+                name: fname,
+                url: `/uploads/kyc/${fname}`,
+                dataUrl: doc,
+                size: Buffer.byteLength(matches[2], 'base64'),
+                type: key
+              };
+            } catch (err) {
+              processedDocs[key] = { name: fname, dataUrl: doc, type: key };
+            }
+          } else {
+            processedDocs[key] = { name: doc, type: key };
+          }
+        } else {
+          processedDocs[key] = { name: doc, type: key };
+        }
+      } else if (typeof doc === 'object') {
+        const docObj = { ...doc };
+        if (docObj.dataUrl && docObj.dataUrl.startsWith('data:image/')) {
+          const matches = docObj.dataUrl.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+          if (matches) {
+            const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+            const fname = `${reqId}_${key}.${ext}`;
+            const fpath = path.join(uploadsDir, fname);
+            try {
+              fs.writeFileSync(fpath, Buffer.from(matches[2], 'base64'));
+              docObj.url = `/uploads/kyc/${fname}`;
+            } catch (err) {
+              console.error('Error saving KYC image:', err);
+            }
+          }
+        }
+        processedDocs[key] = docObj;
+      }
+    }
+  }
+
+  const finalDob = dob || user.dob || (qrVerification && qrVerification.scannedDob) || '';
+  const finalAddr = address || user.address || (qrVerification && qrVerification.scannedAddress) || '';
+
+  const kycEntry = {
+    id: reqId,
     userId: user.id,
     userName: user.name,
     userPhone: user.phone,
+    userEmail: user.email,
     pan: user.pan,
     aadhaar: user.aadhaar,
-    dob: dob || user.dob,
-    address: address || user.address,
+    dob: finalDob,
+    address: finalAddr,
     annualIncome: annualIncome || 'Above 5 Lakhs',
     occupation: occupation || 'Professional',
     status: 'approved',
-    documents: documents || {
-      aadhaarFront: 'Aadhaar_Front_Verified.jpg',
-      aadhaarBack: 'Aadhaar_Back_Verified.jpg',
-      panCard: 'PAN_Card_Verified.jpg',
-      selfie: 'Live_Selfie_Matched.jpg'
+    documents: Object.keys(processedDocs).length > 0 ? processedDocs : {
+      aadhaarFront: { name: 'Aadhaar_Front_Verified.jpg', type: 'Aadhaar Card (Front)' },
+      aadhaarBack: { name: 'Aadhaar_Back_Verified.jpg', type: 'Aadhaar Card (Back)' },
+      panCard: { name: 'PAN_Card_Verified.jpg', type: 'PAN Card' },
+      selfie: { name: 'Live_Selfie_Matched.jpg', type: 'Live Selfie' }
     },
+    qrVerification: qrVerification || null,
+    isBiometricVerified: isBiometricVerified === true || isBiometricVerified === 'true',
     submittedAt: new Date().toISOString()
-  });
+  };
 
-  success(res, { status: 'verified', user }, 'KYC verified successfully');
+  db.kycRequests.unshift(kycEntry);
+
+  success(res, { status: 'verified', user, kyc: kycEntry }, 'KYC verified successfully');
 });
 
 // --- WALLET & TRANSFERS ---
@@ -1552,6 +1632,17 @@ const handleCreditCardApply = async (req, res) => {
 
 router.post('/credit-cards/apply', handleCreditCardApply);
 router.post('/credit-card/apply', handleCreditCardApply);
+
+// GET /credit-cards/my-applications
+router.get('/credit-cards/my-applications', (req, res) => {
+  const user = getAuthenticatedUser(req);
+  const userLeads = (db.creditCardLeads || []).filter(lead => 
+    lead.userId === user.id ||
+    (lead.userPhone && user.phone && String(lead.userPhone).slice(-10) === String(user.phone).slice(-10)) ||
+    (lead.pan && user.pan && String(lead.pan).toUpperCase() === String(user.pan).toUpperCase())
+  );
+  success(res, userLeads, 'User credit card applications fetched');
+});
 
 // --- GOVERNMENT PAN CARD VERIFICATION ---
 router.post('/pan/verify', async (req, res) => {

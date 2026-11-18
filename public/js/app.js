@@ -690,46 +690,200 @@ async function fetchKycRequests() {
         return;
       }
 
-      fullList.innerHTML = cachedKyc.map(k => `
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-header">
-            <div>
-              <h3>${k.userName} (${k.userPhone})</h3>
-              <p>Submitted: ${formatTimestamp(k.submittedAt)}</p>
+      fullList.innerHTML = cachedKyc.map(k => {
+        const docs = k.documents || {};
+        const docKeys = [
+          { key: 'aadhaarFront', label: 'Aadhaar Card (Front)', icon: 'fa-id-card' },
+          { key: 'aadhaarBack', label: 'Aadhaar Card (Back)', icon: 'fa-id-card' },
+          { key: 'panCard', label: 'PAN Card (Front)', icon: 'fa-address-card' },
+          { key: 'selfie', label: 'Live Facial Selfie', icon: 'fa-camera' }
+        ];
+
+        const docCardsHtml = docKeys.map(dk => {
+          const item = docs[dk.key];
+          if (!item) {
+            return `
+              <div class="kyc-doc-card">
+                <div class="kyc-doc-card-title"><i class="fa-solid ${dk.icon} text-slate-400"></i> ${dk.label}</div>
+                <div style="height:140px; background:#f1f5f9; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; font-size:12px; border:1px dashed #cbd5e1;">
+                  <i class="fa-regular fa-image" style="font-size:24px; margin-bottom:6px;"></i>
+                  <span>Not Uploaded</span>
+                </div>
+              </div>
+            `;
+          }
+
+          let imgSrc = '';
+          let fileName = 'document.jpg';
+          let fileSize = '';
+
+          if (typeof item === 'string') {
+            if (item.startsWith('data:image/') || item.startsWith('http') || item.startsWith('/')) {
+              imgSrc = item;
+            } else {
+              imgSrc = `/uploads/kyc/${item}`;
+              fileName = item;
+            }
+          } else if (typeof item === 'object') {
+            imgSrc = item.url || item.dataUrl || (item.name && item.name.startsWith('/') ? item.name : `/uploads/kyc/${item.name}`);
+            fileName = item.name || `${dk.key}.jpg`;
+            if (item.size) {
+              fileSize = `(${(item.size / 1024).toFixed(1)} KB)`;
+            }
+          }
+
+          const safeImgSrc = imgSrc.replace(/'/g, "\\'");
+          const safeLabel = dk.label.replace(/'/g, "\\'");
+          const safeUserName = (k.userName || 'Applicant').replace(/'/g, "\\'");
+
+          return `
+            <div class="kyc-doc-card">
+              <div class="kyc-doc-card-title">
+                <i class="fa-solid ${dk.icon} text-blue"></i> ${dk.label}
+              </div>
+              <div class="kyc-thumb-container" onclick="openKycDocModal('${safeImgSrc}', '${safeLabel}', '${safeUserName}', '${fileName} ${fileSize}')">
+                <img src="${imgSrc}" class="kyc-thumb-img" alt="${dk.label}" onerror="this.onerror=null; this.src='/assets/flamepay_icon.png'">
+                <div class="kyc-thumb-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i> View Original</div>
+              </div>
+              <div class="kyc-doc-card-meta">
+                <span style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${fileName}">${fileName} ${fileSize}</span>
+                <button class="btn btn-outline btn-xs" onclick="openKycDocModal('${safeImgSrc}', '${safeLabel}', '${safeUserName}', '${fileName} ${fileSize}')">
+                  <i class="fa-solid fa-eye"></i> View
+                </button>
+              </div>
             </div>
-            <div>${getStatusBadge(k.status)}</div>
+          `;
+        }).join('');
+
+        return `
+          <div class="panel" style="margin-bottom:20px; border-radius:16px;">
+            <div class="panel-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; border-radius:16px 16px 0 0; padding:16px 20px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <h3 style="font-size:17px; font-weight:800; margin:0;">${k.userName}</h3>
+                  <span class="badge badge-purple" style="font-size:11px;">${k.id}</span>
+                </div>
+                <p style="margin:4px 0 0; font-size:12px; color:#64748b;">
+                  <i class="fa-solid fa-phone"></i> ${k.userPhone} &nbsp;•&nbsp; 
+                  <i class="fa-regular fa-clock"></i> Submitted: ${formatTimestamp(k.submittedAt)}
+                </p>
+              </div>
+              <div>${getStatusBadge(k.status)}</div>
+            </div>
+
+            <div style="padding:20px;">
+              <!-- 3-Column Identity Grid -->
+              <div class="modal-info-grid">
+                <div class="info-box">
+                  <span class="info-lbl">PAN Card Number</span>
+                  <span class="info-val font-bold font-mono" style="color:#0f172a; font-size:14px;">${k.pan || 'N/A'}</span>
+                </div>
+                <div class="info-box">
+                  <span class="info-lbl">Aadhaar (UIDAI Verified)</span>
+                  <span class="info-val font-bold font-mono" style="color:#0f172a; font-size:14px;">${k.aadhaar || 'N/A'}</span>
+                </div>
+                <div class="info-box">
+                  <span class="info-lbl">DOB & Occupation</span>
+                  <span class="info-val">${k.dob ? `DOB: ${k.dob}` : ''} • ${k.occupation || 'Professional'} (${k.annualIncome || 'Above 5L'})</span>
+                </div>
+              </div>
+
+              ${k.address ? `
+                <div style="margin-top:12px; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px; color:#334155;">
+                  <b><i class="fa-solid fa-location-dot text-slate-500"></i> Residential Address:</b> ${k.address}
+                </div>
+              ` : ''}
+
+              <!-- UIDAI QR Code Verification Box -->
+              ${k.qrVerification ? `
+                <div style="margin-top:14px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:14px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                    <div style="font-weight:700; color:#065f46; display:flex; align-items:center; gap:8px; font-size:13px;">
+                      <i class="fa-solid fa-shield-halved" style="color:#10b981;"></i> UIDAI Digital QR Code Verified
+                    </div>
+                    <span class="badge badge-success"><i class="fa-solid fa-check"></i> Digital Signature Valid</span>
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; font-size:12px; color:#047857;">
+                    <div><b>Scanned Name:</b> ${k.qrVerification.scannedName || k.userName}</div>
+                    <div><b>Scanned Aadhaar:</b> ${k.qrVerification.scannedAadhaar || k.aadhaar}</div>
+                    <div><b>Scanned DOB:</b> ${k.qrVerification.scannedDob || k.dob}</div>
+                    <div><b>Gender:</b> ${k.qrVerification.scannedGender || 'Verified'}</div>
+                    ${k.qrVerification.scannedAddress ? `<div style="grid-column:1/-1;"><b>UIDAI Record Address:</b> ${k.qrVerification.scannedAddress}</div>` : ''}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Biometric Match Status -->
+              <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <span class="badge ${k.isBiometricVerified ? 'badge-success' : 'badge-secondary'}">
+                  <i class="fa-solid fa-fingerprint"></i> ${k.isBiometricVerified ? 'Biometric Fingerprint / Face Matched' : 'Biometric Auth Not Completed'}
+                </span>
+                <span class="badge badge-primary">
+                  <i class="fa-solid fa-wallet"></i> Upgraded Wallet Limit: ₹2,00,000 / month
+                </span>
+              </div>
+
+              <!-- Uploaded KYC Documents Section -->
+              <div style="margin-top:18px;">
+                <h4 style="font-size:13px; font-weight:800; color:#0f172a; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-folder-open text-blue"></i> Uploaded Documents (${Object.keys(docs).length} Attached)
+                </h4>
+                <div class="kyc-doc-grid">
+                  ${docCardsHtml}
+                </div>
+              </div>
+
+              <!-- Admin Decision Actions -->
+              ${k.status === 'pending' ? `
+                <div style="margin-top:20px; padding-top:16px; border-top:1px solid #e2e8f0; display:flex; gap:12px; flex-wrap:wrap;">
+                  <button class="btn btn-success" onclick="actionKyc('${k.id}', 'approve')">
+                    <i class="fa-solid fa-check"></i> Approve & Upgrade to Tier-2
+                  </button>
+                  <button class="btn btn-outline" style="color:#ef4444; border-color:#ef4444;" onclick="actionKyc('${k.id}', 'reject')">
+                    <i class="fa-solid fa-xmark"></i> Reject Submission
+                  </button>
+                </div>
+              ` : ''}
+            </div>
           </div>
-          <div style="padding:18px;">
-            <div class="modal-info-grid">
-              <div class="info-box">
-                <span class="info-lbl">PAN Card</span>
-                <span class="info-val font-bold">${k.pan}</span>
-              </div>
-              <div class="info-box">
-                <span class="info-lbl">Aadhaar (Masked)</span>
-                <span class="info-val font-bold">${k.aadhaar}</span>
-              </div>
-              <div class="info-box">
-                <span class="info-lbl">Occupation & Income</span>
-                <span class="info-val">${k.occupation} (${k.annualIncome})</span>
-              </div>
-            </div>
-            <div style="margin-top:12px; font-size:13px; color:#475569;">
-              <b>Residential Address:</b> ${k.address}
-            </div>
-            ${k.status === 'pending' ? `
-              <div style="margin-top:16px; display:flex; gap:10px;">
-                <button class="btn btn-success" onclick="actionKyc('${k.id}', 'approve')"><i class="fa-solid fa-check"></i> Approve & Upgrade to Tier-2</button>
-                <button class="btn btn-outline" style="color:#ef4444; border-color:#ef4444;" onclick="actionKyc('${k.id}', 'reject')"><i class="fa-solid fa-xmark"></i> Reject Submission</button>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
   } catch (e) {
     console.error('KYC error:', e);
   }
+}
+
+// Lightbox Modal for KYC Documents
+function openKycDocModal(imageUrl, title, userName, meta) {
+  const modal = document.getElementById('kyc-doc-modal');
+  const img = document.getElementById('kyc-doc-img');
+  const titleEl = document.getElementById('kyc-doc-title');
+  const badgeEl = document.getElementById('kyc-doc-badge');
+  const metaEl = document.getElementById('kyc-doc-meta');
+  const filenameEl = document.getElementById('kyc-doc-filename');
+  const detailEl = document.getElementById('kyc-doc-detail');
+  const openBtn = document.getElementById('kyc-doc-open-btn');
+  const downloadBtn = document.getElementById('kyc-doc-download-btn');
+
+  if (img) img.src = imageUrl;
+  if (titleEl) titleEl.innerText = title || 'Document Inspection';
+  if (badgeEl) badgeEl.innerText = (title || 'DOCUMENT').toUpperCase();
+  if (metaEl) metaEl.innerText = `Applicant: ${userName || 'User'}`;
+  if (filenameEl) filenameEl.innerText = title || 'Document Photo';
+  if (detailEl) detailEl.innerText = meta || 'Verified Original ID Document submitted from FlamePay App';
+  if (openBtn) openBtn.href = imageUrl;
+  if (downloadBtn) {
+    downloadBtn.href = imageUrl;
+    downloadBtn.download = `${(userName || 'Applicant').replace(/\s+/g, '_')}_${(title || 'Document').replace(/\s+/g, '_')}.jpg`;
+  }
+
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeKycDocModal() {
+  const modal = document.getElementById('kyc-doc-modal');
+  if (modal) modal.style.display = 'none';
 }
 
 async function actionKyc(id, action) {

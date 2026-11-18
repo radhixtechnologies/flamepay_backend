@@ -720,6 +720,40 @@
     </div>
   </div>
 
+  <!-- MODAL: KYC DOCUMENT VIEWER & HIGH-RES INSPECTOR -->
+  <div id="kyc-doc-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card modal-lg" style="max-width: 850px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="badge badge-purple" id="kyc-doc-badge">DOCUMENT</span>
+          <h2 id="kyc-doc-title">Document Inspection</h2>
+          <span class="modal-timestamp" id="kyc-doc-meta">Uploaded Document</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeKycDocModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px; text-align: center;">
+        <div id="kyc-doc-image-container" style="background: #0f172a; border-radius: 12px; padding: 12px; display: flex; justify-content: center; align-items: center; min-height: 400px; max-height: 70vh; overflow: auto;">
+          <img id="kyc-doc-img" src="" alt="Document Preview" style="max-width: 100%; max-height: 65vh; border-radius: 8px; object-fit: contain; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        </div>
+        <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="text-align: left; font-size: 13px; color: #64748b;">
+            <b id="kyc-doc-filename" style="color: #0f172a;">filename.jpg</b>
+            <div id="kyc-doc-detail">Verified Original ID Document</div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <a id="kyc-doc-open-btn" href="#" target="_blank" class="btn btn-secondary btn-sm">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Original
+            </a>
+            <a id="kyc-doc-download-btn" href="#" download class="btn btn-primary btn-sm">
+              <i class="fa-solid fa-download"></i> Download
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="toast-container"></div>
 
