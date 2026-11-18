@@ -10,6 +10,7 @@ const cheapkart = require('../services/cheapkart');
 // Helper wrapper
 const success = (res, data = {}, message = 'Success') => res.json({ success: true, message, data });
 const fail = (res, message = 'Error', code = 400) => res.status(code).json({ success: false, message });
+const error = fail;
 
 // Dynamic user resolution based on token, custom headers, or body
 const getAuthenticatedUser = (req) => {

@@ -21,8 +21,11 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(morgan('dev'));
 
-// Static files (Assets, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
+// Trust Hostinger / reverse proxy headers (X-Forwarded-Host)
+app.set('trust proxy', true);
+
+// Static files (Assets, CSS, JS) — index: false so `/` is routed by hostname below!
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // Mount API Routes (matches Flutter mobile app endpoints)
 app.use('/api/v1', apiRoutes);
@@ -42,7 +45,8 @@ app.get('/admin/*', (req, res) => {
 // If accessed via admin.flamepay.in -> serves Admin Portal (admin.html)
 // Otherwise (flamepay.in, localhost, etc.) -> serves Official Landing Page (index.html)
 app.get('/', (req, res) => {
-  const host = (req.hostname || req.headers.host || '').toLowerCase();
+  const rawHost = req.headers['x-forwarded-host'] || req.headers.host || req.hostname || '';
+  const host = String(rawHost).split(',')[0].trim().toLowerCase();
   if (host.startsWith('admin.')) {
     return res.sendFile(path.join(__dirname, 'public/admin.html'));
   }
@@ -56,10 +60,27 @@ app.get('/health', (req, res) => {
     app: 'FlamePay Backend & Landing Engine',
     version: '1.0.0',
     landingUrl: 'https://flamepay.in/',
-    adminPanelUrl: '/admin',
+    adminPanelUrl: 'https://admin.flamepay.in/',
     apiDocumentation: '/api/v1',
     timestamp: new Date().toISOString()
   });
+});
+
+// Global Error Handler (prevents unhandled crashes -> 503)
+app.use((err, req, res, next) => {
+  console.error('[Express Unhandled Error]:', err);
+  if (res.headersSent) return next(err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
+  });
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Unhandled Rejection]:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[Uncaught Exception]:', err);
 });
 
 app.listen(PORT, HOST, () => {

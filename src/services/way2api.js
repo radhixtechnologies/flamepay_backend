@@ -14,11 +14,15 @@ const post = async (endpoint, body = {}) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(25000),
     });
 
-    const data = await res.json();
-    return data;
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch (_) {
+      return { success: false, status_code: res.status, message: `Way2API returned HTTP ${res.status}` };
+    }
   } catch (err) {
     console.error(`[Way2API Error] ${endpoint}:`, err.message);
     return { success: false, message: err.message };
