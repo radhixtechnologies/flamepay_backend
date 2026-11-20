@@ -2450,24 +2450,7 @@ router.post('/cibil/check', async (req, res) => {
     return error(res, `Invalid PAN Category: 4th character is "${panType}". Only Individual personal PAN cards ("P") are eligible for credit health check.`, 400);
   }
 
-  // 6. Character 5: Under Income Tax Rules, 5th char must match cardholder's surname / name initial
-  const panFifthChar = clientPan.charAt(4);
-  const nameParts = clientName.split(/\s+/).filter(Boolean);
-  const firstName = nameParts[0].toUpperCase();
-  const lastName = (nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0]).toUpperCase();
-
-  const matchesSurname = lastName.startsWith(panFifthChar);
-  const matchesFirstName = firstName.startsWith(panFifthChar);
-
-  if (!isSeedPan && !matchesSurname && !matchesFirstName) {
-    return error(
-      res,
-      `PAN Verification Failed: Name mismatch! The name "${clientName}" does not match PAN Card ${clientPan}. Under Income Tax department records, the surname or name must start with letter "${panFifthChar}". Please enter correct PAN or Name.`,
-      400
-    );
-  }
-
-  // 7. Date of Birth Validation
+  // 6. Date of Birth Validation (Optional, if provided)
   if (dob) {
     let birthDate = null;
     if (dob.includes('/')) {
