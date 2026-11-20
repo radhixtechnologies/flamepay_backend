@@ -32,6 +32,8 @@ router.get('/stats', (req, res) => {
   const totalCreditCards = db.creditCardLeads.length;
   const totalInsurance = db.insuranceLeads.length;
   const totalCibil = db.cibilInquiries.length;
+  const totalContacts = (db.supportTickets || []).length;
+  const openContacts = (db.supportTickets || []).filter(t => t.status === 'open' || !t.status).length;
 
   res.json({
     success: true,
@@ -46,7 +48,9 @@ router.get('/stats', (req, res) => {
       totalLoanRequested,
       totalCreditCards,
       totalInsurance,
-      totalCibil
+      totalCibil,
+      totalContacts,
+      openContacts
     }
   });
 });
@@ -368,14 +372,39 @@ router.delete('/offers/:id', (req, res) => {
 
 // --- SUPPORT / CONTACT TICKETS MANAGEMENT ---
 router.get('/contact-tickets', (req, res) => {
-  res.json({ success: true, count: (db.supportTickets || []).length, data: db.supportTickets || [] });
+  const { status, search } = req.query;
+  let tickets = [...(db.supportTickets || [])];
+  if (status && status !== 'all') {
+    tickets = tickets.filter(t => (t.status || 'open') === status);
+  }
+  if (search) {
+    const q = search.toLowerCase().trim();
+    tickets = tickets.filter(t =>
+      (t.name || '').toLowerCase().includes(q) ||
+      (t.phone || '').includes(q) ||
+      (t.email || '').toLowerCase().includes(q) ||
+      (t.topic || '').toLowerCase().includes(q) ||
+      (t.message || '').toLowerCase().includes(q) ||
+      (t.id || '').toLowerCase().includes(q)
+    );
+  }
+  res.json({ success: true, count: tickets.length, data: tickets });
 });
 
 router.post('/contact-tickets/:id/status', (req, res) => {
   const ticket = (db.supportTickets || []).find(t => t.id === req.params.id);
   if (!ticket) return res.status(404).json({ success: false, message: 'Support ticket not found' });
   ticket.status = req.body.status || 'resolved';
+  if (typeof db.saveContacts === 'function') db.saveContacts();
   res.json({ success: true, message: `Ticket status updated to ${ticket.status}`, data: ticket });
+});
+
+router.delete('/contact-tickets/:id', (req, res) => {
+  const idx = (db.supportTickets || []).findIndex(t => t.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ success: false, message: 'Support ticket not found' });
+  const removed = db.supportTickets.splice(idx, 1)[0];
+  if (typeof db.saveContacts === 'function') db.saveContacts();
+  res.json({ success: true, message: 'Ticket deleted successfully', data: removed });
 });
 
 module.exports = router;

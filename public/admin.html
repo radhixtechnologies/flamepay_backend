@@ -104,6 +104,13 @@
           <span class="badge badge-success" id="offers-badge">0</span>
         </button>
 
+        <div class="nav-section-title">COMMUNICATION & SUPPORT</div>
+        <button class="nav-item" data-tab="contacts">
+          <i class="fa-solid fa-envelope-open-text"></i>
+          <span>Contact Inquiries</span>
+          <span class="badge badge-primary" id="contacts-badge">0</span>
+        </button>
+
         <div class="nav-section-title">USERS & COMPLIANCE</div>
         <button class="nav-item" data-tab="users">
           <i class="fa-solid fa-users"></i>
@@ -196,6 +203,14 @@
               <span class="stat-label">Total Txn Volume</span>
               <h2 class="stat-value" id="stat-volume">₹0.00</h2>
               <span class="stat-sub text-success" id="stat-txns">0 Transactions</span>
+            </div>
+          </div>
+          <div class="stat-card stat-accent-gold" onclick="switchTab('contacts')" style="cursor:pointer" title="Click to view Contact Inquiries">
+            <div class="stat-icon icon-gold"><i class="fa-solid fa-envelope-open-text"></i></div>
+            <div class="stat-details">
+              <span class="stat-label">Contact Inquiries</span>
+              <h2 class="stat-value" id="stat-contacts">0</h2>
+              <span class="stat-sub text-warning" id="stat-contacts-open">0 Open</span>
             </div>
           </div>
         </div>
@@ -587,6 +602,57 @@
               <code>/api/v1/wallet/transfer</code>
               <p>Transfers wallet funds via Mobile number or UPI ID.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: CONTACT INQUIRIES -->
+      <section id="tab-contacts" class="tab-pane">
+        <div class="panel">
+          <div class="panel-header flex-wrap" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div class="panel-title-block">
+              <h3><i class="fa-solid fa-envelope-open-text text-orange"></i> Customer Contact & Support Inquiries</h3>
+              <p>Inquiries submitted directly from flamepay.in/contact. Connect via WhatsApp or Phone call and resolve customer queries.</p>
+            </div>
+            <div class="panel-actions-group">
+              <button class="btn btn-secondary btn-sm" onclick="fetchContacts()">
+                <i class="fa-solid fa-rotate"></i> Sync Inquiries
+              </button>
+            </div>
+          </div>
+
+          <!-- FILTER BAR -->
+          <div class="filter-toolbar">
+            <div class="filter-pills" id="contact-status-filters">
+              <button class="pill active" onclick="filterContactsByStatus('all')">All Inquiries (<span id="count-all-contacts">0</span>)</button>
+              <button class="pill" onclick="filterContactsByStatus('open')">Open (<span id="count-open-contacts">0</span>)</button>
+              <button class="pill" onclick="filterContactsByStatus('in_progress')">In Progress</button>
+              <button class="pill" onclick="filterContactsByStatus('resolved')">Resolved</button>
+            </div>
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="contact-search-input" placeholder="Search by name, phone, topic, message..." onkeyup="filterContactsTable()">
+            </div>
+          </div>
+
+          <!-- CONTACTS TABLE -->
+          <div class="table-responsive">
+            <table class="data-table" id="contacts-table">
+              <thead>
+                <tr>
+                  <th>Ticket / Date</th>
+                  <th>Customer Information</th>
+                  <th>Topic</th>
+                  <th>Message / Query</th>
+                  <th>Status</th>
+                  <th>Quick Connect</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="contacts-tbody">
+                <tr><td colspan="7" class="loading-state">Loading contact inquiries...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

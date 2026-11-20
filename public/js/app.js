@@ -102,6 +102,7 @@ function switchTab(tabId) {
     kyc: 'Tier-2 KYC Verifications',
     transactions: 'Live Financial Ledger',
     offers: 'Offers & Rewards Manager',
+    contacts: 'Customer Contact & Support Inquiries',
     apis: 'REST API Endpoints'
   };
   const desc = {
@@ -111,6 +112,7 @@ function switchTab(tabId) {
     cibil: 'Credit scores, repayment discipline & creditworthiness',
     topups: 'Verify payments sent to SHIVAM SHIVAM (SBI: 32823806111) and approve wallet credit',
     offers: 'Create, edit, pause or delete cashback offers & coupon codes displayed in the mobile app',
+    contacts: 'Inquiries, questions, and support tickets submitted by visitors on flamepay.in',
     overview: 'Real-time metrics, financial product leads, and user verifications'
   };
 
@@ -130,6 +132,7 @@ function switchTab(tabId) {
   if (tabId === 'kyc') fetchKycRequests();
   if (tabId === 'transactions') fetchTransactions();
   if (tabId === 'offers') fetchOffers();
+  if (tabId === 'contacts') fetchContacts();
 }
 
 function refreshCurrentTab() {
@@ -150,6 +153,7 @@ async function loadAllData() {
   fetchKycRequests();
   fetchTransactions();
   fetchOffers();
+  fetchContacts();
 }
 
 // 1. STATS
@@ -175,16 +179,23 @@ async function fetchStats() {
     if (volEl) volEl.innerText = `₹${formatNumber(d.totalVolume || 0)}`;
     if (txnsEl) txnsEl.innerText = `${d.totalTxnCount || 0} Transactions`;
 
+    const contactsEl = document.getElementById('stat-contacts');
+    const contactsOpenEl = document.getElementById('stat-contacts-open');
+    if (contactsEl) contactsEl.innerText = d.totalContacts || 0;
+    if (contactsOpenEl) contactsOpenEl.innerText = `${d.openContacts || 0} Open`;
+
     // Badges in sidebar
     const loansBadge = document.getElementById('loans-badge');
     const cardsBadge = document.getElementById('cards-badge');
     const insBadge = document.getElementById('insurance-badge');
     const kycBadge = document.getElementById('kyc-badge');
+    const contactsBadge = document.getElementById('contacts-badge');
 
     if (loansBadge) loansBadge.innerText = d.pendingLoans || d.totalLoans || 0;
     if (cardsBadge) cardsBadge.innerText = d.totalCreditCards || 0;
     if (insBadge) insBadge.innerText = d.totalInsurance || 0;
     if (kycBadge) kycBadge.innerText = d.pendingKyc || 0;
+    if (contactsBadge) contactsBadge.innerText = d.openContacts || d.totalContacts || 0;
   } catch (e) {
     console.error('Stats error:', e);
   }
@@ -1382,5 +1393,186 @@ async function deleteOffer(id, title) {
     }
   } catch (e) {
     alert('Error deleting offer: ' + e.message);
+  }
+}
+
+// --- 11. CONTACT & SUPPORT INQUIRIES MODULE ---
+let allContacts = [];
+let currentContactStatus = 'all';
+
+async function fetchContacts() {
+  const tbody = document.getElementById('contacts-tbody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="loading-state">Loading contact inquiries...</td></tr>';
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/contact-tickets`);
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      allContacts = json.data;
+      updateContactCounts();
+      renderContactsTable();
+    } else {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="loading-state">No inquiries found</td></tr>';
+    }
+  } catch (e) {
+    console.error('Error fetching contact tickets:', e);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="loading-state text-danger">Error loading contact inquiries</td></tr>';
+  }
+}
+
+function updateContactCounts() {
+  const countAll = document.getElementById('count-all-contacts');
+  const countOpen = document.getElementById('count-open-contacts');
+  const badge = document.getElementById('contacts-badge');
+  const openCount = allContacts.filter(c => (c.status || 'open') === 'open').length;
+
+  if (countAll) countAll.innerText = allContacts.length;
+  if (countOpen) countOpen.innerText = openCount;
+  if (badge) badge.innerText = openCount;
+}
+
+function filterContactsByStatus(status) {
+  currentContactStatus = status;
+  document.querySelectorAll('#contact-status-filters .pill').forEach(p => {
+    p.classList.remove('active');
+  });
+  if (event && event.target) {
+    event.target.classList.add('active');
+  }
+  renderContactsTable();
+}
+
+function filterContactsTable() {
+  renderContactsTable();
+}
+
+function renderContactsTable() {
+  const tbody = document.getElementById('contacts-tbody');
+  if (!tbody) return;
+
+  const searchInput = document.getElementById('contact-search-input');
+  const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+
+  let filtered = allContacts.filter(c => {
+    const st = c.status || 'open';
+    if (currentContactStatus !== 'all' && st !== currentContactStatus) return false;
+    if (query) {
+      const match = (c.name || '').toLowerCase().includes(query) ||
+                    (c.phone || '').includes(query) ||
+                    (c.email || '').toLowerCase().includes(query) ||
+                    (c.topic || '').toLowerCase().includes(query) ||
+                    (c.message || '').toLowerCase().includes(query) ||
+                    (c.id || '').toLowerCase().includes(query);
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;"><i class="fa-solid fa-inbox" style="font-size:24px; margin-bottom:8px; display:block;"></i>No contact inquiries match the criteria</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const st = c.status || 'open';
+    const dateStr = c.createdAt ? new Date(c.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'Recent';
+    const cleanPhone = (c.phone || '').replace(/\D/g, '').slice(-10);
+    const waUrl = cleanPhone ? `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${c.name || 'Customer'}, regarding your FlamePay inquiry (${c.topic || 'General'})...`)}` : '#';
+
+    let badgeClass = 'badge-warning';
+    let statusLabel = 'Open';
+    if (st === 'in_progress') { badgeClass = 'badge-primary'; statusLabel = 'In Progress'; }
+    if (st === 'resolved') { badgeClass = 'badge-success'; statusLabel = 'Resolved'; }
+
+    return `
+      <tr>
+        <td>
+          <b style="color:#0ea5e9;">#${c.id}</b>
+          <div style="font-size:11px; color:#64748b; margin-top:2px;">${dateStr}</div>
+        </td>
+        <td>
+          <div style="font-weight:700; color:#0f172a;">${c.name || 'Anonymous'}</div>
+          <div style="font-size:12px; color:#475569; margin-top:2px;"><i class="fa-solid fa-phone" style="font-size:11px; color:#3b82f6;"></i> ${c.phone || 'N/A'}</div>
+          ${c.email ? `<div style="font-size:11px; color:#64748b;"><i class="fa-solid fa-envelope" style="font-size:10px;"></i> ${c.email}</div>` : ''}
+        </td>
+        <td>
+          <span class="badge badge-purple" style="font-size:11px;">${c.topic || 'General'}</span>
+        </td>
+        <td style="max-width:320px;">
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:12.5px; color:#1e293b; line-height:1.45; word-break:break-word;">
+            ${c.message || 'No message content'}
+          </div>
+        </td>
+        <td>
+          <span class="badge ${badgeClass}">${statusLabel}</span>
+        </td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            ${cleanPhone ? `
+              <a href="${waUrl}" target="_blank" class="btn btn-sm" style="background:#22c55e; color:#fff; padding:6px 10px; border-radius:6px; font-size:11.5px; display:inline-flex; align-items:center; gap:4px; text-decoration:none;" title="Chat on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i> Chat
+              </a>
+              <a href="tel:${cleanPhone}" class="btn btn-sm btn-outline" style="padding:6px 10px; border-radius:6px; font-size:11.5px;" title="Call Customer">
+                <i class="fa-solid fa-phone"></i>
+              </a>
+            ` : '<span style="color:#94a3b8; font-size:11px;">-</span>'}
+          </div>
+        </td>
+        <td>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <select class="form-select form-select-sm" style="font-size:12px; padding:4px 8px; border-radius:6px;" onchange="updateContactStatus('${c.id}', this.value)">
+              <option value="open" ${st === 'open' ? 'selected' : ''}>Open</option>
+              <option value="in_progress" ${st === 'in_progress' ? 'selected' : ''}>In Progress</option>
+              <option value="resolved" ${st === 'resolved' ? 'selected' : ''}>Resolved</option>
+            </select>
+            <button class="btn btn-sm btn-outline" style="color:#ef4444; border-color:#fca5a5; padding:5px 8px;" onclick="deleteContact('${c.id}')" title="Delete Inquiry">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function updateContactStatus(ticketId, newStatus) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/contact-tickets/${encodeURIComponent(ticketId)}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast(`Ticket #${ticketId} updated to ${newStatus}`);
+      const t = allContacts.find(c => c.id === ticketId);
+      if (t) t.status = newStatus;
+      updateContactCounts();
+      renderContactsTable();
+    } else {
+      alert(json.message || 'Could not update ticket status');
+    }
+  } catch (e) {
+    alert('Error updating status: ' + e.message);
+  }
+}
+
+async function deleteContact(ticketId) {
+  if (!confirm(`Delete ticket #${ticketId} permanently?`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/contact-tickets/${encodeURIComponent(ticketId)}`, {
+      method: 'DELETE'
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast(`Ticket #${ticketId} deleted`);
+      allContacts = allContacts.filter(c => c.id !== ticketId);
+      updateContactCounts();
+      renderContactsTable();
+    } else {
+      alert(json.message || 'Could not delete ticket');
+    }
+  } catch (e) {
+    alert('Error deleting ticket: ' + e.message);
   }
 }

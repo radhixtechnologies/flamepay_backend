@@ -1,0 +1,32 @@
+[
+  {
+    "id": "TKT_3847",
+    "name": "Shivam Test Customer",
+    "phone": "9990385942",
+    "email": "shivam@flamepay.in",
+    "topic": "Recharge",
+    "message": "Testing contact us form from website. Please confirm inquiry shows in admin dashboard.",
+    "status": "open",
+    "createdAt": "2026-11-20T10:15:19.934Z"
+  },
+  {
+    "id": "TKT_1001",
+    "name": "Vikas Dubey",
+    "phone": "9876501234",
+    "email": "vikas.d@example.com",
+    "topic": "Recharge",
+    "message": "My Jio recharge was debited but not reflected immediately.",
+    "status": "open",
+    "createdAt": "2026-11-20T08:14:37.007Z"
+  },
+  {
+    "id": "TKT_1002",
+    "name": "Sunita Mehra",
+    "phone": "9812345678",
+    "email": "sunita.m@example.com",
+    "topic": "Loan",
+    "message": "Need help understanding personal loan tenure and interest rates.",
+    "status": "in_progress",
+    "createdAt": "2026-11-20T06:14:37.007Z"
+  }
+]

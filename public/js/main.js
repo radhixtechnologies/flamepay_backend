@@ -836,7 +836,7 @@
       if (!ok) { var bad = $(".invalid .input", form); bad && bad.focus(); return; }
 
       var d = new FormData(form);
-      var name = d.get("name"), phone = d.get("phone"), topic = d.get("topic"), message = d.get("message");
+      var name = d.get("name"), phone = d.get("phone"), email = d.get("email"), topic = d.get("topic"), message = d.get("message");
       var btn = form.querySelector('button[type="submit"]');
       var origContent = btn ? btn.innerHTML : "Send";
       if (btn) { btn.innerHTML = "Submitting ticket..."; btn.disabled = true; }
@@ -844,14 +844,20 @@
       fetch("/api/v1/contact/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name, phone: phone, topic: topic, message: message })
+        body: JSON.stringify({ name: name, phone: phone, email: email, topic: topic, message: message })
       })
       .then(function (r) { return r.json(); })
       .then(function (res) {
         if (btn) { btn.innerHTML = origContent; btn.disabled = false; }
         if (res.success) {
-          window.fpToast && window.fpToast("Ticket #" + (res.data?.id || "REC") + " created! Our team will contact you shortly.");
+          var tId = (res.data && res.data.id) ? res.data.id : "TKT";
+          window.fpToast && window.fpToast("Ticket #" + tId + " created! Our team will contact you shortly.");
           window.fpBurst && window.fpBurst(form);
+          var sBox = document.getElementById("contact-success-box");
+          if (sBox) {
+            sBox.style.display = "block";
+            sBox.innerHTML = "<b>Inquiry Submitted Successfully! (Ticket #" + tId + ")</b><br>Our team will contact you shortly.";
+          }
           form.reset();
         } else {
           window.fpToast && window.fpToast(res.message || "Failed to submit ticket");

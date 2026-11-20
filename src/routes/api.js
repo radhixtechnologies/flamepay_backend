@@ -2680,6 +2680,7 @@ router.post('/contact/submit', (req, res) => {
 
   if (!db.supportTickets) db.supportTickets = [];
   db.supportTickets.unshift(ticket);
+  if (typeof db.saveContacts === 'function') db.saveContacts();
 
   success(res, ticket, 'Your message has been received! Ticket #' + ticket.id + ' logged. Support team will contact you shortly.');
 });

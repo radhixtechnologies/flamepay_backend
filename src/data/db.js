@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const OFFERS_FILE = path.join(__dirname, 'offers.json');
+const CONTACTS_FILE = path.join(__dirname, 'contacts.json');
 
 // In-Memory Database with Persistent Offers & Comprehensive Seed Data for FlamePay Super-App
 class Database {
@@ -626,6 +627,19 @@ class Database {
         createdAt: new Date(Date.now() - 14400000).toISOString()
       }
     ];
+
+    try {
+      if (fs.existsSync(CONTACTS_FILE)) {
+        const parsed = JSON.parse(fs.readFileSync(CONTACTS_FILE, 'utf8'));
+        if (Array.isArray(parsed)) {
+          this.supportTickets = parsed;
+        }
+      } else {
+        this.saveContacts();
+      }
+    } catch (e) {
+      console.warn('[DB] Could not load contacts.json, using defaults:', e.message);
+    }
   }
 
   saveOffers() {
@@ -633,6 +647,14 @@ class Database {
       fs.writeFileSync(OFFERS_FILE, JSON.stringify(this.offers, null, 2), 'utf8');
     } catch (e) {
       console.warn('[DB] Could not save offers.json:', e.message);
+    }
+  }
+
+  saveContacts() {
+    try {
+      fs.writeFileSync(CONTACTS_FILE, JSON.stringify(this.supportTickets, null, 2), 'utf8');
+    } catch (e) {
+      console.warn('[DB] Could not save contacts.json:', e.message);
     }
   }
 

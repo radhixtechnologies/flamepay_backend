@@ -59,6 +59,11 @@ app.get('*', (req, res, next) => {
     clean = clean.slice(0, -1);
   }
 
+  // Redirect legacy /hi to default English homepage
+  if (clean === '/hi' || clean === '/hi.html') {
+    return res.redirect(301, '/');
+  }
+
   if (!clean || clean === '/' || clean === '/index') {
     return res.sendFile(path.join(__dirname, 'public/index.html'));
   }
