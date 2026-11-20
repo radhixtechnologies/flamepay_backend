@@ -128,3 +128,6 @@ app.listen(PORT, HOST, () => {
   console.log(`🚀 API Base URL:     /api/v1`);
   console.log('==================================================');
 });
+
+module.exports = app;
+

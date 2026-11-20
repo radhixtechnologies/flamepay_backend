@@ -365,6 +365,79 @@ const raiseDispute = async (transid, reason = 'Transaction Failed') => {
   }
 };
 
+/**
+ * Cyrus TransUnion CIBIL Credit Report API
+ * Endpoint: POST https://cyrusrecharge.in/api/total-kyc.aspx
+ * Docs: https://documenter.getpostman.com/view/22264863/2sBYHQ1Mvo#420cef60-4ef6-4bf4-b1fe-3775d70025b5
+ */
+const fetchCibilReport = async ({ name, mobile, pan, dob, gender, address, city, state, pincode, street }) => {
+  const { memberId, pin } = getCredentials();
+  const cleanMobile = String(mobile || '9990385942').replace(/[^0-9]/g, '').slice(-10);
+  const cleanPan = (pan || '').toUpperCase().trim();
+  const cleanName = (name || 'Customer').trim();
+  const cleanGender = (gender && String(gender).toLowerCase() === 'female') ? 'female' : 'male';
+
+  // Format DOB to YYYY-MM-DD
+  let formattedDob = '1995-08-15';
+  if (dob) {
+    if (dob.includes('/')) {
+      const parts = dob.split('/');
+      if (parts.length === 3) {
+        formattedDob = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+    } else if (dob.includes('-')) {
+      const parts = dob.split('-');
+      if (parts[0].length === 4) {
+        formattedDob = dob;
+      } else if (parts[2].length === 4) {
+        formattedDob = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+    }
+  }
+
+  const addrObj = (address && typeof address === 'object') ? address : {
+    street: street || (typeof address === 'string' ? address : 'Main Road'),
+    city: city || 'Jaipur',
+    state: state || 'Rajasthan',
+    pincode: Number(pincode || 302017) || 302017
+  };
+
+  const payload = {
+    merchantId: process.env.CYRUS_MERCHANT_ID || process.env.CYRUS_API_ID || memberId || 'AP178923',
+    merchantKey: process.env.CYRUS_MERCHANT_KEY || process.env.CYRUS_PASSWORD || pin || '73A4DB6556',
+    mobile: cleanMobile,
+    name: cleanName,
+    pan: cleanPan,
+    dob: formattedDob,
+    gender: cleanGender,
+    address: addrObj,
+    consent: 'Y',
+    type: 'CREDIT_REPORT_CIBIL',
+    txnid: 'FP_' + Date.now() + '_' + Math.floor(1000 + Math.random() * 9000)
+  };
+
+  const url = `${CYRUS_BASE}/api/total-kyc.aspx`;
+  console.log(`[Cyrus CIBIL] Invoking TransUnion CIBIL check for ${cleanName} (${cleanPan}, DOB: ${formattedDob})...`);
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(25000)
+    });
+
+    const data = await res.json();
+    console.log('[Cyrus CIBIL Response]:', JSON.stringify(data).slice(0, 500));
+    return data;
+  } catch (err) {
+    console.error('[Cyrus CIBIL Error]:', err.message);
+    return { success: false, statusCode: '500', message: err.message };
+  }
+};
+
 module.exports = {
   getCredentials,
   resolveCircleCode,
@@ -377,6 +450,7 @@ module.exports = {
   payBill,
   checkStatus,
   raiseDispute,
+  fetchCibilReport,
   setTestMode,
   getTestMode
 };
