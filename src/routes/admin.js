@@ -366,4 +366,16 @@ router.delete('/offers/:id', (req, res) => {
   res.json({ success: true, message: 'Offer deleted successfully', data: removed });
 });
 
+// --- SUPPORT / CONTACT TICKETS MANAGEMENT ---
+router.get('/contact-tickets', (req, res) => {
+  res.json({ success: true, count: (db.supportTickets || []).length, data: db.supportTickets || [] });
+});
+
+router.post('/contact-tickets/:id/status', (req, res) => {
+  const ticket = (db.supportTickets || []).find(t => t.id === req.params.id);
+  if (!ticket) return res.status(404).json({ success: false, message: 'Support ticket not found' });
+  ticket.status = req.body.status || 'resolved';
+  res.json({ success: true, message: `Ticket status updated to ${ticket.status}`, data: ticket });
+});
+
 module.exports = router;

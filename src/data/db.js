@@ -602,6 +602,30 @@ class Database {
         actionRoute: '/wallet'
       }
     ];
+
+    // Customer Support & Contact Inquiries
+    this.supportTickets = [
+      {
+        id: 'TKT_1001',
+        name: 'Vikas Dubey',
+        phone: '9876501234',
+        email: 'vikas.d@example.com',
+        topic: 'Recharge',
+        message: 'My Jio recharge was debited but not reflected immediately.',
+        status: 'open',
+        createdAt: new Date(Date.now() - 7200000).toISOString()
+      },
+      {
+        id: 'TKT_1002',
+        name: 'Sunita Mehra',
+        phone: '9812345678',
+        email: 'sunita.m@example.com',
+        topic: 'Loan',
+        message: 'Need help understanding personal loan tenure and interest rates.',
+        status: 'in_progress',
+        createdAt: new Date(Date.now() - 14400000).toISOString()
+      }
+    ];
   }
 
   saveOffers() {

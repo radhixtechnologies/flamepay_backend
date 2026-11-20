@@ -1,704 +1,751 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en-IN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlamePay — One App, Many Possibilities | Official Website</title>
-  
-  <!-- Meta SEO -->
-  <meta name="description" content="FlamePay is India's premier financial super-app. Recharge mobile & DTH, pay utility bills, check free CIBIL score, buy insurance, and apply for instant loans and credit cards. Fast, Secure, Simple.">
-  <meta name="keywords" content="FlamePay, mobile recharge, bill payment, CIBIL score, instant loans, credit card, insurance, UPI wallet, India fintech">
-  <meta name="author" content="FlamePay">
-  <meta property="og:title" content="FlamePay — One App, Many Possibilities">
-  <meta property="og:description" content="Recharge, Pay Bills, Buy Insurance, Check CIBIL, Apply for Credit Card, and Loans — Fast, Secure, Simple. Anytime, Anywhere.">
-  <meta property="og:image" content="/assets/landing/hero_visual_hd.png">
-  <meta property="og:url" content="https://flamepay.in/">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="/assets/flamepay_icon.png">
-
-  <!-- Google Fonts: Plus Jakarta Sans -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <!-- Custom Stylesheet -->
-  <link rel="stylesheet" href="/css/landing.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FlamePay – Recharge, Bills, Insurance, CIBIL &amp; Loans in One App</title>
+<meta name="description" content="Recharge any mobile, pay electricity, DTH, gas &amp; broadband bills, buy insurance, check your CIBIL score free and apply for credit cards &amp; loans — all in the FlamePay app.">
+<!-- DEMO BUILD: flip to "index, follow" + remove robots.txt Disallow when moved to flamepay.in -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://flamepay.in/">
+<meta name="theme-color" content="#071e42">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FlamePay">
+<meta property="og:title" content="FlamePay – Recharge, Bills, Insurance, CIBIL &amp; Loans in One App">
+<meta property="og:description" content="Recharge any mobile, pay electricity, DTH, gas &amp; broadband bills, buy insurance, check your CIBIL score free and apply for credit cards &amp; loans — all in the FlamePay app.">
+<meta property="og:url" content="https://flamepay.in/">
+<meta property="og:image" content="https://flamepay.codelithlabdemo.online/img/og/home.jpg?v=15">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_IN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://flamepay.codelithlabdemo.online/img/og/home.jpg?v=15">
+<link rel="icon" href="/img/favicon-32.png?v=15" sizes="32x32" type="image/png">
+<link rel="icon" href="/img/icon-192.png?v=15" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png?v=15">
+<link rel="manifest" href="/manifest.webmanifest?v=15">
+<link rel="preload" href="/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css?v=15">
+<script>try{if(localStorage.getItem("fp_theme")==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"FlamePay","url":"https://flamepay.in","logo":"https://flamepay.in/img/icon-512.png","slogan":"Ignite Your Payments.","email":"support@flamepay.in"}</script>
+<link rel="alternate" hreflang="en-IN" href="https://flamepay.in/"><link rel="alternate" hreflang="hi-IN" href="https://flamepay.in/hi"><script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"FlamePay","operatingSystem":"Android, iOS","applicationCategory":"FinanceApplication","description":"Mobile recharge, bill payments, insurance, CIBIL score, credit cards and loans in one app.","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"}}</script>
 </head>
-<body>
-
-  <!-- ========================================================================
-       TOP NAVIGATION BAR
-       ======================================================================== -->
-  <header class="site-header">
-    <div class="container">
-      <nav class="navbar">
-        <!-- Official Brand Logo -->
-        <a href="/" class="brand-logo-container">
-          <img src="/assets/flamepay_logo_header.png" alt="FlamePay — Ignite Your Payments" class="brand-logo-img" style="height: 34px; width: auto; max-height: 34px; object-fit: contain;">
-        </a>
-
-        <!-- Desktop Navigation Links -->
-        <ul class="nav-links">
-          <li><a href="#home" class="nav-link active">Home</a></li>
-          <li><a href="#services" class="nav-link">Services</a></li>
-          <li><a href="#why-us" class="nav-link">Why Us</a></li>
-          <li><a href="#offers" class="nav-link">Offers</a></li>
-          <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
-          <li><a href="#contact" class="nav-link">Contact</a></li>
-        </ul>
-
-        <!-- Right Action Button -->
-        <div class="nav-actions">
-          <button class="btn btn-primary trigger-download" data-service="FlamePay App">
-            <i class="fa-solid fa-mobile-screen"></i>
-            <span>Download App</span>
-          </button>
-        </div>
-
-        <!-- Mobile Menu Toggle Button -->
-        <button class="mobile-toggle-btn" id="mobile-toggle" aria-label="Toggle Navigation">
-          <i class="fa-solid fa-bars-staggered"></i>
-        </button>
-      </nav>
+<body class="home">
+<a class="skip" href="#main">Skip to content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><rect x="6" y="2" width="12" height="20" rx="3"/></g><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></g><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></g><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M3.3 19a10 10 0 1 1 17.4 0z"/></g><path d="M12 14 16 9"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/><circle cx="12" cy="14" r="1.5"/></symbol>
+<symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><rect x="2" y="5" width="20" height="14" rx="3"/></g><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></symbol>
+<symbol id="i-loan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10M7 9h10M7 5c5 0 5 8 0 8l7 6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .8-5.2 4.8 1.4 7-6.2-3.6-6.2 3.6 1.4-7L2 9.3l7-.8z"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path fill="#00d7fe" d="M3.6 1.8 13.5 12 3.6 22.2c-.4-.2-.6-.7-.6-1.2V3c0-.5.2-1 .6-1.2z"/><path fill="#ffce00" d="m17 8.5-3.5 3.5 3.5 3.5 4-2.3c1.1-.6 1.1-1.8 0-2.4z"/><path fill="#ff3a44" d="M13.5 12 3.6 22.2c.4.2.9.2 1.4-.1L17 15.5z"/><path fill="#00f076" d="M3.6 1.8c.4-.2.9-.2 1.4.1L17 8.5 13.5 12z"/></symbol>
+<symbol id="i-apple" viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.8 1.2 1.8 2.6 3.1 2.5 1.3-.1 1.7-.8 3.3-.8 1.5 0 2 .8 3.3.8 1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.5-4zM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.5z"/></symbol>
+<symbol id="i-tv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><rect x="2" y="6" width="20" height="13" rx="2"/></g><rect x="2" y="6" width="20" height="13" rx="2"/><path d="m8 2 4 4 4-4"/></symbol>
+<symbol id="i-fire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M12 22c4 0 7-2.7 7-7 0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-3 3-5 5.5-5 8 0 4.3 3 7 7 7z"/></g><path d="M12 22c4 0 7-2.7 7-7 0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-3 3-5 5.5-5 8 0 4.3 3 7 7 7z"/></symbol>
+<symbol id="i-wifi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.6a10 10 0 0 1 14 0M8.5 16.3a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></symbol>
+<symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M12 2.7 6.3 9a7.5 7.5 0 1 0 11.4 0z"/></g><path d="M12 2.7 6.3 9a7.5 7.5 0 1 0 11.4 0z"/></symbol>
+<symbol id="i-car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M3 12l2-5h14l2 5v5H3z"/></g><path d="M5 17H3v-5l2-5h14l2 5v5h-2M5 12h14"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/></symbol>
+<symbol id="i-cyl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M7 8a5 5 0 0 1 10 0v12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/></g><path d="M9 2h6v3H9zM7 8a5 5 0 0 1 10 0v12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zM7 12h10"/></symbol>
+<symbol id="i-bank" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M2 10 12 3l10 7z"/></g><path d="M3 21h18M5 21V10M10 21V10M14 21V10M19 21V10M2 10 12 3l10 7z"/></symbol>
+<symbol id="i-grad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M22 9 12 4 2 9l10 5 10-5z"/></g><path d="M22 9 12 4 2 9l10 5 10-5zM6 11v5c3 2.7 9 2.7 12 0v-5"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></g><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+<symbol id="i-umb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M22 12a10 10 0 0 0-20 0z"/></g><path d="M22 12a10 10 0 0 0-20 0zM12 12v7a2 2 0 0 0 4 0"/></symbol>
+<symbol id="i-plane" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><rect x="4" y="11" width="16" height="11" rx="2"/></g><rect x="4" y="11" width="16" height="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+<symbol id="i-finger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4M14 13.12c0 2.38 0 6.38-1 8.88M17.29 21.02c.12-.6.43-2.3.5-3.02M2 12a10 10 0 0 1 18-6M2 16h.01M21.8 16c.2-2 .131-5.354 0-6M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2M8.65 22c.21-.66.45-1.32.57-2M9 6.8a6 6 0 0 1 9 5.2v2"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-head" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M21 16a2 2 0 0 1-2 2h-1v-6h3zM3 16a2 2 0 0 0 2 2h1v-6H3z"/></g><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><path d="M21 16a2 2 0 0 1-2 2h-1v-6h3zM3 16a2 2 0 0 0 2 2h1v-6H3zM18 18v1a3 3 0 0 1-3 3h-3"/></symbol>
+<symbol id="i-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3M3 4h8"/></symbol>
+<symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2z"/></g><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2z"/><path d="M8 9h8M8 13h6"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><circle cx="9" cy="8" r="4"/></g><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1zM12 15l-3-3a22 22 0 0 1 2-4A13 13 0 0 1 22 2c0 2.7-.8 7.5-6 11a22 22 0 0 1-4 2z"/><path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><rect x="2" y="4" width="20" height="16" rx="2"/></g><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><rect x="5" y="12" width="14" height="9"/></g><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><circle cx="9" cy="7" r="4"/></g><circle cx="9" cy="7" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 3.1a4 4 0 0 1 0 7.8M22 21a7 7 0 0 0-4-6.3"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24" fill="currentColor"><path d="M12 23c4.4 0 8-3 8-7.6 0-4.5-3.3-6.6-4.4-11.4-2.2 2.2-3.3 4.4-3.3 6.6-1.1-1.1-2.2-2.2-2.2-4.4C6.8 9.5 4 12.3 4 15.4 4 20 7.6 23 12 23z"/></symbol>
+<symbol id="i-fb" viewBox="0 0 24 24" fill="currentColor"><path d="M14 8h3V4h-3c-2.8 0-4 1.8-4 4.5V11H7v4h3v9h4v-9h3l1-4h-4V9c0-.6.4-1 1-1z"/></symbol>
+<symbol id="i-ig" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></symbol>
+<symbol id="i-in" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h4v12H4zM6 3a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM10 9h4v1.7c.6-1 2-2 4-2 3.4 0 4 2.2 4 5.2V21h-4v-6.2c0-1.5 0-3.3-2-3.3s-2.3 1.6-2.3 3.2V21H10z"/></symbol>
+<symbol id="i-yt" viewBox="0 0 24 24" fill="currentColor"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.8 15V9l5.7 3z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="duo" fill="currentColor" stroke="none" opacity=".28"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></g><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></symbol>
+</defs>
+</svg>
+<div class="topbar" aria-label="Announcements">
+  <div class="tb-mq"><div class="marquee">
+    <span>Instant mobile recharge for Jio, Airtel, Vi &amp; BSNL</span><span>Pay electricity, DTH, gas, broadband &amp; water bills in seconds</span><span>Check your CIBIL score — free</span><span>Compare &amp; buy health, term, motor and travel insurance</span><span>Apply for credit cards and loans from trusted partners</span><span>24/7 customer support</span>
+    <span aria-hidden="true">Instant mobile recharge for Jio, Airtel, Vi &amp; BSNL</span><span aria-hidden="true">Pay electricity, DTH, gas, broadband &amp; water bills in seconds</span><span aria-hidden="true">Check your CIBIL score — free</span><span aria-hidden="true">Compare &amp; buy health, term, motor and travel insurance</span><span aria-hidden="true">Apply for credit cards and loans from trusted partners</span><span aria-hidden="true">24/7 customer support</span>
+  </div></div>
+  <nav class="util" aria-label="Utility"><a href="/hi" lang="hi" class="lang">हिंदी</a><a href="/help">Help Center</a><a href="/security">Security</a><a href="/grievance">Grievance</a><a href="/contact">Contact</a></nav>
+</div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<header class="header" id="top">
+  <div class="wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="brand" href="/" aria-label="FlamePay home"><img src="/img/logo.webp?v=15" alt="FlamePay — Ignite Your Payments" width="400" height="149" fetchpriority="high"></a>
+      <ul class="menu">
+        <li><a href="/">Home</a></li>
+        <li class="has-mega"><button type="button" aria-expanded="false" aria-haspopup="true">Services <svg><use href="#i-chev"/></svg></button>
+          <div class="mega"><span class="mega-glow" aria-hidden="true"></span>
+            <a href="/mobile-recharge"><span class="ico sm"><svg><use href="#i-phone"/></svg></span><span><b>Mobile Recharge</b><small>Instant recharge for all major operators</small></span></a>
+            <a href="/bill-payment"><span class="ico sm navy"><svg><use href="#i-bolt"/></svg></span><span><b>Bill Payment</b><small>Electricity, DTH, gas, broadband, water</small></span></a>
+            <a href="/insurance"><span class="ico sm"><svg><use href="#i-shield"/></svg></span><span><b>Buy Insurance</b><small>Health, term, motor &amp; travel plans</small></span></a>
+            <a href="/cibil-score"><span class="ico sm navy"><svg><use href="#i-gauge"/></svg></span><span><b>CIBIL Score</b><small>Free score + detailed credit report</small></span></a>
+            <a href="/credit-cards"><span class="ico sm"><svg><use href="#i-card"/></svg></span><span><b>Credit Cards</b><small>Compare and apply in minutes</small></span></a>
+            <a href="/loans"><span class="ico sm navy"><svg><use href="#i-loan"/></svg></span><span><b>Loans</b><small>Personal, home, business &amp; LAP</small></span></a>
+            <div class="mega-foot"><a href="/tools"><svg><use href="#i-gauge"/></svg>Free money tools</a><a href="/learn"><svg><use href="#i-file"/></svg>Learn</a><a href="/electricity-bill-payment"><svg><use href="#i-bolt"/></svg>Electricity boards</a><a href="/partner"><svg><use href="#i-hand"/></svg>Partner with us</a></div>
+          </div>
+        </li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/security">Security</a></li>
+        <li><a href="/about">Company</a></li>
+        <li><a href="/help">Help</a></li>
+      </ul>
+      <div class="nav-cta">
+        <button class="theme-btn" type="button" data-theme-toggle aria-pressed="false" aria-label="Switch to dark mode"><svg class="t-moon"><use href="#i-moon"/></svg><svg class="t-sun"><use href="#i-sun"/></svg></button>
+        <button class="btn btn-flame" type="button" data-open="dl"><svg><use href="#i-dl"/></svg>Download App</button>
+        <button class="burger" type="button" aria-label="Open menu" data-drawer><svg><use href="#i-menu"/></svg></button>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<section class="hero">
+  <span class="aurora a1"></span><span class="aurora a2"></span>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow rv"><i><svg><use href="#i-flame"/></svg></i>Ignite your payments</span>
+      <h1 class="rv d1">All your financial needs. <span class="serif grad-text">One app,</span> many possibilities.</h1>
+      <p class="lead rv d2">Recharge, pay bills, buy insurance, check CIBIL, apply for credit cards and loans — fast, secure, simple. Anytime, anywhere.</p>
+      <div class="chips rv d2">
+        <a class="chip" href="#recharge"><b><svg><use href="#i-phone"/></svg></b>Mobile Recharge</a>
+        <a class="chip" href="#bills"><b><svg><use href="#i-bolt"/></svg></b>Bill Payment</a>
+        <a class="chip" href="#insurance"><b><svg><use href="#i-shield"/></svg></b>Insurance</a>
+        <a class="chip" href="#cibil"><b><svg><use href="#i-gauge"/></svg></b>CIBIL Score</a>
+        <a class="chip" href="#cards"><b><svg><use href="#i-card"/></svg></b>Credit Card</a>
+        <a class="chip" href="#loans"><b><svg><use href="#i-loan"/></svg></b>Loans</a>
+      </div>
+      <div class="stores rv d3">
+        <a class="store" href="https://play.google.com/store/apps" target="_blank" rel="noopener" data-store="android"><svg><use href="#i-play"/></svg><span><small>GET IT ON</small><b>Google Play</b></span></a>
+        <a class="store" href="https://www.apple.com/app-store/" target="_blank" rel="noopener" data-store="ios"><svg><use href="#i-apple"/></svg><span><small>Download on the</small><b>App Store</b></span></a>
+      </div>
+      <div class="hero-proof rv d3">
+        <div class="avatars" aria-hidden="true"><span style="background:#ff6b00">RM</span><span style="background:#1565c0">PS</span><span style="background:#ff3d00">AD</span><span style="background:#0d3b82">+</span></div>
+        <div><b>10L+ happy users</b>trust FlamePay across India</div>
+      </div>
     </div>
-  </header>
 
-  <!-- ========================================================================
-       HERO SECTION: One App Many Possibilities
-       ======================================================================== -->
-  <section class="hero-section" id="home">
-    <div class="container">
-      <div class="hero-grid">
-        <!-- Left Hero Content -->
-        <div class="hero-content">
-          <div class="section-pill">
-            <i class="fa-solid fa-sparkles"></i>
-            <span>All Your Financial Needs</span>
+    <div class="stage rv d2" id="stage">
+      <div class="phone" id="phone">
+        <div class="screen">
+          <div class="scr-top">
+            <div class="scr-hi"><div><small>Good evening</small><b>Rahul Mehta</b></div><img src="/img/icon-64.png?v=15" alt="" width="32" height="32"></div>
           </div>
-
-          <h1 class="hero-title">
-            <span class="text-orange">One App</span><br>
-            Many Possibilities
-          </h1>
-
-          <p class="hero-subtitle">
-            Recharge, Pay Bills, Buy Insurance, Check CIBIL, Apply for Credit Card, and Loans — Fast, Secure, Simple. Anytime, Anywhere.
-          </p>
-
-          <!-- 6 Quick Service Pills -->
-          <div class="quick-services-bar">
-            <div class="quick-service-pill trigger-download" data-service="Mobile Recharge">
-              <div class="qs-icon qs-blue">
-                <i class="fa-solid fa-mobile-screen-button"></i>
-              </div>
-              <span>Mobile<br>Recharge</span>
-            </div>
-
-            <div class="quick-service-pill trigger-download" data-service="Bill Payment">
-              <div class="qs-icon qs-orange">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-              </div>
-              <span>Bill<br>Payment</span>
-            </div>
-
-            <div class="quick-service-pill trigger-download" data-service="Insurance">
-              <div class="qs-icon qs-teal">
-                <i class="fa-solid fa-shield-heart"></i>
-              </div>
-              <span>Buy<br>Insurance</span>
-            </div>
-
-            <div class="quick-service-pill trigger-download" data-service="CIBIL Score">
-              <div class="qs-icon qs-purple">
-                <i class="fa-solid fa-gauge-high"></i>
-              </div>
-              <span>CIBIL<br>Score</span>
-            </div>
-
-            <div class="quick-service-pill trigger-download" data-service="Credit Card">
-              <div class="qs-icon qs-red">
-                <i class="fa-solid fa-credit-card"></i>
-              </div>
-              <span>Credit<br>Card</span>
-            </div>
-
-            <div class="quick-service-pill trigger-download" data-service="Loans">
-              <div class="qs-icon qs-amber">
-                <i class="fa-solid fa-sack-dollar"></i>
-              </div>
-              <span>Loan<br>Apply</span>
-            </div>
+          <div class="scr-card"><small>Cashback earned this month</small><b>₹1,240</b><div class="row"><span>Pay</span><span>Scan</span><span>Wallet</span></div></div>
+          <div class="scr-grid">
+            <div><i><svg><use href="#i-phone"/></svg></i>Recharge</div>
+            <div><i><svg><use href="#i-bolt"/></svg></i>Bills</div>
+            <div><i><svg><use href="#i-shield"/></svg></i>Insurance</div>
+            <div><i><svg><use href="#i-gauge"/></svg></i>CIBIL</div>
+            <div><i><svg><use href="#i-card"/></svg></i>Cards</div>
+            <div><i><svg><use href="#i-loan"/></svg></i>Loans</div>
           </div>
-
-          <!-- App Store Download Buttons -->
-          <div class="hero-store-buttons">
-            <a href="https://play.google.com/store/apps" target="_blank" class="app-store-badge trigger-download">
-              <i class="fa-brands fa-google-play" style="color: #00E676;"></i>
-              <div class="store-text">
-                <span>GET IT ON</span>
-                <strong>Google Play</strong>
-              </div>
-            </a>
-
-            <a href="https://www.apple.com/app-store/" target="_blank" class="app-store-badge trigger-download">
-              <i class="fa-brands fa-apple"></i>
-              <div class="store-text">
-                <span>Download on the</span>
-                <strong>App Store</strong>
-              </div>
-            </a>
-          </div>
-        </div>
-
-        <!-- Right Hero Visual: Exact 3D Model Woman with Phone & Floating Typography -->
-        <div class="hero-visual">
-          <div class="hero-img-wrap">
-            <img src="/assets/landing/hero_visual_hd.png" alt="FlamePay One App Many Possibilities" class="hero-main-img">
+          <div class="scr-list">
+            <h5>Recent</h5>
+            <div class="scr-item"><i><svg><use href="#i-check"/></svg></i><div><b>Jio prepaid recharge</b><small>Today, 7:42 PM</small></div><em>₹299</em></div>
+            <div class="scr-item"><i><svg><use href="#i-check"/></svg></i><div><b>Electricity bill</b><small>Yesterday</small></div><em>₹1,842</em></div>
           </div>
         </div>
       </div>
+      <div class="float f1"><span class="ok"><svg><use href="#i-check"/></svg></span><div><b>Recharge successful</b><small>₹299 · Jio · in 3 sec</small></div></div>
+      <div class="float f2"><svg class="mini-gauge" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#4ade80" stroke-width="5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="23" transform="rotate(-90 22 22)"/></svg><div><b>CIBIL 782</b><small>Excellent · checked free</small></div></div>
+      <div class="float f3"><span class="ok" style="background:linear-gradient(135deg,#ffb300,#ff3d00)"><svg><use href="#i-bolt"/></svg></span><div><b>Bill paid</b><small>Electricity · ₹1,842</small></div></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ========================================================================
-       SECTION: OUR SERVICES (Complete Financial Solutions In One Place)
-       ======================================================================== -->
-  <section class="services-section" id="services">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-pill">Our Services</div>
-        <h2>Complete Financial Solutions <span class="text-orange">In One Place</span></h2>
-        <p>FlamePay brings together multiple financial services to make your life easier, smarter and more secure.</p>
-      </div>
+<div class="trustbar"><div class="wrap"><div class="inner rv">
+  <div class="t"><span class="ico sm"><svg><use href="#i-lock"/></svg></span><div><b>Bank-grade security</b><small>256-bit SSL, encrypted end to end</small></div></div>
+  <div class="t"><span class="ico sm navy"><svg><use href="#i-bank"/></svg></span><div><b>Regulated partners</b><small>RBI-regulated banks &amp; NBFCs</small></div></div>
+  <div class="t"><span class="ico sm"><svg><use href="#i-zap"/></svg></span><div><b>Instant refunds</b><small>Failed payments auto-reversed</small></div></div>
+  <div class="t"><span class="ico sm navy"><svg><use href="#i-head"/></svg></span><div><b>24/7 human support</b><small>Grievance officer on record</small></div></div>
+</div></div></div>
 
-      <div class="services-grid-6">
-        <!-- 1. Mobile Recharge -->
-        <div class="service-card">
-          <img src="/assets/landing/icon_recharge_3d_hd.png" alt="Mobile Recharge" class="service-card-img">
-          <h3>Mobile Recharge</h3>
-          <p>Instant recharge for all major operators.</p>
-          <a href="#" class="btn-card-action trigger-download" data-service="Mobile Recharge">
-            <span>Recharge</span> <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
+<div class="ticker" style="border-bottom:0;padding-top:48px;background:transparent">
+  <p class="lab">Recharge &amp; pay across 500+ service providers</p>
+  <div class="fade-x"><div class="marquee">
+    <span>Jio</span><span>Airtel</span><span>Vi</span><span>BSNL</span><span>Electricity</span><span>DTH</span><span>Piped Gas</span><span>Broadband</span><span>Water</span><span>FASTag</span><span>LPG Booking</span><span>Postpaid</span><span>Insurance Premium</span><span>Loan EMI</span>
+    <span aria-hidden="true">Jio</span><span aria-hidden="true">Airtel</span><span aria-hidden="true">Vi</span><span aria-hidden="true">BSNL</span><span aria-hidden="true">Electricity</span><span aria-hidden="true">DTH</span><span aria-hidden="true">Piped Gas</span><span aria-hidden="true">Broadband</span><span aria-hidden="true">Water</span><span aria-hidden="true">FASTag</span><span aria-hidden="true">LPG Booking</span><span aria-hidden="true">Postpaid</span><span aria-hidden="true">Insurance Premium</span><span aria-hidden="true">Loan EMI</span>
+  </div></div>
+</div>
 
-        <!-- 2. Bill Payment -->
-        <div class="service-card">
-          <img src="/assets/landing/icon_bill_3d_hd.png" alt="Bill Payment" class="service-card-img">
-          <h3>Bill Payment</h3>
-          <p>Pay electricity, DTH, gas, broadband, water and more.</p>
-          <a href="#" class="btn-card-action trigger-download" data-service="Bill Payment">
-            <span>Pay Bills</span> <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-
-        <!-- 3. Buy Insurance -->
-        <div class="service-card">
-          <img src="/assets/landing/icon_insurance_3d_hd.png" alt="Buy Insurance" class="service-card-img">
-          <h3>Buy Insurance</h3>
-          <p>Compare & buy health, term, motor, travel insurance.</p>
-          <a href="#" class="btn-card-action trigger-download" data-service="Insurance">
-            <span>Buy Now</span> <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-
-        <!-- 4. CIBIL Score -->
-        <div class="service-card">
-          <img src="/assets/landing/icon_cibil_3d_hd.png" alt="CIBIL Score" class="service-card-img">
-          <h3>CIBIL Score</h3>
-          <p>Check your credit score and detailed report instantly.</p>
-          <a href="#" class="btn-card-action trigger-download" data-service="CIBIL Score">
-            <span>Check Score</span> <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-
-        <!-- 5. Credit Card -->
-        <div class="service-card">
-          <img src="/assets/landing/icon_card_3d_hd.png" alt="Apply for Credit Card" class="service-card-img">
-          <h3>Apply for Credit Card</h3>
-          <p>Compare and apply for best credit cards.</p>
-          <a href="#" class="btn-card-action trigger-download" data-service="Credit Card">
-            <span>Apply Now</span> <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-
-        <!-- 6. Loan Apply -->
-        <div class="service-card">
-          <img src="/assets/landing/icon_loan_3d_hd.png" alt="Loan Apply" class="service-card-img">
-          <h3>Loan Apply</h3>
-          <p>Personal, Home, Business, Loan Against Property and more.</p>
-          <a href="#" class="btn-card-action trigger-download" data-service="Loans">
-            <span>Apply Now</span> <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
+<section class="sec" id="services">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">Our Services</span>
+      <h2>Complete financial solutions <span class="serif grad-text">in one place</span></h2>
+      <p>FlamePay brings together multiple financial services to make your life easier, smarter and more secure.</p>
     </div>
-  </section>
-
-  <!-- ========================================================================
-       MID-PAGE BANNER: Fast Payments For a Smarter You
-       ======================================================================== -->
-  <section class="mid-banner-section" id="why-us">
-    <div class="container">
-      <div class="mid-banner-card">
-        <div class="mid-banner-grid">
-          <!-- Left Text & CTA -->
-          <div class="mid-banner-text">
-            <h2>Fast Payments<br>For a <span class="text-orange">Smarter You</span></h2>
-            <p>Recharge, Pay, Insure, Check, Apply, All in One App.</p>
-            <button class="btn btn-primary trigger-download" data-service="FlamePay App">
-              <span>Download FlamePay App</span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </div>
-
-          <!-- Center Smartphone Visual: Exact 3D phone with floating icons -->
-          <div class="mid-phone-center">
-            <img src="/assets/landing/mid_banner_phone_hd.png" alt="FlamePay Phone with Floating Badges" class="mid-banner-phone-img">
-          </div>
-
-          <!-- Right Feature Highlights -->
-          <div class="mid-features-list">
-            <div class="mid-feature-item">
-              <div class="mfi-icon"><i class="fa-solid fa-shield"></i></div>
-              <div class="mfi-text">
-                <h4>100% Secure Transactions</h4>
-              </div>
-            </div>
-
-            <div class="mid-feature-item">
-              <div class="mfi-icon"><i class="fa-solid fa-gear"></i></div>
-              <div class="mfi-text">
-                <h4>Best Offers & Cashback</h4>
-              </div>
-            </div>
-
-            <div class="mid-feature-item">
-              <div class="mfi-icon"><i class="fa-solid fa-headset"></i></div>
-              <div class="mfi-text">
-                <h4>24/7 Customer Support</h4>
-              </div>
-            </div>
-
-            <div class="mid-feature-item">
-              <div class="mfi-icon"><i class="fa-solid fa-circle-check"></i></div>
-              <div class="mfi-text">
-                <h4>Trusted Partners & Services</h4>
-              </div>
-            </div>
-          </div>
+    <div class="bento">
+      <article class="card navy span2 rv" id="recharge">
+        <span class="ico"><svg><use href="#i-phone"/></svg></span>
+        <h3>Mobile Recharge</h3>
+        <p>Recharge any prepaid number in seconds. Instant recharge for all major operators, with plan browsing built in.</p>
+        <div class="ops"><span>Jio</span><span>airtel</span><span>Vi</span><span>BSNL</span></div>
+        <div class="plans">
+          <div class="plan"><b>Data</b><small>Daily data packs</small></div>
+          <div class="plan"><b>Unlimited</b><small>Calls + data combos</small></div>
+          <div class="plan"><b>Top-up</b><small>Talktime &amp; add-ons</small></div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========================================================================
-       DETAILED SERVICES SHOWCASE (2 Columns x 3 Rows)
-       ======================================================================== -->
-  <section class="detailed-showcase-section" id="offers">
-    <div class="container">
-      <div class="detailed-cards-grid">
-        <!-- 1. Mobile Recharge -->
-        <div class="detailed-card trigger-download" data-service="Mobile Recharge">
-          <div class="detailed-card-visual">
-            <img src="/assets/landing/showcase_recharge_hd.png" alt="Mobile Recharge" class="dc-img">
-          </div>
-          <div class="detailed-card-info">
-            <h3>Mobile Recharge</h3>
-            <p>Recharge any number in seconds.</p>
-            <div class="detailed-card-badges">
-              <span class="operator-badge" style="background: #0078FF; color: #FFF;">Jio</span>
-              <span class="operator-badge" style="background: #E53935; color: #FFF;">airtel</span>
-              <span class="operator-badge" style="background: #D32F2F; color: #FFF;">Vi</span>
-              <span class="operator-badge" style="background: #1976D2; color: #FFF;">BSNL</span>
-            </div>
-          </div>
-          <div class="arrow-circle-btn">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
-        </div>
-
-        <!-- 2. Bill Payment -->
-        <div class="detailed-card trigger-download" data-service="Bill Payment">
-          <div class="detailed-card-visual">
-            <img src="/assets/landing/showcase_bill_hd.png" alt="Bill Payment" class="dc-img">
-          </div>
-          <div class="detailed-card-info">
-            <h3>Bill Payment</h3>
-            <p>Pay all your utility bills easily.</p>
-            <div class="detailed-card-badges">
-              <span class="operator-badge"><i class="fa-solid fa-bolt text-orange"></i> Electricity</span>
-              <span class="operator-badge"><i class="fa-solid fa-tv"></i> DTH</span>
-              <span class="operator-badge"><i class="fa-solid fa-fire text-orange"></i> Gas</span>
-              <span class="operator-badge"><i class="fa-solid fa-wifi"></i> Broadband</span>
-              <span class="operator-badge"><i class="fa-solid fa-water" style="color: #0288D1;"></i> Water</span>
-            </div>
-          </div>
-          <div class="arrow-circle-btn">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
-        </div>
-
-        <!-- 3. Buy Insurance -->
-        <div class="detailed-card trigger-download" data-service="Insurance">
-          <div class="detailed-card-visual">
-            <img src="/assets/landing/showcase_insurance_hd.png" alt="Buy Insurance" class="dc-img">
-          </div>
-          <div class="detailed-card-info">
-            <h3>Buy Insurance</h3>
-            <p>Health, Term, Motor, Travel and more. Compare & buy the best plans.</p>
-          </div>
-          <div class="arrow-circle-btn">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
-        </div>
-
-        <!-- 4. CIBIL Score -->
-        <div class="detailed-card trigger-download" data-service="CIBIL Score">
-          <div class="detailed-card-visual">
-            <img src="/assets/landing/showcase_cibil_hd.png" alt="CIBIL Score" class="dc-img">
-          </div>
-          <div class="detailed-card-info">
-            <h3>CIBIL Score</h3>
-            <p>Check your CIBIL score, detailed report and tips to improve your credit profile.</p>
-          </div>
-          <div class="arrow-circle-btn">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
-        </div>
-
-        <!-- 5. Apply for Credit Card -->
-        <div class="detailed-card trigger-download" data-service="Credit Card">
-          <div class="detailed-card-visual">
-            <img src="/assets/landing/showcase_credit_card_hd.png" alt="Apply for Credit Card" class="dc-img">
-          </div>
-          <div class="detailed-card-info">
-            <h3>Apply for Credit Card</h3>
-            <p>Compare best credit cards and apply online in minutes.</p>
-          </div>
-          <div class="arrow-circle-btn">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
-        </div>
-
-        <!-- 6. Loan Apply -->
-        <div class="detailed-card trigger-download" data-service="Loans">
-          <div class="detailed-card-visual">
-            <img src="/assets/landing/showcase_loan_hd.png" alt="Loan Apply" class="dc-img">
-          </div>
-          <div class="detailed-card-info">
+        <button class="link-arrow" type="button" data-open="dl" style="color:#ffb35c">Recharge now <svg><use href="#i-arrow"/></svg></button>
+      </article>
+      <article class="card rv d1">
+        <span class="ico navy"><svg><use href="#i-bolt"/></svg></span>
+        <h3>Bill Payment</h3>
+        <p>Pay all your utility bills easily — on time, every time.</p>
+        <div class="bill-tags"><span>Electricity</span><span>DTH</span><span>Gas</span><span>Broadband</span><span>Water</span></div>
+        <a class="link-arrow" href="#bills">Pay bills <svg><use href="#i-arrow"/></svg></a>
+      </article>
+      <article class="card rv">
+        <span class="ico"><svg><use href="#i-shield"/></svg></span>
+        <h3>Buy Insurance</h3>
+        <p>Health, term, motor, travel and more. Compare &amp; buy the best plans.</p>
+        <a class="link-arrow" href="#protect">Explore plans <svg><use href="#i-arrow"/></svg></a>
+      </article>
+      <article class="card rv d1">
+        <span class="ico navy"><svg><use href="#i-gauge"/></svg></span>
+        <h3>CIBIL Score</h3>
+        <p>Check your score, detailed report and tips to improve your credit profile.</p>
+        <div class="gauge-sm"><svg viewBox="0 0 120 72" aria-hidden="true"><path d="M10 64a50 50 0 0 1 100 0" fill="none" stroke="#e4eaf3" stroke-width="12" stroke-linecap="round"/><path d="M10 64a50 50 0 0 1 100 0" fill="none" stroke="url(#gsm)" stroke-width="12" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="31"/><defs><linearGradient id="gsm"><stop offset="0" stop-color="#ff3d00"/><stop offset=".5" stop-color="#ffb300"/><stop offset="1" stop-color="#22c55e"/></linearGradient></defs></svg><div><b>782</b><small>Excellent</small></div></div>
+        <a class="link-arrow" href="#cibil">Check score <svg><use href="#i-arrow"/></svg></a>
+      </article>
+      <article class="card rv d2" id="cards-mini">
+        <span class="ico"><svg><use href="#i-card"/></svg></span>
+        <h3>Credit Cards</h3>
+        <p>Compare the best credit cards and apply online in minutes.</p>
+        <div class="mini-card" aria-hidden="true"><div class="cc c1"><b>REWARDS</b><div class="chipx"></div>•••• 4021</div><div class="cc c2"><b>TRAVEL</b><div class="chipx"></div>•••• 7710</div><div class="cc c3"><b>CASHBACK</b><div class="chipx"></div>•••• 3398</div></div>
+        <a class="link-arrow" href="#cards">Compare cards <svg><use href="#i-arrow"/></svg></a>
+      </article>
+      <article class="card span3 rv">
+        <div class="loan-row">
+          <div>
+            <span class="ico navy"><svg><use href="#i-loan"/></svg></span>
             <h3>Loan Apply</h3>
-            <p>Personal, Home, Business Loan, Loan Against Property and more.</p>
+            <p>Personal, home, business, loan against property and more — from trusted lending partners. Plan your EMI before you apply.</p>
+            <a class="link-arrow" href="#loans">Calculate your EMI <svg><use href="#i-arrow"/></svg></a>
           </div>
-          <div class="arrow-circle-btn">
-            <i class="fa-solid fa-arrow-right"></i>
+          <div class="loan-types">
+            <a href="#loans" data-loan="personal"><span class="ico sm"><svg><use href="#i-user"/></svg></span>Personal Loan</a>
+            <a href="#loans" data-loan="home"><span class="ico sm navy"><svg><use href="#i-bank"/></svg></span>Home Loan</a>
+            <a href="#loans" data-loan="business"><span class="ico sm"><svg><use href="#i-rocket"/></svg></span>Business Loan</a>
+            <a href="#loans" data-loan="lap"><span class="ico sm navy"><svg><use href="#i-file"/></svg></span>Loan Against Property</a>
           </div>
         </div>
-      </div>
+      </article>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ========================================================================
-       SECTION: HOW IT WORKS (Get Started in 3 Simple Steps)
-       ======================================================================== -->
-  <section class="how-it-works-section" id="how-it-works">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-pill">How It Works</div>
-        <h2>Get Started in <span class="text-orange">3 Simple Steps</span></h2>
-      </div>
-
-      <div class="steps-grid">
-        <!-- Step 1 -->
-        <div class="step-card">
-          <div class="step-badge">1</div>
-          <div class="step-icon-wrap">
-            <i class="fa-solid fa-download"></i>
-          </div>
-          <h3>Download App</h3>
-          <p>Install FlamePay from Play Store or App Store.</p>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="step-card">
-          <div class="step-badge">2</div>
-          <div class="step-icon-wrap">
-            <i class="fa-solid fa-user"></i>
-          </div>
-          <h3>Register</h3>
-          <p>Create your account in a few seconds.</p>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="step-card">
-          <div class="step-badge">3</div>
-          <div class="step-icon-wrap" style="color: #10B981;">
-            <i class="fa-solid fa-check"></i>
-          </div>
-          <h3>Start Using</h3>
-          <p>Recharge, pay bills, buy insurance, check CIBIL, apply for cards & loans.</p>
-        </div>
-      </div>
+<section class="sec" id="story" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">See it in action</span>
+      <h2>From tap to done in <span class="serif grad-text">seconds</span></h2>
+      <p>Here's what a recharge, a bill payment and a credit check actually look like inside FlamePay.</p>
     </div>
-  </section>
-
-  <!-- ========================================================================
-       SECTION: STATS & TRUST BAR
-       ======================================================================== -->
-  <section class="stats-bar-section">
-    <div class="container">
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-          <h3>10L+</h3>
-          <p>Happy Users</p>
-        </div>
-
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fa-solid fa-network-wired"></i></div>
-          <h3>500+</h3>
-          <p>Service Providers</p>
-        </div>
-
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
-          <h3>99.9%</h3>
-          <p>Secure Transactions</p>
-        </div>
-
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fa-solid fa-headset"></i></div>
-          <h3>24/7</h3>
-          <p>Customer Support</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========================================================================
-       SECTION: TESTIMONIALS (What Our Users Say)
-       ======================================================================== -->
-  <section class="testimonials-section">
-    <div class="container">
-      <div class="section-header">
-        <h2>What <span class="text-orange">Our Users</span> Say</h2>
-        <p>Trusted by thousands across India</p>
-      </div>
-
-      <div class="testimonials-grid">
-        <!-- Testimonial 1 -->
-        <div class="testimonial-card">
-          <div>
-            <div class="stars-row">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
+    <div class="story">
+      <div class="story-stage" aria-hidden="true">
+        <div class="phone">
+          <div class="screen">
+            <div class="sstate on">
+              <div class="s-head"><small>Mobile recharge</small><b>98XXX XXX21 · Jio</b></div>
+              <div class="s-body">
+                <div class="s-field">Operator &amp; circle<b>Jio · Maharashtra</b></div>
+                <div class="s-plans">
+                  <div class="s-plan">Data<b>₹239</b>1.5 GB/day</div>
+                  <div class="s-plan sel">Unlimited<b>₹299</b>2 GB/day</div>
+                  <div class="s-plan">Top-up<b>₹100</b>Talktime</div>
+                  <div class="s-plan">Annual<b>₹2,999</b>365 days</div>
+                </div>
+                <div class="s-pay">Pay ₹299 securely</div>
+              </div>
             </div>
-            <p class="testimonial-quote">"FlamePay makes bill payments so easy and fast. Love the UI and offers!"</p>
-          </div>
-          <div class="testimonial-author">
-            <img src="/assets/landing/avatar_rahul_hd.png" alt="Rahul Mehta" class="author-avatar-img">
-            <div class="author-info">
-              <h4>Rahul Mehta</h4>
+            <div class="sstate">
+              <div class="s-head"><small>Electricity bill</small><b>Consumer no. 1100XXXX72</b></div>
+              <div class="s-body">
+                <div class="s-ok"><i><svg><use href="#i-check"/></svg></i><b>₹1,842 paid</b><small>Bill fetched &amp; paid · Ref FP7X2K91</small></div>
+                <div class="s-field">Due date<b>Paid 6 days early</b></div>
+                <div class="s-field">Receipt<b>Saved to your history</b></div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Testimonial 2 -->
-        <div class="testimonial-card">
-          <div>
-            <div class="stars-row">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <p class="testimonial-quote">"I checked my CIBIL score and applied for a credit card in minutes. Amazing experience!"</p>
-          </div>
-          <div class="testimonial-author">
-            <img src="/assets/landing/avatar_priya_hd.png" alt="Priya Sharma" class="author-avatar-img">
-            <div class="author-info">
-              <h4>Priya Sharma</h4>
-            </div>
-          </div>
-        </div>
-
-        <!-- Testimonial 3 -->
-        <div class="testimonial-card">
-          <div>
-            <div class="stars-row">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <p class="testimonial-quote">"Best app for recharge, bill payment and insurance. Highly recommended!"</p>
-          </div>
-          <div class="testimonial-author">
-            <img src="/assets/landing/avatar_amit_hd.png" alt="Amit Das" class="author-avatar-img">
-            <div class="author-info">
-              <h4>Amit Das</h4>
+            <div class="sstate">
+              <div class="s-head"><small>Credit health</small><b>Your CIBIL score</b></div>
+              <div class="s-body">
+                <svg class="s-gauge" viewBox="0 0 240 130"><defs><linearGradient id="sg" x1="0" x2="1"><stop offset="0" stop-color="#ff3d00"/><stop offset=".45" stop-color="#ffb300"/><stop offset="1" stop-color="#22c55e"/></linearGradient></defs><path d="M20 120a100 100 0 0 1 200 0" fill="none" stroke="#e4eaf3" stroke-width="18" stroke-linecap="round"/><path d="M20 120a100 100 0 0 1 200 0" fill="none" stroke="url(#sg)" stroke-width="18" stroke-linecap="round" stroke-dasharray="314.2" stroke-dashoffset="62"/></svg>
+                <div class="s-score"><b>782</b><small>Excellent</small></div>
+                <div class="s-field">Payment history<b>100% on time</b></div>
+                <div class="s-field">Tip<b>Keep card usage under 30%</b></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- ========================================================================
-       PRE-FOOTER APP DOWNLOAD CTA BANNER
-       ======================================================================== -->
-  <section class="pre-footer-cta">
-    <div class="container">
-      <div class="pre-footer-content">
-        <div class="pfc-brand">
-          <img src="/assets/flamepay_logo_footer.png" alt="FlamePay" class="pfc-logo-img">
-        </div>
-        <div class="pfc-center">
-          <h3>Download FlamePay App Now</h3>
-          <p>Experience a faster, safer and simpler way to manage your finances.</p>
-        </div>
-        <div class="pfc-buttons">
-          <a href="https://play.google.com/store/apps" target="_blank" class="app-store-badge trigger-download">
-            <i class="fa-brands fa-google-play" style="color: #00E676;"></i>
-            <div class="store-text">
-              <span>GET IT ON</span>
-              <strong>Google Play</strong>
-            </div>
-          </a>
-          <a href="https://www.apple.com/app-store/" target="_blank" class="app-store-badge trigger-download">
-            <i class="fa-brands fa-apple"></i>
-            <div class="store-text">
-              <span>Download on the</span>
-              <strong>App Store</strong>
-            </div>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========================================================================
-       FOOTER
-       ======================================================================== -->
-  <footer class="site-footer" id="contact">
-    <div class="container">
-      <div class="footer-grid">
-        <!-- Col 1: Brand Info -->
-        <div class="footer-col footer-col-brand">
-          <img src="/assets/flamepay_logo_footer.png" alt="FlamePay — Ignite Your Payments" class="footer-brand-logo-img">
-          <p>FlamePay is your trusted partner for mobile recharge, bill payments, insurance, CIBIL score, credit card and loan services. Fast, Secure, Simple.</p>
-          
-          <div class="social-links-row">
-            <a href="https://facebook.com" target="_blank" class="social-link-btn" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="https://instagram.com" target="_blank" class="social-link-btn" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://youtube.com" target="_blank" class="social-link-btn" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
-            <a href="https://linkedin.com" target="_blank" class="social-link-btn" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-          </div>
-        </div>
-
-        <!-- Col 2: Quick Links -->
-        <div class="footer-col">
-          <h4>Quick Links</h4>
-          <div class="footer-links-list">
-            <a href="#home">Home</a>
-            <a href="#services">Services</a>
-            <a href="#why-us">Why Us</a>
-            <a href="#offers">Offers</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#contact">Contact</a>
-          </div>
-        </div>
-
-        <!-- Col 3: Our Services -->
-        <div class="footer-col">
-          <h4>Our Services</h4>
-          <div class="footer-links-list">
-            <a href="#services">Mobile Recharge</a>
-            <a href="#services">Bill Payment</a>
-            <a href="#services">Buy Insurance</a>
-            <a href="#services">CIBIL Score</a>
-            <a href="#services">Credit Card</a>
-            <a href="#services">Loan Apply</a>
-          </div>
-        </div>
-
-        <!-- Col 4: Support & Legal -->
-        <div class="footer-col">
-          <h4>Support</h4>
-          <div class="footer-links-list">
-            <a href="#">FAQ</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms & Conditions</a>
-            <a href="#">Disclaimer</a>
-            <a href="#">Grievance Redressal</a>
-            <a href="#">Contact Us</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Copyright Bar -->
-      <div class="footer-bottom-bar">
-        <div>© 2026 FlamePay. All Rights Reserved.</div>
-        <div>FAST • SECURE • SIMPLE</div>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ========================================================================
-       DOWNLOAD APP MODAL POPUP
-       ======================================================================== -->
-  <div class="modal-overlay" id="download-modal">
-    <div class="modal-card">
-      <button class="modal-close-btn" id="close-modal-btn" aria-label="Close Modal">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <div class="modal-icon">
-        <i class="fa-solid fa-mobile-screen-button"></i>
-      </div>
-
-      <h3 id="modal-service-name">Get the FlamePay Super App</h3>
-      <p>Download the FlamePay app on Android or iOS to experience lightning-fast payments, instant loans, and cashback rewards.</p>
-
-      <!-- SMS Link Box -->
-      <form id="sms-link-form">
-        <div class="sms-input-row">
-          <input type="tel" id="sms-phone-input" placeholder="Enter 10-digit mobile number" maxlength="10">
-          <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Send Link</button>
-        </div>
-        <div id="sms-feedback" style="font-size: 13px; font-weight: 700; display: none; margin-bottom: 16px;"></div>
-      </form>
-
-      <!-- Store Badges -->
-      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-        <a href="https://play.google.com/store/apps" target="_blank" class="app-store-badge">
-          <i class="fa-brands fa-google-play" style="color: #00E676;"></i>
-          <div class="store-text">
-            <span>GET IT ON</span>
-            <strong>Google Play</strong>
-          </div>
-        </a>
-        <a href="https://www.apple.com/app-store/" target="_blank" class="app-store-badge">
-          <i class="fa-brands fa-apple"></i>
-          <div class="store-text">
-            <span>Download on the</span>
-            <strong>App Store</strong>
-          </div>
-        </a>
+      <div class="story-steps">
+        <article class="sstep"><div class="step-n">1</div><div><h3>Recharge in 3 taps</h3><p>Enter the number, pick a plan, pay. Operator and circle are filled in for you.</p><ul class="ticks"><li><i><svg><use href="#i-check"/></svg></i>All plans in one list</li><li><i><svg><use href="#i-check"/></svg></i>Instant confirmation</li></ul></div></article>
+        <article class="sstep"><div class="step-n">2</div><div><h3>Bills paid, receipts saved</h3><p>Fetch your bill with a consumer number and pay before the due date — receipts stay in your history.</p><ul class="ticks"><li><i><svg><use href="#i-check"/></svg></i>500+ billers</li><li><i><svg><use href="#i-check"/></svg></i>Auto-refund if it fails</li></ul></div></article>
+        <article class="sstep"><div class="step-n">3</div><div><h3>Know your credit score</h3><p>Check your CIBIL score free, understand what drives it, and get tips to improve.</p><ul class="ticks"><li><i><svg><use href="#i-check"/></svg></i>No impact on score</li><li><i><svg><use href="#i-check"/></svg></i>Personalised tips</li></ul></div></article>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- Scripts -->
-  <script src="/js/landing.js"></script>
+<section class="band">
+  <div class="wrap band-grid">
+    <div class="rv">
+      <span class="kicker" style="color:#ffb35c">Fast payments</span>
+      <h2>Fast payments for a <span class="serif">smarter</span> you</h2>
+      <p>Recharge, pay, insure, check, apply — all in one app.</p>
+      <button class="btn btn-flame" type="button" data-open="dl"><svg><use href="#i-dl"/></svg>Download FlamePay App</button>
+    </div>
+    <div class="trust">
+      <div class="glass rv"><span class="ico"><svg><use href="#i-lock"/></svg></span>100% Secure Transactions</div>
+      <div class="glass rv d1"><span class="ico"><svg><use href="#i-gift"/></svg></span>Best Offers &amp; Cashback</div>
+      <div class="glass rv d2"><span class="ico"><svg><use href="#i-head"/></svg></span>24/7 Customer Support</div>
+      <div class="glass rv d3"><span class="ico"><svg><use href="#i-hand"/></svg></span>Trusted Partners &amp; Services</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="bills">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">Bill Payments</span>
+      <h2>Every bill. <span class="serif grad-text">One tap.</span></h2>
+      <p>Fetch your bill, pay in seconds and get an instant confirmation — no queues, no late fees, no hunting for apps.</p>
+    </div>
+    <div class="bills">
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-bolt"/></svg></span>Electricity</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-tv"/></svg></span>DTH</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-fire"/></svg></span>Piped Gas</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-wifi"/></svg></span>Broadband</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-drop"/></svg></span>Water</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-phone"/></svg></span>Postpaid</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-car"/></svg></span>FASTag</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-cyl"/></svg></span>LPG Cylinder</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-card"/></svg></span>Credit Card Bill</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-loan"/></svg></span>Loan EMI</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-shield"/></svg></span>Insurance Premium</button>
+      <button class="bill rv" type="button" data-open="dl"><span class="ico"><svg><use href="#i-grad"/></svg></span>Education Fees</button>
+    </div>
+  </div>
+</section>
+
+<section class="sec dark" id="cibil">
+  <span class="glow-seam"></span>
+  <div class="wrap split">
+    <div class="glass gauge-card rv">
+      <svg class="gauge" viewBox="0 0 240 130" aria-hidden="true">
+        <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#ff3d00"/><stop offset=".45" stop-color="#ffb300"/><stop offset="1" stop-color="#22c55e"/></linearGradient></defs>
+        <path d="M20 120a100 100 0 0 1 200 0" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="16" stroke-linecap="round"/>
+        <path id="gArc" d="M20 120a100 100 0 0 1 200 0" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round" stroke-dasharray="314.2" stroke-dashoffset="314.2"/>
+      </svg>
+      <div class="gauge-val"><b id="gNum">300</b><small>Excellent</small></div>
+      <div class="gauge-scale"><span>300</span><span>Poor · Fair · Good</span><span>900</span></div>
+      <div class="gauge-stats">
+        <div><b>Free</b><small>Score check</small></div>
+        <div><b>Full</b><small>Credit report</small></div>
+        <div><b>Smart</b><small>Improvement tips</small></div>
+      </div>
+    </div>
+    <div class="rv d1">
+      <span class="kicker">CIBIL Score</span>
+      <h2 class="h2">Know your score. <span class="serif grad-text">Grow your score.</span></h2>
+      <ul class="ticks">
+        <li><i><svg><use href="#i-check"/></svg></i><div><b>Check your CIBIL score instantly</b><small>See where you stand in under a minute.</small></div></li>
+        <li><i><svg><use href="#i-check"/></svg></i><div><b>Detailed credit report</b><small>Accounts, enquiries, payment history — explained simply.</small></div></li>
+        <li><i><svg><use href="#i-check"/></svg></i><div><b>Tips to improve your credit profile</b><small>Personalised steps to unlock better card and loan offers.</small></div></li>
+        <li><i><svg><use href="#i-check"/></svg></i><div><b>Checking your own score is a soft enquiry</b><small>It doesn't lower your credit score.</small></div></li>
+      </ul>
+      <button class="btn btn-flame" type="button" data-open="dl"><svg><use href="#i-gauge"/></svg>Check my score</button>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="loans">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">Loans &amp; EMI</span>
+      <h2>Plan your loan <span class="serif grad-text">before you apply</span></h2>
+      <p>Personal, home, business and loan against property — see your monthly EMI in real time.</p>
+    </div>
+    <div class="emi rv">
+      <div class="emi-in">
+        <div class="emi-tabs" role="group" aria-label="Loan type">
+          <button type="button" data-loan="personal" aria-pressed="true">Personal</button>
+          <button type="button" data-loan="home" aria-pressed="false">Home</button>
+          <button type="button" data-loan="business" aria-pressed="false">Business</button>
+          <button type="button" data-loan="lap" aria-pressed="false">Against Property</button>
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="amt">Loan amount</label><output id="amtO" for="amt">₹5,00,000</output></div>
+          <input type="range" id="amt" min="50000" max="10000000" step="10000" value="500000">
+          <div class="range-lim"><span>₹50K</span><span>₹1 Cr</span></div>
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="rate">Interest rate (p.a.)</label><output id="rateO" for="rate">11%</output></div>
+          <input type="range" id="rate" min="6" max="24" step="0.1" value="11">
+          <div class="range-lim"><span>6%</span><span>24%</span></div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <div class="field-top"><label for="ten">Tenure</label><output id="tenO" for="ten">3 years</output></div>
+          <input type="range" id="ten" min="1" max="30" step="1" value="3">
+          <div class="range-lim"><span>1 yr</span><span>30 yrs</span></div>
+        </div>
+      </div>
+      <div class="emi-out">
+        <small>Your monthly EMI</small>
+        <div class="emi-big" id="emiO">₹16,370</div>
+        <div class="donut-wrap">
+          <svg class="donut" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="48" fill="none" stroke="#ff6b00" stroke-width="16"/><circle id="donP" cx="60" cy="60" r="48" fill="none" stroke="#4f9cf0" stroke-width="16" stroke-dasharray="301.6" stroke-dashoffset="60"/></svg>
+          <div class="legend">
+            <div><i style="background:#4f9cf0"></i>Principal<b id="prinO">₹5,00,000</b></div>
+            <div><i style="background:#ff6b00"></i>Total interest<b id="intO">₹89,320</b></div>
+            <div>Total payable<b id="totO">₹5,89,320</b></div>
+          </div>
+        </div>
+        <button class="btn btn-flame" type="button" data-open="dl">Apply in the app <svg><use href="#i-arrow"/></svg></button>
+        <p class="fine">Indicative calculation only. Actual rate, eligibility and EMI are decided by the lending partner.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="protect" style="padding-top:0">
+  <div class="wrap duo">
+    <article class="card rv" id="insurance">
+      <span class="kicker">Insurance</span>
+      <h3 style="margin-top:0;font-size:var(--fs-xl)">Protect what matters. <span class="serif grad-text">Compare &amp; buy.</span></h3>
+      <p>Side-by-side plan comparison from leading insurers, with instant policy issuance in the app.</p>
+      <div class="ins-list">
+        <div class="ins"><span class="ico sm"><svg><use href="#i-heart"/></svg></span><div><b>Health Insurance</b><small>Family floater &amp; individual</small></div></div>
+        <div class="ins"><span class="ico sm navy"><svg><use href="#i-umb"/></svg></span><div><b>Term Life</b><small>High cover, low premium</small></div></div>
+        <div class="ins"><span class="ico sm"><svg><use href="#i-car"/></svg></span><div><b>Motor Insurance</b><small>Car &amp; two-wheeler</small></div></div>
+        <div class="ins"><span class="ico sm navy"><svg><use href="#i-plane"/></svg></span><div><b>Travel Insurance</b><small>Domestic &amp; international</small></div></div>
+      </div>
+      <button class="btn btn-dark" type="button" data-open="dl" style="margin-top:32px">Get a quote <svg><use href="#i-arrow"/></svg></button>
+    </article>
+    <article class="card rv d1" id="cards">
+      <span class="kicker">Credit Cards</span>
+      <h3 style="margin-top:0;font-size:var(--fs-xl)">The right card, <span class="serif grad-text">in minutes.</span></h3>
+      <p>Compare rewards, cashback, travel and lifetime-free cards from partner banks — and apply online.</p>
+      <div class="big-cards" aria-hidden="true"><div class="cc c1"><b>REWARDS</b><div class="chipx"></div>•••• •••• 4021</div><div class="cc c2"><b>TRAVEL</b><div class="chipx"></div>•••• •••• 7710</div><div class="cc c3"><b>CASHBACK</b><div class="chipx"></div>•••• •••• 3398</div></div>
+      <button class="btn btn-dark" type="button" data-open="dl" style="margin-top:32px">Compare cards <svg><use href="#i-arrow"/></svg></button>
+    </article>
+  </div>
+</section>
+
+<section class="sec" id="offers" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">Offers</span>
+      <h2>Rewards that <span class="serif grad-text">add up</span></h2>
+      <p>Cashback and offers on everyday payments. Fresh deals every week inside the app.</p>
+    </div>
+    <div class="offers">
+      <article class="offer o1 sheen rv"><span class="tag">New users</span><h3>Cashback on your first recharge</h3><p>Make your first mobile recharge on FlamePay and get cashback in your account.</p><div class="cut">Claim in app <span>T&amp;C apply</span></div></article>
+      <article class="offer o2 sheen rv d1"><span class="tag">Bills</span><h3>Bill-pay rewards</h3><p>Earn rewards every time you pay electricity, DTH, gas or broadband bills.</p><div class="cut">Pay &amp; earn <span>T&amp;C apply</span></div></article>
+      <article class="offer o3 sheen rv d2"><span class="tag">Refer</span><h3>Refer &amp; earn</h3><p>Invite friends to FlamePay. When they transact, you both get rewarded.</p><div class="cut">Share invite <span>T&amp;C apply</span></div></article>
+    </div>
+  </div>
+</section>
+
+<section class="sec dark" id="why-us">
+  <span class="glow-seam"></span>
+  <div class="wrap" style="position:relative">
+    <div class="sec-head rv">
+      <span class="kicker">Why FlamePay</span>
+      <h2>Built for speed. <span class="serif grad-text">Built for trust.</span></h2>
+      <p>Your money and your data deserve the same care. Here's what you get with every transaction.</p>
+    </div>
+    <div class="why">
+      <div class="glass rv"><span class="ico"><svg><use href="#i-lock"/></svg></span><h3>Secure transactions</h3><p>Encrypted connections and partner-grade payment rails on every transaction.</p></div>
+      <div class="glass rv d1"><span class="ico"><svg><use href="#i-finger"/></svg></span><h3>Protected login</h3><p>MPIN and device-level protection keep your account in your hands only.</p></div>
+      <div class="glass rv d2"><span class="ico"><svg><use href="#i-zap"/></svg></span><h3>Instant confirmations</h3><p>Real-time status and receipts for every recharge and bill — no guesswork.</p></div>
+      <div class="glass rv"><span class="ico"><svg><use href="#i-head"/></svg></span><h3>24/7 support</h3><p>Stuck anywhere? Our support team is available round the clock.</p></div>
+      <div class="glass rv d1"><span class="ico"><svg><use href="#i-hand"/></svg></span><h3>Trusted partners</h3><p>Cards, loans and insurance come from regulated banks, NBFCs and insurers.</p></div>
+      <div class="glass rv d2"><span class="ico"><svg><use href="#i-receipt"/></svg></span><h3>Transparent by design</h3><p>Every charge shown before you pay. Clear refund rules for failed payments.</p></div>
+    </div>
+    <div style="text-align:center;margin-top:48px" class="rv"><a class="btn btn-ghost" href="/security">How we protect you <svg><use href="#i-arrow"/></svg></a> <a class="btn btn-ghost" href="/pricing">See pricing &amp; fees <svg><use href="#i-arrow"/></svg></a></div>
+  </div>
+</section>
+
+<section class="sec" id="how-it-works">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">How It Works</span>
+      <h2>Get started in <span class="serif grad-text">3 simple steps</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step rv"><div class="step-n">1</div><h3>Download App</h3><p>Install FlamePay from Play Store or App Store.</p></div>
+      <div class="step rv d1"><div class="step-n">2</div><h3>Register</h3><p>Create your account in a few seconds with your mobile number.</p></div>
+      <div class="step rv d2"><div class="step-n">3</div><h3>Start Using</h3><p>Recharge, pay bills, buy insurance, check CIBIL, apply for cards &amp; loans.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:0">
+  <div class="wrap">
+    <div class="stats rv">
+      <div class="stat"><b class="grad-text" data-count="10" data-suffix="L+">10L+</b><span>Happy Users</span></div>
+      <div class="stat"><b class="grad-text" data-count="500" data-suffix="+">500+</b><span>Service Providers</span></div>
+      <div class="stat"><b class="grad-text" data-count="99.9" data-suffix="%" data-dec="1">99.9%</b><span>Secure Transactions</span></div>
+      <div class="stat"><b class="grad-text">24/7</b><span>Customer Support</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:0" id="reviews">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">Reviews</span>
+      <h2>What our <span class="serif grad-text">users say</span></h2>
+      <p>Trusted by thousands across India.</p>
+    </div>
+    <div class="quotes">
+      <figure class="quote rv" style="margin:0"><div class="stars" aria-label="5 out of 5"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p>“FlamePay makes bill payments so easy and fast. Love the UI and offers!”</p><figcaption class="who"><span style="background:#ff6b00">RM</span><div><b>Rahul Mehta</b><small>FlamePay user</small></div></figcaption></figure>
+      <figure class="quote rv d1" style="margin:0"><div class="stars" aria-label="5 out of 5"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p>“I checked my CIBIL score and applied for a credit card in minutes. Amazing experience!”</p><figcaption class="who"><span style="background:#1565c0">PS</span><div><b>Priya Sharma</b><small>FlamePay user</small></div></figcaption></figure>
+      <figure class="quote rv d2" style="margin:0"><div class="stars" aria-label="5 out of 5"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p>“Best app for recharge, bill payment and insurance. Highly recommended!”</p><figcaption class="who"><span style="background:#ff3d00">AD</span><div><b>Amit Das</b><small>FlamePay user</small></div></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:0" id="tools-teaser">
+  <div class="wrap">
+    <div class="sec-head rv"><span class="kicker">Free money tools</span><h2>Plan smarter <span class="serif grad-text">in seconds</span></h2><p>Free calculators and guides — no sign-up, no spam.</p></div>
+    <div class="learn-grid">
+      <a class="lcard rv" href="/cibil-score#cibil-sim"><span class="ico"><svg><use href="#i-gauge"/></svg></span><small>Simulator</small><b>CIBIL score simulator</b></a>
+      <a class="lcard rv d1" href="/credit-cards#card-finder"><span class="ico navy"><svg><use href="#i-card"/></svg></span><small>Quiz</small><b>Which credit card suits you?</b></a>
+      <a class="lcard rv d2" href="/insurance#cover-calc"><span class="ico"><svg><use href="#i-umb"/></svg></span><small>Calculator</small><b>How much term cover you need</b></a>
+      <a class="lcard rv d3" href="/learn/how-to-improve-cibil-score"><span class="ico navy"><svg><use href="#i-file"/></svg></span><small>Guide</small><b>12 steps to a better CIBIL score</b></a>
+    </div>
+    <div style="text-align:center;margin-top:32px" class="rv"><a class="btn btn-line" href="/tools">All money tools <svg><use href="#i-arrow"/></svg></a> <a class="btn btn-line" href="/learn">Read the guides <svg><use href="#i-arrow"/></svg></a></div>
+  </div>
+</section>
+
+<section class="sec" id="faq" style="padding-top:0">
+  <div class="wrap faq-grid">
+    <div class="faq-side rv">
+      <span class="kicker">FAQ</span>
+      <h2 class="h2">Questions? <span class="serif grad-text">Answered.</span></h2>
+      <p style="margin-top:16px;color:var(--muted)">Everything you need to know about FlamePay. Can't find your answer? Our team is here 24/7.</p>
+      <div class="support-card"><span class="ico"><svg><use href="#i-head"/></svg></span><div><b>Talk to support</b><small>We usually reply within minutes</small></div><a class="link-arrow" href="/contact" style="margin-left:auto" aria-label="Contact support"><svg><use href="#i-arrow"/></svg></a></div>
+    </div>
+    <div class="faq rv d1">
+      <details open><summary>Is FlamePay free to use?<i><svg><use href="#i-plus"/></svg></i></summary><p>Yes. Downloading FlamePay and creating an account is free. If any service carries a convenience fee, it is shown clearly before you confirm the payment.</p></details>
+      <details><summary>What happens if my recharge or bill payment fails?<i><svg><use href="#i-plus"/></svg></i></summary><p>If money is debited but the transaction fails, it is automatically reversed to your original payment source, usually within 5–7 working days. You can track the status in the app. See our <a href="/refund-policy" style="color:var(--flame);font-weight:700">Refund Policy</a>.</p></details>
+      <details><summary>Does checking my CIBIL score on FlamePay reduce it?<i><svg><use href="#i-plus"/></svg></i></summary><p>No. Checking your own credit score is a soft enquiry and does not affect your score.</p></details>
+      <details><summary>Does FlamePay give loans or credit cards itself?<i><svg><use href="#i-plus"/></svg></i></summary><p>No. FlamePay helps you compare and apply. Loans and credit cards are offered by partner banks and NBFCs, who decide approval, interest rate and terms.</p></details>
+      <details><summary>Is my personal data safe?<i><svg><use href="#i-plus"/></svg></i></summary><p>Your data is encrypted in transit and shared only with the partners needed to complete a service you request. We do not sell your personal data. Read our <a href="/privacy-policy" style="color:var(--flame);font-weight:700">Privacy Policy</a>.</p></details>
+      <details><summary>How do I raise a complaint?<i><svg><use href="#i-plus"/></svg></i></summary><p>Use Help &amp; Support in the app or write to us from the <a href="/contact" style="color:var(--flame);font-weight:700">Contact page</a>. If unresolved, you can escalate through our <a href="/grievance" style="color:var(--flame);font-weight:700">Grievance Redressal</a> process.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding:0">
+  <div class="wrap">
+    <div class="cta rv">
+      <div>
+        <span class="kicker" style="color:#ffb35c">Download now</span>
+        <h2>Download the FlamePay <span class="serif grad-text">app now</span></h2>
+        <p>Experience a faster, safer and simpler way to manage your finances.</p>
+        <div class="stores">
+          <a class="store" href="https://play.google.com/store/apps" target="_blank" rel="noopener" data-store="android"><svg><use href="#i-play"/></svg><span><small>GET IT ON</small><b>Google Play</b></span></a>
+          <a class="store" href="https://www.apple.com/app-store/" target="_blank" rel="noopener" data-store="ios"><svg><use href="#i-apple"/></svg><span><small>Download on the</small><b>App Store</b></span></a>
+        </div>
+        <div class="qr-box"><img src="/img/qr-app.svg?v=15" alt="QR code to download FlamePay" width="96" height="96" loading="lazy"><div><b>Scan to download</b><small>Point your phone camera at the code</small></div></div>
+      </div>
+      <div class="cta-art" aria-hidden="true"><span class="ring"></span><img src="/img/icon-512.webp?v=15" alt="" width="200" height="200" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is FlamePay free to use?","acceptedAnswer":{"@type":"Answer","text":"Yes. Downloading FlamePay and creating an account is free. If any service carries a convenience fee, it is shown clearly before you confirm the payment."}},{"@type":"Question","name":"What happens if my recharge or bill payment fails?","acceptedAnswer":{"@type":"Answer","text":"If money is debited but the transaction fails, it is automatically reversed to your original payment source, usually within 5–7 working days."}},{"@type":"Question","name":"Does checking my CIBIL score on FlamePay reduce it?","acceptedAnswer":{"@type":"Answer","text":"No. Checking your own credit score is a soft enquiry and does not affect your score."}},{"@type":"Question","name":"Does FlamePay give loans or credit cards itself?","acceptedAnswer":{"@type":"Answer","text":"No. Loans and credit cards are offered by partner banks and NBFCs, who decide approval, interest rate and terms."}}]}</script>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="foot-trust">
+      <div class="ft-item"><span class="ico sm"><svg><use href="#i-lock"/></svg></span><div><b>256-bit SSL encryption</b><small>Every page and payment</small></div></div>
+      <div class="ft-item"><span class="ico sm navy"><svg><use href="#i-bank"/></svg></span><div><b>Regulated partners</b><small>RBI-regulated banks &amp; NBFCs</small></div></div>
+      <div class="ft-item"><span class="ico sm"><svg><use href="#i-shield"/></svg></span><div><b>Insurance partners</b><small>IRDAI-registered insurers</small></div></div>
+      <div class="ft-item"><span class="ico sm navy"><svg><use href="#i-head"/></svg></span><div><b>24/7 support</b><small>Grievance officer on record</small></div></div>
+    </div>
+    <div class="foot-grid">
+      <div>
+        <img src="/img/logo-light.webp?v=15" alt="FlamePay" width="320" height="120" loading="lazy">
+        <p>FlamePay is your trusted partner for mobile recharge, bill payments, insurance, CIBIL score, credit card and loan services. Fast, secure, simple.</p>
+        <div class="stores stores-sm">
+          <a class="store" href="https://play.google.com/store/apps" target="_blank" rel="noopener" data-store="android"><svg><use href="#i-play"/></svg><span><small>GET IT ON</small><b>Google Play</b></span></a>
+          <a class="store" href="https://www.apple.com/app-store/" target="_blank" rel="noopener" data-store="ios"><svg><use href="#i-apple"/></svg><span><small>Download on the</small><b>App Store</b></span></a>
+        </div>
+        <div class="socials">
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="FlamePay on Facebook"><svg><use href="#i-fb"/></svg></a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="FlamePay on Instagram"><svg><use href="#i-ig"/></svg></a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="FlamePay on LinkedIn"><svg><use href="#i-in"/></svg></a>
+          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="FlamePay on YouTube"><svg><use href="#i-yt"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <ul>
+          <li><a href="/mobile-recharge">Mobile Recharge</a></li>
+          <li><a href="/bill-payment">Bill Payment</a></li>
+          <li><a href="/insurance">Buy Insurance</a></li>
+          <li><a href="/cibil-score">CIBIL Score</a></li>
+          <li><a href="/credit-cards">Credit Card</a></li>
+          <li><a href="/loans">Loans &amp; EMI Calculator</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/pricing">Pricing &amp; Fees</a></li>
+          <li><a href="/security">Security &amp; Trust</a></li>
+          <li><a href="/#offers">Offers</a></li>
+          <li><a href="/#reviews">Reviews</a></li>
+          <li><a href="/tools">Money Tools</a></li>
+          <li><a href="/learn">Learn</a></li>
+          <li><a href="/partner">Partner with us</a></li>
+          <li><a href="/careers">Careers</a></li>
+          <li><a href="/press">Press &amp; Brand</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <ul>
+          <li><a href="/help">Help Center</a></li>
+          <li><a href="/contact">Contact Us</a></li>
+          <li><a href="/grievance">Grievance Redressal</a></li>
+          <li><a href="/refund-policy">Refunds</a></li>
+          <li><a href="/electricity-bill-payment">Electricity boards</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="/terms">Terms &amp; Conditions</a></li>
+          <li><a href="/privacy-policy">Privacy Policy</a></li>
+          <li><a href="/refund-policy">Refund &amp; Cancellation</a></li>
+          <li><a href="/delivery-policy">Service Delivery Policy</a></li>
+          <li><a href="/disclaimer">Disclaimer</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-co">
+      <div class="co-cell"><small>Brand</small><b>FlamePay</b></div>
+      
+      
+      
+      
+      
+      <div class="co-cell"><small>Support</small><b><a href="mailto:support@flamepay.in">support@flamepay.in</a></b></div>
+      <div class="co-cell"><small>Grievance</small><b><a href="mailto:grievance@flamepay.in">grievance@flamepay.in</a></b></div>
+    </div>
+
+    <div class="pay-row">
+      <span>Pay securely with</span>
+      <i>UPI</i><i>RuPay</i><i>Visa</i><i>Mastercard</i><i>Net Banking</i><i>Wallets</i>
+    </div>
+
+    <p class="foot-note">FlamePay is a technology platform and is not a bank, NBFC or insurer. Loans and credit cards are offered by our partner banks and NBFCs regulated by the RBI, and insurance by IRDAI-registered insurers and intermediaries; approval, pricing and terms are decided solely by the respective partner. Insurance is the subject matter of solicitation. Recharge and bill payments are processed through authorised partners. Operator, biller and card network names belong to their respective owners.</p>
+    <div class="foot-bottom">
+      <span>© <span data-year>2026</span> FlamePay. All rights reserved.</span>
+      <nav class="fb-links" aria-label="Legal"><a href="/terms">Terms</a><a href="/privacy-policy">Privacy</a><a href="/refund-policy">Refunds</a><a href="/sitemap.xml">Sitemap</a></nav>
+      <b>FAST • SECURE • SIMPLE</b>
+    </div>
+  </div>
+</footer>
+
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-bg" data-close></div>
+  <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="drawer-head"><img src="/img/logo.webp?v=15" alt="FlamePay" width="400" height="149" loading="lazy"><button class="x" type="button" aria-label="Close menu" data-close><svg><use href="#i-x"/></svg></button></div>
+    <a class="dl" href="/"><span class="ico sm navy"><svg><use href="#i-flame"/></svg></span>Home</a>
+    <span class="group">Services</span>
+    <a class="dl" href="/mobile-recharge"><span class="ico sm"><svg><use href="#i-phone"/></svg></span>Mobile Recharge</a>
+    <a class="dl" href="/bill-payment"><span class="ico sm navy"><svg><use href="#i-bolt"/></svg></span>Bill Payment</a>
+    <a class="dl" href="/insurance"><span class="ico sm"><svg><use href="#i-shield"/></svg></span>Buy Insurance</a>
+    <a class="dl" href="/cibil-score"><span class="ico sm navy"><svg><use href="#i-gauge"/></svg></span>CIBIL Score</a>
+    <a class="dl" href="/credit-cards"><span class="ico sm"><svg><use href="#i-card"/></svg></span>Credit Cards</a>
+    <a class="dl" href="/loans"><span class="ico sm navy"><svg><use href="#i-loan"/></svg></span>Loans &amp; EMI Calculator</a>
+    <span class="group">Company</span>
+    <a class="dl" href="/tools"><span class="ico sm navy"><svg><use href="#i-gauge"/></svg></span>Money Tools</a>
+    <a class="dl" href="/learn"><span class="ico sm"><svg><use href="#i-file"/></svg></span>Learn</a>
+    <a class="dl" href="/partner"><span class="ico sm navy"><svg><use href="#i-hand"/></svg></span>Partner with us</a>
+    <a class="dl" href="/pricing"><span class="ico sm"><svg><use href="#i-receipt"/></svg></span>Pricing &amp; Fees</a>
+    <a class="dl" href="/security"><span class="ico sm navy"><svg><use href="#i-lock"/></svg></span>Security &amp; Trust</a>
+    <a class="dl" href="/about"><span class="ico sm"><svg><use href="#i-users"/></svg></span>About Us</a>
+    <a class="dl" href="/help"><span class="ico sm navy"><svg><use href="#i-head"/></svg></span>Help Center</a>
+    <a class="dl" href="/contact"><span class="ico sm"><svg><use href="#i-mail"/></svg></span>Contact Us</a>
+    <a class="dl" href="/hi" lang="hi"><span class="ico sm navy"><svg><use href="#i-users"/></svg></span>हिंदी में देखें</a>
+    <button class="dl dl-theme" type="button" data-theme-toggle aria-pressed="false" aria-label="Switch to dark mode"><span class="ico sm navy"><svg><use href="#i-moon"/></svg></span>Dark mode</button>
+    <button class="btn btn-flame" type="button" data-open="dl" style="margin-top:16px"><svg><use href="#i-dl"/></svg>Download FlamePay</button>
+  </div>
+</div>
+
+<div class="modal" id="dl" aria-hidden="true">
+  <div class="modal-bg" data-close></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="dl-t">
+    <button class="x" type="button" aria-label="Close" data-close><svg><use href="#i-x"/></svg></button>
+    <img class="mi" src="/img/icon-192.png?v=15" alt="" width="88" height="88">
+    <h3 id="dl-t">Get the FlamePay Super App</h3>
+    <p>Lightning-fast recharges, bill payments, insurance, CIBIL score, cards and loans — all in one app.</p>
+    <div class="stores">
+      <a class="store" href="https://play.google.com/store/apps" target="_blank" rel="noopener" data-store="android"><svg><use href="#i-play"/></svg><span><small>GET IT ON</small><b>Google Play</b></span></a>
+      <a class="store" href="https://www.apple.com/app-store/" target="_blank" rel="noopener" data-store="ios"><svg><use href="#i-apple"/></svg><span><small>Download on the</small><b>App Store</b></span></a>
+    </div>
+    <div class="qr-box"><img src="/img/qr-app.svg?v=15" alt="QR code to download FlamePay" width="96" height="96" loading="lazy"><div><b>On a computer?</b><small>Scan with your phone camera to get the app</small></div></div>
+    <p class="modal-trust"><svg><use href="#i-lock"/></svg>Free to download · 10L+ users · 24/7 support</p>
+  </div>
+</div>
+
+<div class="cookie" id="cookie" role="dialog" aria-label="Cookie preferences" hidden>
+  <p>We use essential cookies to run this site and, with your consent, analytics cookies to improve it. See our <a href="/privacy-policy">Privacy Policy</a>.</p>
+  <div><button class="btn btn-line" type="button" data-cookie="essential">Essential only</button><button class="btn btn-dark" type="button" data-cookie="all">Accept all</button></div>
+</div>
+
+<nav class="tabbar" aria-label="Quick navigation">
+  <a href="/" data-tab="/"><svg><use href="#i-flame"/></svg>Home</a>
+  <a href="/#services" data-tab="services"><svg><use href="#i-bolt"/></svg>Services</a>
+  <button type="button" class="tab-fab" data-open="dl" aria-label="Download the app"><svg><use href="#i-dl"/></svg></button>
+  <a href="/pricing" data-tab="/pricing"><svg><use href="#i-receipt"/></svg>Pricing</a>
+  <a href="/help" data-tab="/help"><svg><use href="#i-head"/></svg>Help</a>
+</nav>
+
+<button class="to-top" type="button" aria-label="Back to top" id="toTop"><svg><use href="#i-up"/></svg></button>
+<div class="appbar" id="appbar" hidden data-play="https://play.google.com/store/apps" data-ios="https://www.apple.com/app-store/"><button class="x" type="button" aria-label="Dismiss" data-appbar-close><svg><use href="#i-x"/></svg></button><img src="/img/icon-64.png?v=15" alt="" width="40" height="40"><div><b>FlamePay</b><small>Recharge, bills &amp; more — free</small></div><a class="btn btn-flame" id="appbarGo" href="/app">Open</a></div>
+<div class="assist" id="assist">
+  <button class="assist-fab" type="button" aria-label="Open FlamePay Assistant" aria-expanded="false" aria-controls="assistPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><span class="assist-dot"></span></button>
+  <div class="assist-panel" id="assistPanel" role="dialog" aria-label="FlamePay Assistant" hidden>
+    <div class="assist-head"><img src="/img/icon-64.png?v=15" alt="" width="36" height="36"><div><b>FlamePay Assistant</b><small><i></i>Instant answers, 24/7</small></div><button class="x" type="button" aria-label="Close assistant" data-assist-close><svg><use href="#i-x"/></svg></button></div>
+    <div class="assist-log" id="assistLog" aria-live="polite"></div>
+    <div class="assist-chips" id="assistChips"><button type="button">Recharge failed, money debited</button><button type="button">Is FlamePay free?</button><button type="button">Does checking CIBIL lower my score?</button><button type="button">How do I contact support?</button></div>
+    <form class="assist-form" id="assistForm"><input class="input" id="assistQ" placeholder="Ask anything… (English / Hinglish)" autocomplete="off" aria-label="Your question"><button class="btn btn-flame" type="submit" aria-label="Send"><svg><use href="#i-arrow"/></svg></button></form>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/js/main.js?v=15" defer></script>
 </body>
 </html>

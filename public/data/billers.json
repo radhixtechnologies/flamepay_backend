@@ -1,0 +1,20 @@
+{
+  "Electricity": [
+    ["MSEDCL (Mahavitaran)", "Maharashtra"], ["Adani Electricity Mumbai", "Maharashtra"], ["Tata Power Mumbai", "Maharashtra"], ["BEST Undertaking", "Maharashtra"],
+    ["Torrent Power", "Gujarat"], ["PGVCL", "Gujarat"], ["UGVCL", "Gujarat"], ["MGVCL", "Gujarat"], ["DGVCL", "Gujarat"],
+    ["BSES Rajdhani", "Delhi"], ["BSES Yamuna", "Delhi"], ["Tata Power-DDL", "Delhi"], ["NDMC", "Delhi"],
+    ["BESCOM", "Karnataka"], ["MESCOM", "Karnataka"], ["HESCOM", "Karnataka"], ["GESCOM", "Karnataka"], ["CESC Mysore", "Karnataka"],
+    ["TNPDCL (formerly TANGEDCO)", "Tamil Nadu"], ["KSEB", "Kerala"],
+    ["APSPDCL", "Andhra Pradesh"], ["APEPDCL", "Andhra Pradesh"], ["APCPDCL", "Andhra Pradesh"], ["TGSPDCL", "Telangana"], ["TGNPDCL", "Telangana"],
+    ["UPPCL", "Uttar Pradesh"], ["UPCL", "Uttarakhand"], ["PSPCL", "Punjab"], ["DHBVN", "Haryana"], ["UHBVN", "Haryana"], ["HPSEBL", "Himachal Pradesh"],
+    ["JVVNL", "Rajasthan"], ["AVVNL", "Rajasthan"], ["JdVVNL", "Rajasthan"],
+    ["MP Paschim Kshetra VVCL", "Madhya Pradesh"], ["MP Madhya Kshetra VVCL", "Madhya Pradesh"], ["MP Poorv Kshetra VVCL", "Madhya Pradesh"], ["CSPDCL", "Chhattisgarh"],
+    ["CESC", "West Bengal"], ["WBSEDCL", "West Bengal"], ["NBPDCL", "Bihar"], ["SBPDCL", "Bihar"], ["JBVNL", "Jharkhand"],
+    ["TPCODL", "Odisha"], ["TPSODL", "Odisha"], ["TPWODL", "Odisha"], ["TPNODL", "Odisha"],
+    ["APDCL", "Assam"], ["Goa Electricity Department", "Goa"], ["JPDCL", "Jammu & Kashmir"], ["KPDCL", "Jammu & Kashmir"]
+  ],
+  "DTH": [["Tata Play", "All India"], ["Airtel Digital TV", "All India"], ["Dish TV", "All India"], ["d2h", "All India"], ["Sun Direct", "All India"]],
+  "Broadband": [["Airtel Xstream Fiber", "All India"], ["JioFiber", "All India"], ["ACT Fibernet", "Multiple cities"], ["BSNL Bharat Fiber", "All India"], ["Hathway", "Multiple cities"], ["Excitel", "Multiple cities"]],
+  "Piped Gas": [["Indraprastha Gas (IGL)", "Delhi NCR"], ["Mahanagar Gas (MGL)", "Mumbai"], ["Adani Total Gas", "Multiple cities"], ["Gujarat Gas", "Gujarat"], ["GAIL Gas", "Multiple cities"], ["Torrent Gas", "Multiple cities"]],
+  "Water": [["Delhi Jal Board", "Delhi"], ["BWSSB", "Bengaluru"], ["Hyderabad Metro Water (HMWSSB)", "Hyderabad"], ["Pune Municipal Corporation", "Pune"]]
+}

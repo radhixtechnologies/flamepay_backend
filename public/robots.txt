@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /
+# DEMO. At go-live on flamepay.in replace with:
+# User-agent: *
+# Allow: /
+# Sitemap: https://flamepay.in/sitemap.xml
