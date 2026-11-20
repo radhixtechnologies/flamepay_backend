@@ -1,0 +1,36 @@
+# FlamePay Web Routing & Reverse Proxy / Static Fallback for Hostinger
+
+Options -Indexes
+DirectoryIndex index.php index.html public/index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Redirect /hi to root
+    RewriteRule ^hi(/.*)?$ / [R=301,L]
+
+    # Admin portal rewrite
+    RewriteRule ^admin(/.*)?$ public/admin.html [L]
+
+    # If the requested file or directory exists directly, serve it
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Root -> public/index.html
+    RewriteRule ^$ public/index.html [L]
+
+    # Check if direct file/folder exists inside public/
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Clean URL support for HTML pages (e.g. /contact -> /public/contact.html)
+    RewriteCond %{DOCUMENT_ROOT}/public/$1.html -f
+    RewriteRule ^(.*)$ public/$1.html [L]
+
+    # Default fallback to public/index.html
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/index.html [L]
+</IfModule>
