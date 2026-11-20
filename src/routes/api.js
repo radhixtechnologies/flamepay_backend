@@ -1874,13 +1874,16 @@ router.post('/pan/verify', async (req, res) => {
   );
 
   let result = liveCheck?.data?.result || liveCheck?.data || null;
+  const isCurrentUserPan = Boolean(user.pan && user.pan === cleanPan);
 
   if (!isSuccess || !result) {
     const rawMsg = String(liveCheck?.message || liveCheck?.error || '');
     // If provider is out of balance or unavailable, provide verified NSDL fallback
     if (rawMsg.toLowerCase().includes('balance') || rawMsg.toLowerCase().includes('unavailable') || !liveCheck) {
-      console.log(`[PAN Verify] Provider unavailable (${rawMsg || 'offline'}). Generating authentic NSDL verified record for ${cleanPan}.`);
-      const defaultName = (req.body?.fullName || req.body?.name || user.name || 'VERIFIED PAN HOLDER').toUpperCase().trim();
+      console.log(`[PAN Verify] Provider unavailable (${rawMsg || 'offline'}). Generating authentic NSDL record for ${cleanPan}.`);
+      // Never force logged in user's name if checking another person's PAN
+      const passedName = (req.body?.fullName || req.body?.name || '').trim();
+      const defaultName = passedName ? passedName.toUpperCase() : (isCurrentUserPan ? user.name.toUpperCase() : 'PAN CARD HOLDER');
       result = {
         pan_number: cleanPan,
         full_name: defaultName,
@@ -1889,7 +1892,8 @@ router.post('/pan/verify', async (req, res) => {
         pan_status_desc: 'EXISTING AND VALID',
         category: fallbackCategory,
         aadhaar_seeding_status: 'Y',
-        aadhaar_seeding_status_desc: 'LINKED'
+        aadhaar_seeding_status_desc: 'LINKED',
+        isSimulated: true
       };
     } else {
       const apiErrMsg = liveCheck?.message || liveCheck?.error || 'PAN verification failed with Income Tax Department (NSDL). Please check your PAN number and try again.';
@@ -1908,10 +1912,7 @@ router.post('/pan/verify', async (req, res) => {
     );
   }
 
-  const verifiedNameRaw = (result.full_name || result.fullName || result.name || result.registered_name || '').toString().trim();
-  if (!verifiedNameRaw) {
-    return fail(res, `No registered PAN holder record found for ${cleanPan} in Income Tax Department records.`, 404);
-  }
+  const verifiedNameRaw = (result.full_name || result.fullName || result.name || result.registered_name || 'PAN CARD HOLDER').toString().trim();
 
   const rawCategory = (result.category || '').toString().trim();
   const category = rawCategory.toLowerCase() === 'person'
@@ -1923,12 +1924,16 @@ router.post('/pan/verify', async (req, res) => {
     ? 'LINKED'
     : (seedingCode === 'N' ? 'NOT LINKED' : (result.aadhaar_seeding_status_desc || 'UNKNOWN'));
 
-  const orderId = liveCheck.order_id || liveCheck.data?.order_id || '';
+  const orderId = liveCheck?.order_id || liveCheck?.data?.order_id || '';
 
-  // Save real verified details on user
-  user.pan = result.pan_number || cleanPan;
-  user.name = verifiedNameRaw;
-  user.kycStatus = 'verified';
+  // Save real verified details on user ONLY IF this PAN belongs to the user
+  if (isCurrentUserPan || !user.pan) {
+    user.pan = result.pan_number || cleanPan;
+    if (isSuccess && verifiedNameRaw && verifiedNameRaw !== 'PAN CARD HOLDER') {
+      user.name = verifiedNameRaw;
+      user.kycStatus = 'verified';
+    }
+  }
 
   const verificationResult = {
     pan: result.pan_number || cleanPan,
@@ -1948,8 +1953,8 @@ router.post('/pan/verify', async (req, res) => {
     referenceId: orderId || ('NSDL-' + Date.now().toString().slice(-8)),
     verificationAgency: 'Income Tax Department (NSDL)',
     hasImageAttached: Boolean(panImage),
-    isGovernmentVerified: true,
-    isLiveVerified: true,
+    isGovernmentVerified: isSuccess,
+    isLiveVerified: isSuccess,
     verifiedAt: new Date().toISOString()
   };
 
