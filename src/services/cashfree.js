@@ -26,9 +26,7 @@ class CashfreeService {
   }
 
   getCheckoutBaseUrl() {
-    return this.isProd()
-      ? 'https://payments.cashfree.com/forms'
-      : 'https://payments-test.cashfree.com/forms';
+    return 'https://admin.flamepay.in/api/v1/payment/cashfree/checkout';
   }
 
   getCredentials() {
@@ -129,7 +127,7 @@ class CashfreeService {
       }
 
       const paymentSessionId = data.payment_session_id;
-      const checkoutUrl = `${this.getCheckoutBaseUrl()}/${paymentSessionId}`;
+      const checkoutUrl = `${this.getCheckoutBaseUrl()}?session_id=${encodeURIComponent(paymentSessionId)}&order_id=${encodeURIComponent(data.order_id)}`;
 
       return {
         success: true,

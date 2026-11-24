@@ -3079,4 +3079,129 @@ router.get('/payment/cashfree/return', (req, res) => {
   `);
 });
 
+/**
+ * 6. Cashfree Hosted Web Checkout Page
+ * GET /api/v1/payment/cashfree/checkout
+ * Serves official Cashfree JS SDK v3 checkout to avoid APK installer package security restrictions
+ */
+router.get('/payment/cashfree/checkout', (req, res) => {
+  const { session_id, order_id } = req.query;
+  if (!session_id) {
+    return res.status(400).send('<h3>Invalid Request: Missing payment session ID.</h3>');
+  }
+
+  const isProd = cashfree.isProd();
+  const sdkMode = isProd ? 'production' : 'sandbox';
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>FlamePay - Cashfree UPI Payment</title>
+      <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+      <style>
+        * { box-sizing: border-box; }
+        body {
+          margin: 0;
+          padding: 0;
+          background: #0f172a;
+          color: #f8fafc;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+        }
+        .container {
+          text-align: center;
+          padding: 24px;
+          max-width: 360px;
+          width: 90%;
+        }
+        .spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(255, 255, 255, 0.1);
+          border-top-color: #f97316;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin: 0 auto 20px;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        h2 {
+          font-size: 19px;
+          margin: 0 0 8px;
+          font-weight: 600;
+        }
+        p {
+          font-size: 13px;
+          color: #94a3b8;
+          margin: 0 0 20px;
+        }
+        .btn-retry {
+          display: none;
+          background: #f97316;
+          color: white;
+          border: none;
+          padding: 10px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="spinner" id="spinner"></div>
+        <h2 id="title">Opening Cashfree UPI Payment...</h2>
+        <p id="subtitle">Connecting securely to Cashfree...</p>
+        <button class="btn-retry" id="retryBtn" onclick="launchCheckout()">Retry Payment</button>
+      </div>
+
+      <script>
+        function launchCheckout() {
+          try {
+            document.getElementById('title').innerText = 'Opening Cashfree UPI Payment...';
+            document.getElementById('spinner').style.display = 'block';
+            document.getElementById('retryBtn').style.display = 'none';
+
+            const cashfree = Cashfree({
+              mode: "${sdkMode}"
+            });
+
+            cashfree.checkout({
+              paymentSessionId: "${session_id}",
+              redirectTarget: "_self"
+            }).then(function(result) {
+              if (result && result.error) {
+                console.error('[Cashfree Checkout Error]:', result.error);
+                document.getElementById('title').innerText = 'Payment Notice';
+                document.getElementById('subtitle').innerText = result.error.message || 'Payment window closed.';
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('retryBtn').style.display = 'inline-block';
+              }
+            });
+          } catch (err) {
+            console.error('[Cashfree Launch Exception]:', err);
+            document.getElementById('title').innerText = 'Error Loading Payment';
+            document.getElementById('subtitle').innerText = err.message || 'Could not load Cashfree gateway.';
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('retryBtn').style.display = 'inline-block';
+          }
+        }
+
+        window.onload = function() {
+          setTimeout(launchCheckout, 300);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+});
+
 module.exports = router;
