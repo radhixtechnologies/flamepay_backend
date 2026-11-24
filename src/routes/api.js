@@ -6,6 +6,7 @@ const db = require('../data/db');
 const way2api = require('../services/way2api');
 const cyrus = require('../services/cyrus');
 const cheapkart = require('../services/cheapkart');
+const cashfree = require('../services/cashfree');
 
 // Helper wrapper
 const success = (res, data = {}, message = 'Success') => res.json({ success: true, message, data });
@@ -2763,6 +2764,292 @@ router.post('/contact/submit', (req, res) => {
   if (typeof db.saveContacts === 'function') db.saveContacts();
 
   success(res, ticket, 'Your message has been received! Ticket #' + ticket.id + ' logged. Support team will contact you shortly.');
+});
+
+// ============================================================================
+// CASHFREE PAYMENT GATEWAY INTEGRATION (UPI ONLY)
+// ============================================================================
+
+// In-memory cache for processed Cashfree orders to prevent duplicate recharges
+const processedCashfreeOrders = new Set();
+const pendingCashfreeOrders = new Map();
+
+/**
+ * 1. Create Cashfree Order strictly restricted to UPI
+ * POST /api/v1/payment/cashfree/create-order
+ */
+router.post('/payment/cashfree/create-order', async (req, res) => {
+  const user = getAuthenticatedUser(req);
+  const {
+    amount = 19,
+    purpose = 'recharge',
+    mobile = '',
+    mobileNumber = '',
+    operator = 'Jio',
+    operatorId = '',
+    circle = 'Delhi',
+    planId = '',
+    serviceType = 'Mobile Recharge'
+  } = req.body;
+
+  const targetMobile = mobileNumber || mobile || user.phone || '9876543210';
+  const targetOperator = operatorId || operator || 'Jio';
+  const numAmount = Number(Number(amount).toFixed(2));
+
+  if (numAmount <= 0) {
+    return fail(res, 'Payment amount must be greater than zero.', 400);
+  }
+
+  const orderId = `FP_CF_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+
+  try {
+    const cfOrder = await cashfree.createOrder({
+      orderId,
+      orderAmount: numAmount,
+      customerPhone: targetMobile,
+      customerEmail: user.email || 'user@flamepay.in',
+      customerName: user.name || 'FlamePay User',
+      customerId: user.id || `cust_${targetMobile}`,
+      orderNote: `${serviceType} - ${targetOperator} (${targetMobile})`
+    });
+
+    if (!cfOrder.success) {
+      return fail(res, cfOrder.error || 'Failed to initiate Cashfree payment order.', 500);
+    }
+
+    // Try to get seamless UPI intent string if order is active
+    let upiIntentUrl = cfOrder.upiIntentUrl || '';
+    if (cfOrder.paymentSessionId && !cfOrder.isSimulated) {
+      const upiRes = await cashfree.generateUpiIntent({
+        paymentSessionId: cfOrder.paymentSessionId,
+        channel: 'intent'
+      });
+      if (upiRes.success && upiRes.upiUrl) {
+        upiIntentUrl = upiRes.upiUrl;
+      }
+    }
+
+    // Store order context for recharge verification
+    pendingCashfreeOrders.set(orderId, {
+      userId: user.id,
+      amount: numAmount,
+      purpose,
+      mobile: targetMobile,
+      operator: targetOperator,
+      circle: circle || 'Delhi',
+      planId,
+      serviceType,
+      createdAt: Date.now()
+    });
+
+    success(res, {
+      orderId: cfOrder.orderId,
+      cfOrderId: cfOrder.cfOrderId,
+      paymentSessionId: cfOrder.paymentSessionId,
+      orderAmount: numAmount,
+      orderStatus: cfOrder.orderStatus,
+      checkoutUrl: cfOrder.checkoutUrl,
+      upiIntentUrl: upiIntentUrl || cfOrder.checkoutUrl,
+      isSimulated: Boolean(cfOrder.isSimulated),
+      environment: cashfree.getEnv()
+    }, 'Cashfree UPI order created successfully');
+  } catch (err) {
+    console.error('[Cashfree create-order error]:', err);
+    fail(res, err.message || 'Error creating payment order', 500);
+  }
+});
+
+/**
+ * 2. Verify Order and Execute Recharge upon successful UPI payment
+ * POST /api/v1/payment/cashfree/verify-and-recharge
+ */
+router.post('/payment/cashfree/verify-and-recharge', async (req, res) => {
+  const user = getAuthenticatedUser(req);
+  const {
+    orderId,
+    mobile,
+    mobileNumber,
+    operator,
+    operatorId,
+    circle,
+    amount,
+    planId,
+    serviceType = 'Mobile Recharge'
+  } = req.body;
+
+  if (!orderId) {
+    return fail(res, 'orderId is required to verify payment.', 400);
+  }
+
+  // Idempotency: Check if already processed
+  if (processedCashfreeOrders.has(orderId)) {
+    const existingTxn = db.transactions.find(t => t.cfOrderId === orderId || t.id.includes(orderId));
+    if (existingTxn) {
+      return success(res, existingTxn, 'Order already processed successfully.');
+    }
+  }
+
+  // Fetch context from pending order or fallback to body
+  const orderCtx = pendingCashfreeOrders.get(orderId) || {};
+  const targetMobile = mobileNumber || mobile || orderCtx.mobile || user.phone;
+  const targetOperator = operatorId || operator || orderCtx.operator || 'Jio';
+  const targetCircle = circle || orderCtx.circle || 'Delhi';
+  const numAmount = Number(amount || orderCtx.amount || 19);
+  const targetServiceType = serviceType || orderCtx.serviceType || 'Mobile Recharge';
+  const isDth = (targetServiceType || '').toLowerCase().includes('dth');
+
+  try {
+    // Check payment status with Cashfree
+    const orderStatus = await cashfree.getOrder(orderId);
+
+    const isPaid = orderStatus.isPaid || 
+      (orderStatus.orderStatus && orderStatus.orderStatus.toUpperCase() === 'PAID') ||
+      orderStatus.isSimulated;
+
+    if (!isPaid) {
+      return fail(res, `Payment is not completed yet. Current status: ${orderStatus.orderStatus || 'PENDING'}`, 402);
+    }
+
+    // Mark as processed immediately to prevent duplicate runs
+    processedCashfreeOrders.add(orderId);
+
+    // If purpose is wallet topup
+    if (orderCtx.purpose === 'wallet_topup') {
+      user.walletBalance = (user.walletBalance || 0) + numAmount;
+      const txnId = 'FP_WT_' + Date.now();
+      const topupTxn = {
+        id: txnId,
+        userId: user.id,
+        userName: user.name,
+        title: 'Wallet Top-up via UPI',
+        subtitle: `Added ₹${numAmount} • Cashfree UPI`,
+        amount: numAmount,
+        timestamp: new Date().toISOString(),
+        status: 'success',
+        category: 'wallet_topup',
+        paymentMode: 'Cashfree UPI',
+        cfOrderId: orderId
+      };
+      db.transactions.unshift(topupTxn);
+      return success(res, {
+        newBalance: user.walletBalance,
+        transactionId: txnId,
+        amount: numAmount,
+        status: 'success'
+      }, `₹${numAmount} added to wallet successfully via Cashfree UPI!`);
+    }
+
+    // Execute Live Cyrus Recharge
+    const txnId = 'FP_CF_' + Date.now();
+    let opRef = 'OP' + Math.floor(100000000 + Math.random() * 900000000);
+    let status = 'success';
+    let cyrusInfo = null;
+
+    try {
+      const cyrusRes = await cyrus.executeRecharge({
+        number: targetMobile,
+        operator: targetOperator,
+        circle: targetCircle,
+        amount: numAmount,
+        usertx: txnId,
+        type: isDth ? 'dth' : 'mobile'
+      });
+
+      cyrusInfo = cyrusRes;
+      if (cyrusRes && cyrusRes.operatorRef && cyrusRes.operatorRef.trim() !== '') {
+        opRef = cyrusRes.operatorRef;
+      }
+      if (cyrusRes && cyrusRes.status) {
+        const s = cyrusRes.status.toUpperCase();
+        if (s === 'FAILURE') status = 'failed';
+        else if (s === 'PENDING') status = 'pending';
+        else status = 'success';
+      }
+    } catch (err) {
+      console.error('[Cyrus Execution via Cashfree Error]:', err.message);
+    }
+
+    const newTxn = {
+      id: txnId,
+      userId: user.id,
+      userName: user.name,
+      title: `${targetOperator} ${isDth ? 'DTH' : 'Recharge'}`,
+      subtitle: `+91 ${targetMobile} • Cashfree UPI`,
+      amount: numAmount,
+      timestamp: new Date().toISOString(),
+      status,
+      category: isDth ? 'dth' : 'recharge',
+      operatorName: targetOperator,
+      operatorRefNumber: opRef,
+      apiTransId: cyrusInfo?.apiTransId || '',
+      mobile: targetMobile.startsWith('+91') ? targetMobile : '+91 ' + targetMobile,
+      paymentMode: 'Cashfree UPI',
+      cfOrderId: orderId
+    };
+
+    // Push into Admin Ledger
+    db.transactions.unshift(newTxn);
+
+    if (status === 'failed') {
+      // Since payment was deducted via UPI, credit the amount to user's wallet as instant refund!
+      user.walletBalance = (user.walletBalance || 0) + numAmount;
+      return res.status(400).json({
+        success: false,
+        message: cyrusInfo?.errorMessage 
+          ? `Operator recharge failed: ${cyrusInfo.errorMessage}. Amount ₹${numAmount} has been credited to your FlamePay Wallet.`
+          : `Recharge failed. ₹${numAmount} credited to your FlamePay Wallet.`,
+        data: {
+          transactionId: txnId,
+          status: 'refunded_to_wallet',
+          walletBalance: user.walletBalance,
+          errorMessage: cyrusInfo?.errorMessage
+        }
+      });
+    }
+
+    success(res, {
+      transactionId: txnId,
+      operatorRefNumber: opRef,
+      apiTransId: cyrusInfo?.apiTransId || '',
+      amount: numAmount,
+      timestamp: new Date().toISOString(),
+      status,
+      serviceType: targetServiceType,
+      targetTitle: `${targetOperator} - ${targetMobile}`,
+      paymentMode: 'Cashfree UPI'
+    }, 'Recharge completed successfully via Cashfree UPI!');
+
+  } catch (err) {
+    console.error('[Cashfree verify-and-recharge error]:', err);
+    fail(res, err.message || 'Error processing recharge after payment', 500);
+  }
+});
+
+/**
+ * 3. Status check endpoint for any order
+ * GET /api/v1/payment/cashfree/order/:orderId
+ */
+router.get('/payment/cashfree/order/:orderId', async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const orderData = await cashfree.getOrder(orderId);
+    if (!orderData.success) {
+      return fail(res, orderData.error || 'Failed to fetch order status', 400);
+    }
+    success(res, orderData, 'Order status retrieved');
+  } catch (err) {
+    fail(res, err.message, 500);
+  }
+});
+
+/**
+ * 4. Cashfree Webhook Listener
+ * POST /api/v1/payment/cashfree/webhook
+ */
+router.post('/payment/cashfree/webhook', async (req, res) => {
+  console.log('[Cashfree Webhook Received]:', JSON.stringify(req.body));
+  // Acknowledge Cashfree quickly
+  res.status(200).json({ status: 'OK' });
 });
 
 module.exports = router;
