@@ -148,14 +148,14 @@ class CashfreeService {
   }
 
   /**
-   * Generate Seamless UPI Intent for direct app redirection (GPay, PhonePe, Paytm)
+   * Generate Seamless UPI Intent / Link for direct app redirection (GPay, PhonePe, Paytm)
    */
-  async generateUpiIntent({ paymentSessionId, channel = 'intent' }) {
+  async generateUpiIntent({ paymentSessionId, channel = 'link' }) {
     if (!this.isConfigured()) {
       return {
         success: true,
         isSimulated: true,
-        channel: 'intent',
+        channel: 'link',
         upiUrl: `upi://pay?pa=flamepay@cashfree&pn=FlamePay&cu=INR`
       };
     }
@@ -165,7 +165,7 @@ class CashfreeService {
       payment_session_id: paymentSessionId,
       payment_method: {
         upi: {
-          channel: channel // 'intent' or 'qrcode'
+          channel: channel // 'link' or 'qrcode' or 'collect'
         }
       }
     };
