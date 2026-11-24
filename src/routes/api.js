@@ -3040,4 +3040,43 @@ router.post('/payment/cashfree/webhook', async (req, res) => {
   res.status(200).json({ status: 'OK' });
 });
 
+/**
+ * 5. Cashfree Return Page
+ * GET /api/v1/payment/cashfree/return
+ */
+router.get('/payment/cashfree/return', (req, res) => {
+  const { order_id } = req.query;
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Payment Received - FlamePay</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 40px 20px; background: #f8fafc; color: #1e293b; }
+        .card { max-width: 420px; margin: 40px auto; background: white; padding: 32px 24px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); }
+        .icon { width: 64px; height: 64px; background: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px; }
+        h2 { margin: 0 0 8px; color: #0f172a; font-size: 20px; }
+        p { color: #64748b; font-size: 14px; margin: 0 0 24px; line-height: 1.5; }
+        .btn { display: inline-block; background: #2563eb; color: white; padding: 12px 28px; border-radius: 12px; font-weight: 600; text-decoration: none; font-size: 15px; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="icon">✓</div>
+        <h2>Payment Processed!</h2>
+        <p>Order ID: <b>${order_id || 'Completed'}</b><br>Please return to the FlamePay app to see your recharge status.</p>
+        <a class="btn" href="flamepay://payment/return?order_id=${encodeURIComponent(order_id || '')}">Return to FlamePay</a>
+      </div>
+      <script>
+        setTimeout(function() {
+          window.location.href = "flamepay://payment/return?order_id=${encodeURIComponent(order_id || '')}";
+        }, 1200);
+      </script>
+    </body>
+    </html>
+  `);
+});
+
 module.exports = router;
