@@ -10,8 +10,13 @@ class CashfreeService {
   }
 
   getEnv() {
-    const env = (process.env.CASHFREE_ENV || 'TEST').toUpperCase();
-    return env === 'PROD' || env === 'PRODUCTION' ? 'PROD' : 'TEST';
+    const env = (process.env.CASHFREE_ENV || '').toUpperCase();
+    if (env === 'PROD' || env === 'PRODUCTION') return 'PROD';
+    if (env === 'TEST' || env === 'SANDBOX') return 'TEST';
+    // Auto-detect from secret key prefix
+    const secret = process.env.CASHFREE_SECRET_KEY || '';
+    if (secret.startsWith('cfsk_ma_prod_')) return 'PROD';
+    return 'TEST';
   }
 
   isProd() {
