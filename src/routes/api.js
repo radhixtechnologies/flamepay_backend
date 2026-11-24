@@ -2817,20 +2817,6 @@ router.post('/payment/cashfree/create-order', async (req, res) => {
       return fail(res, cfOrder.error || 'Failed to initiate Cashfree payment order.', 500);
     }
 
-    // Try to get seamless UPI intent / link string if order is active
-    let upiIntentUrl = cfOrder.upiIntentUrl || '';
-    let upiPayload = null;
-    if (cfOrder.paymentSessionId && !cfOrder.isSimulated) {
-      const upiRes = await cashfree.generateUpiIntent({
-        paymentSessionId: cfOrder.paymentSessionId,
-        channel: 'link'
-      });
-      if (upiRes.success) {
-        upiIntentUrl = upiRes.upiUrl;
-        upiPayload = upiRes.payload;
-      }
-    }
-
     // Store order context for recharge verification
     pendingCashfreeOrders.set(orderId, {
       userId: user.id,
@@ -2851,8 +2837,7 @@ router.post('/payment/cashfree/create-order', async (req, res) => {
       orderAmount: numAmount,
       orderStatus: cfOrder.orderStatus,
       checkoutUrl: cfOrder.checkoutUrl,
-      upiIntentUrl: upiIntentUrl || cfOrder.checkoutUrl,
-      upiPayload,
+      upiIntentUrl: cfOrder.checkoutUrl,
       isSimulated: Boolean(cfOrder.isSimulated),
       environment: cashfree.getEnv()
     }, 'Cashfree UPI order created successfully');
